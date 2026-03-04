@@ -436,6 +436,38 @@ See [.ai-context/Guide/aws-setup-and-costs.md](.ai-context/Guide/aws-setup-and-c
 4. **Setup** → Environment Autopilot: "8 steps detected, 2 conflicts found"
 5. **Track** → Progress dashboard: "Understanding: 0% → 45% in 10 minutes"
 
+### Demo Mode (No AWS Required)
+
+AutoDev includes a **fully offline demo mode** with pre-canned data for 3 sample repos:
+
+```bash
+# Start backend + frontend
+pnpm --filter backend dev &
+pnpm --filter frontend dev
+
+# Open demo dashboard
+open http://localhost:3000/dashboard?demo=true
+```
+
+**How it works:**
+- Add `?demo=true` to the dashboard URL → loads 3 demo repositories
+- Click any demo repo → all pages (architecture, walkthroughs, Q&A, progress, etc.) serve pre-built data from `/api/demo/*`
+- No AWS credentials, DynamoDB, or S3 needed
+- Guided walkthrough at [localhost:3000/demo](http://localhost:3000/demo)
+
+**Demo repos:** `express-shop` (Node.js), `react-dashboard` (React), `python-ml-api` (Python)
+
+**Endpoints:**
+| Endpoint | Purpose |
+|---|---|
+| `GET /health` | Service health check |
+| `GET /api/warmup` | Pre-warm services, check readiness |
+| `GET /api/demo/repos` | List demo repositories |
+| `GET /api/demo/analysis/:owner/:repo/architecture` | Architecture data |
+| `GET /api/demo/animated/:owner/:repo/sequences` | Animated flow sequences |
+| `POST /api/demo/qa/:owner/:repo` | AI Q&A (canned responses) |
+| `GET /api/demo/progress/:owner/:repo/team` | Team progress + leaderboard |
+
 ---
 
 ## Supported Languages
@@ -459,10 +491,10 @@ See [.ai-context/Guide/aws-setup-and-costs.md](.ai-context/Guide/aws-setup-and-c
 | M1: Foundation | ✅ Done | Monorepo, all 5 packages, AWS infra template |
 | M2: Core Integration | ✅ Done | Bedrock AI, GitHub App, React Flow maps |
 | M3: MVP End-to-End | ✅ Done | Q&A, analysis pipeline, VS Code extension |
-| M4: Walkthroughs + Env Setup | ⏳ In Progress | Guided tours, conventions, setup autopilot |
-| M5: Animated Maps + i18n | ⏳ Planned | Animated walkthroughs, multi-language support |
-| M6: Progress Dashboard | ⏳ Planned | Skill radar, learning tracking, team view |
-| M7: Demo Day | ⏳ Planned | Polish, demo video, presentation |
+| M4: Walkthroughs + Env Setup | ✅ Done | Guided tours, conventions, setup autopilot |
+| M5: Animated Maps + i18n | ✅ Done | Animated walkthroughs, multi-language support |
+| M6: Progress Dashboard | ✅ Done | Skill radar, learning tracking, team view |
+| M7: Demo Day | ✅ Done | Polish, demo mode, guided demo script, health check |
 
 ---
 

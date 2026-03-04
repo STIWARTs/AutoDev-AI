@@ -2,7 +2,7 @@
 > Updated by AI at end of every session. Open this to see project state without launching any AI tool.
 
 **Last Updated:** 2026-03-02
-**Status:** 🟢 Milestone 6 Complete — Learning Progress + Skill Tracker + Tests (44 tests passing)
+**Status:** 🟢 ALL 7 MILESTONES COMPLETE — Demo Day Ready
 
 ---
 
@@ -81,12 +81,22 @@
   - All 8 sidebar pages updated with "My Progress" and "Team" nav links
   - Backend tests: 29 tests (vitest) — classifyArea, getAreasFromArchitecture, computeSkillScores, computeDeveloperProgress, edge cases
   - Frontend tests: 15 tests (vitest + @testing-library/react) — SkillRadar, ProgressTimeline, ModuleCompletionGrid
+- **Milestone 7: Demo Day**
+  - `routes/demo.ts` (~670 lines) — Full demo data API with 3 sample repos, all routes matching frontend patterns
+  - `lib/api.ts` (44 lines) — `useIsDemo()`, `getApiBase(repoId)`, `apiUrl()`, `API_BASE` utility
+  - All 8 dashboard sub-pages wired for demo mode via `getApiBase(decodedRepoId)`
+  - `dashboard/page.tsx` — Demo mode toggle with `?demo=true` query param
+  - `demo/page.tsx` (~260 lines) — Guided 5-step demo walkthrough page
+  - `page.tsx` — Polished landing page with hero, features, how-it-works, stats
+  - `GET /api/warmup` — Pre-warm endpoint with service readiness checks
+  - README updated with all milestones ✅ Done + Demo Mode section
+  - 3 demo repos: express-shop (Node.js), react-dashboard (React), python-ml-api (Python)
 
 ## 🔄 In Progress
 - (none)
 
 ## 📋 Up Next
-- [ ] Milestone 7: Demo Day
+- (all milestones complete)
 
 ---
 
@@ -134,3 +144,6 @@
 | packages/github-app/src/ | Probot webhook handlers (installation, push, PR onboarding) |
 | packages/vscode-extension/src/ | VS Code extension (CodebaseExplorer, QAPanel, WalkthroughPanel, CodeLensProvider) |
 | infrastructure/template.yaml | AWS SAM template |
+| packages/backend/src/routes/demo.ts | Demo data API (3 repos, all routes, no AWS) |
+| packages/frontend/src/lib/api.ts | Demo mode utility (getApiBase, useIsDemo) |
+| packages/frontend/src/app/demo/page.tsx | Guided 5-step demo walkthrough page |

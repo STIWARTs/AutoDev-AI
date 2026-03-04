@@ -118,3 +118,32 @@
 - Added vitest to backend + frontend, vitest.config.ts for both, @testing-library/react + jsdom for frontend
 **Next:** Milestone 7 — Final polish, deployment, README
 ---
+
+### [MILESTONE 7: DEMO DAY] ✅ COMPLETED
+**Prompt:** Implement Milestone 7 — Demo Day: polish, demo mode, guided script, health check, README
+**Changes:**
+- Created `routes/demo.ts` (~670 lines) — Full demo data API with 3 sample repos (express-shop, react-dashboard, python-ml-api), all routes matching frontend patterns (architecture, animated, walkthroughs, conventions, env-setup, QA, progress, team, leaderboard, i18n)
+- Created `lib/api.ts` (44 lines) — `useIsDemo()`, `getApiBase(repoId)`, `apiUrl()`, `API_BASE` utility for routing demo vs real API calls
+- Updated all 8 dashboard sub-pages to use `getApiBase(decodedRepoId)` instead of hardcoded `API_BASE`
+- Updated `dashboard/page.tsx` — Demo mode toggle with `?demo=true` query param, loads demo repos
+- Created `demo/page.tsx` (~260 lines) — Guided 5-step demo walkthrough page with accordion steps
+- Polished `page.tsx` — Landing page with hero, features grid, how-it-works, stats section
+- Added `GET /api/warmup` endpoint to `index.ts` — Pre-warm services with readiness checks
+- Updated README.md — All 7 milestones marked ✅ Done, added Demo Mode section with usage instructions + endpoint table
+- Updated `.ai-context/` — checkpoints/latest.md, progress.md, prompt_log.md all reflect M7 completion
+**Result:** All 7 milestones complete. Project is fully demo-ready.
+---
+
+### [UI/UX REDESIGN WITH SHADCN] ⚡ IN-PROGRESS
+**Prompt:** Use shadcn/ui and ui-ux-pro-max skill to redesign entire frontend with professional design system, premium colors, modern fonts, fancy animations
+**Changes:**
+- Generated design system (Dark Mode OLED, Plus Jakarta Sans typography, indigo/purple gradient accents)
+- Initialized shadcn/ui, installed 14 components (button, card, badge, input, separator, tabs, tooltip, avatar, skeleton, sheet, scroll-area, dialog, dropdown-menu, progress)
+- Redesigned `tailwind.config.ts` — Premium color system, custom animations (float, glow-pulse, orbit, shimmer), glassmorphism shadows
+- Redesigned `globals.css` — Shadcn CSS variables, glass effects, gradient text utilities, custom scrollbar
+- Updated `layout.tsx` — Plus Jakarta Sans (headings) + Inter (body) + JetBrains Mono fonts
+- Created `DashboardSidebar.tsx` — Shared sidebar component with active states, tooltips, status indicator
+- Redesigned `page.tsx` (landing) — Animated hero with orbiting icons, feature cards, comparison table, multi-language section, demo CTA
+- Redesigned `dashboard/page.tsx` — Shadcn Button/Card/Badge components, improved layout
+**Next:** Redesign all 8 repo detail pages ([repoId]/page.tsx, animated, walkthroughs, conventions, env-setup, qa, progress, team) to use DashboardSidebar + shadcn components
+---
