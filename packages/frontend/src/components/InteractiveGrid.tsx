@@ -17,37 +17,13 @@ export function InteractiveGrid() {
     canvas.width = width;
     canvas.height = height;
 
-    // We keep target angles for smooth interpolation
-    const cells: { targetAngle: number; currentAngle: number; cx: number; cy: number }[] = [];
-    const spacing = 35; // Pixels between each vector arrow
-    
-    let cols = Math.ceil(width / spacing);
-    let rows = Math.ceil(height / spacing);
-
-    const initCells = () => {
-        cells.length = 0;
-        cols = Math.ceil(width / spacing);
-        rows = Math.ceil(height / spacing);
-        for (let i = 0; i < cols; i++) {
-            for (let j = 0; j < rows; j++) {
-                cells.push({
-                    cx: i * spacing + spacing / 2,
-                    cy: j * spacing + spacing / 2,
-                    targetAngle: 0,
-                    currentAngle: 0
-                });
-            }
-        }
-    };
-    initCells();
-
-    const mouse = { x: -1000, y: -1000 };
+    const mouse = { x: width / 2, y: height / 2, targetX: width / 2, targetY: height / 2 };
     let isMousePresent = false;
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - rect.left;
-      mouse.y = e.clientY - rect.top;
+      mouse.targetX = e.clientX - rect.left;
+      mouse.targetY = e.clientY - rect.top;
       isMousePresent = true;
     };
     
@@ -63,7 +39,6 @@ export function InteractiveGrid() {
       height = window.innerHeight;
       canvas.width = width;
       canvas.height = height;
-      initCells();
     };
     window.addEventListener("resize", handleResize);
 
@@ -72,63 +47,68 @@ export function InteractiveGrid() {
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
-      time += 0.01;
-      
-      for (const cell of cells) {
-          const { cx, cy } = cell;
-          
-          let dist = 1000;
-          
-          if (isMousePresent) {
-             const dx = mouse.x - cx;
-             const dy = mouse.y - cy;
-             cell.targetAngle = Math.atan2(dy, dx);
-             dist = Math.sqrt(dx * dx + dy * dy);
-          } else {
-             // Idle ambient wave motion
-             cell.targetAngle = Math.sin(time + cx * 0.005) * Math.cos(time + cy * 0.005) * Math.PI;
-          }
+      time += 0.005;
 
-          // Smooth rotation interpolation
-          // To prevent spinning the wrong way across the -PI/PI boundary:
-          let diff = cell.targetAngle - cell.currentAngle;
-          while (diff < -Math.PI) diff += Math.PI * 2;
-          while (diff > Math.PI) diff -= Math.PI * 2;
-          
-          cell.currentAngle += diff * 0.1;
-
-          ctx.save();
-          ctx.translate(cx, cy);
-          ctx.rotate(cell.currentAngle);
-          
-          // Calculate intensity based on distance from mouse
-          // Max influence radius is 400px
-          const intensity = isMousePresent ? Math.max(0, 1 - dist / 400) : 0;
-          
-          // Draw the vector line
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          const lineLength = 6 + intensity * 10; // Stretches out when near cursor
-          ctx.lineTo(lineLength, 0);
-          
-          if (intensity > 0) {
-             ctx.strokeStyle = `rgba(226, 90, 52, ${0.1 + intensity * 0.8})`; // Brand accent color glow
-          } else {
-             ctx.strokeStyle = `rgba(161, 161, 170, 0.15)`; // Muted idle color
-          }
-          
-          ctx.lineWidth = 1.5;
-          ctx.lineCap = "round";
-          ctx.stroke();
-
-          // Draw the origin dot
-          ctx.beginPath();
-          ctx.arc(0, 0, 1.5, 0, Math.PI * 2);
-          ctx.fillStyle = intensity > 0 ? `rgba(226, 90, 52, ${0.3 + intensity * 0.7})` : `rgba(161, 161, 170, 0.4)`;
-          ctx.fill();
-
-          ctx.restore();
+      // Smooth interpolation for mouse
+      if (!isMousePresent) {
+         // Ambient wandering when mouse is away
+         mouse.targetX = width / 2 + Math.sin(time) * 300;
+         mouse.targetY = height / 2 + Math.cos(time * 0.8) * 200;
       }
+      mouse.x += (mouse.targetX - mouse.x) * 0.05;
+      mouse.y += (mouse.targetY - mouse.y) * 0.05;
+
+      const gridSize = 40;
+      
+      // Subtle parallax shift based on mouse position
+      // This makes the entire grid gently shift in the opposite direction of the mouse
+      const parallaxX = (mouse.x / width - 0.5) * -40;
+      const parallaxY = (mouse.y / height - 0.5) * -40;
+
+      // Draw grid
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      
+      // Calculate start and end points including parallax offset
+      const startX = (parallaxX % gridSize) - gridSize;
+      const startY = (parallaxY % gridSize) - gridSize;
+
+      for (let x = startX; x <= width + gridSize; x += gridSize) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+      }
+      for (let y = startY; y <= height + gridSize; y += gridSize) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+      }
+      
+      // Muted technical grid color
+      ctx.strokeStyle = "rgba(161, 161, 170, 0.4)"; 
+      ctx.stroke();
+
+      // Apply the flashlight mask using destination-in
+      const gradient = ctx.createRadialGradient(
+        mouse.x, mouse.y, 0,
+        mouse.x, mouse.y, 600
+      );
+      // Center is fully opaque, edges fade to transparent
+      gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+      ctx.globalCompositeOperation = "destination-in";
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+      
+      // Add a subtle brand-colored ambient glow over the focused area of the grid
+      ctx.globalCompositeOperation = "source-over";
+      const ambientGlow = ctx.createRadialGradient(
+        mouse.x, mouse.y, 0,
+        mouse.x, mouse.y, 400
+      );
+      ambientGlow.addColorStop(0, "rgba(226, 90, 52, 0.1)"); // Subtle brand accent
+      ambientGlow.addColorStop(1, "rgba(226, 90, 52, 0)");
+      ctx.fillStyle = ambientGlow;
+      ctx.fillRect(0, 0, width, height);
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -146,7 +126,7 @@ export function InteractiveGrid() {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 pointer-events-none z-0 opacity-80"
+      className="absolute inset-0 pointer-events-none z-0"
     />
   );
 }

@@ -74,8 +74,8 @@ export default function HomePage() {
             <span className="font-heading font-semibold text-xl tracking-tight">AutoDev</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 font-mono text-xs uppercase tracking-widest text-brand-muted">
-            <Link href="#product" className="hover:text-brand-text transition-colors">Product</Link>
             <Link href="#how-it-works" className="hover:text-brand-text transition-colors">How it works</Link>
+            <Link href="#product" className="hover:text-brand-text transition-colors">Product</Link>
             <Link href="#customers" className="hover:text-brand-text transition-colors">Customers</Link>
             <Link href="#pricing" className="hover:text-brand-text transition-colors">Pricing</Link>
           </div>
@@ -223,9 +223,10 @@ export default function HomePage() {
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.15 }}
-                className="relative z-10 flex flex-col items-center text-center"
+                className="relative z-10 flex flex-col items-center text-center cursor-default bg-brand-surface p-6 rounded-sm border border-transparent hover:border-brand-border/50 hover:bg-brand-bg/50 transition-colors"
               >
                 <div className="w-14 h-14 bg-brand-bg border border-brand-border rounded-sm flex items-center justify-center mb-6 shadow-sm">
                   <s.Icon className="w-6 h-6 text-brand-DEFAULT" />
@@ -268,23 +269,53 @@ export default function HomePage() {
             >
               <div className="bg-brand-surface border border-brand-border rounded-sm p-4 h-[400px] flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(#2A2726_1px,transparent_1px)] [background-size:16px_16px] opacity-30" />
-                <div className="p-4 bg-brand-bg border border-brand-border rounded-sm absolute top-10 left-10 shadow-xl z-10 w-48">
+                <motion.div 
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="p-4 bg-brand-bg border border-brand-border rounded-sm absolute top-10 left-10 shadow-xl z-10 w-48"
+                >
                   <div className="font-mono text-[10px] text-brand-muted mb-1">FRONTEND</div>
                   <div className="font-heading text-lg">Next.js App</div>
-                </div>
+                </motion.div>
                 {/* Connecting Line */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-brand-border stroke-[2px] opacity-50"><path d="M 230 80 Q 300 100 350 200" fill="none" strokeDasharray="4 4" /></svg>
-                <div className="p-4 bg-brand-bg border border-brand-DEFAULT/50 rounded-sm absolute top-32 right-12 z-10 w-48 shadow-[0_0_30px_rgba(226,90,52,0.1)]">
+                <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-brand-border stroke-[2px] opacity-50">
+                  <motion.path 
+                    d="M 230 80 Q 300 100 350 200" 
+                    fill="none" 
+                    strokeDasharray="4 4" 
+                    initial={{ pathLength: 0 }}
+                    whileInView={{ pathLength: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, ease: "easeInOut" }}
+                  />
+                </svg>
+                <motion.div 
+                  animate={{ y: [0, 10, 0] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                  className="p-4 bg-brand-bg border border-brand-DEFAULT/50 rounded-sm absolute top-32 right-12 z-10 w-48 shadow-[0_0_30px_rgba(226,90,52,0.1)]"
+                >
                   <div className="font-mono text-[10px] text-brand-DEFAULT mb-1">BACKEND</div>
                   <div className="font-heading text-lg">Express API</div>
                   <div className="mt-2 pt-2 border-t border-brand-border font-mono text-[10px] text-brand-muted">REST + WebSockets</div>
-                </div>
+                </motion.div>
                 {/* Connecting Line */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-brand-border stroke-[2px] opacity-50"><path d="M 400 280 Q 300 350 150 300" fill="none" /></svg>
-                <div className="p-4 bg-brand-bg border border-brand-border rounded-sm absolute bottom-12 left-16 shadow-xl z-10 w-48">
+                <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-brand-border stroke-[2px] opacity-50">
+                  <motion.path 
+                    d="M 400 280 Q 300 350 150 300" fill="none"
+                    initial={{ pathLength: 0 }}
+                    whileInView={{ pathLength: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, ease: "easeInOut", delay: 0.5 }}
+                  />
+                </svg>
+                <motion.div 
+                  animate={{ y: [0, -12, 0] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                  className="p-4 bg-brand-bg border border-brand-border rounded-sm absolute bottom-12 left-16 shadow-xl z-10 w-48"
+                >
                   <div className="font-mono text-[10px] text-emerald-500 mb-1">DATABASE</div>
                   <div className="font-heading text-lg">PostgreSQL</div>
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           </div>
@@ -357,13 +388,24 @@ export default function HomePage() {
               <div className="bg-brand-surface border border-brand-border rounded-sm overflow-hidden flex flex-col h-[400px]">
                 <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[radial-gradient(#2A2726_1px,transparent_1px)] [background-size:16px_16px]">
                   {/* Message 1 */}
-                  <div className="flex justify-end">
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20, scale: 0.95 }}
+                    whileInView={{ opacity: 1, x: 0, scale: 1 }}
+                    viewport={{ once: true }}
+                    className="flex justify-end"
+                  >
                     <div className="bg-brand-card border border-brand-border rounded-sm rounded-tr-none px-4 py-3 max-w-[80%] inline-block text-sm">
                       How does the authentication middleware work here? (कृपया हिंदी में समझाएं)
                     </div>
-                  </div>
+                  </motion.div>
                   {/* Message 2 */}
-                  <div className="flex justify-start">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.8 }}
+                    className="flex justify-start"
+                  >
                     <div className="bg-brand-DEFAULT text-brand-bg rounded-sm rounded-tl-none px-4 py-3 max-w-[85%] inline-block text-[13px] leading-relaxed shadow-lg">
                       <p className="font-semibold mb-2">ज़रूर!</p>
                       <p className="mb-2">इस प्रोजेक्ट में, ऑथेंटिकेशन <code>src/middleware/auth.ts</code> में संभाला गया है।</p>
@@ -373,7 +415,7 @@ export default function HomePage() {
                         <li>अगर टोकन सही है, तो यह यूज़र डेटा को <code>req.user</code> में डाल देता है ताकि आगे इस्तेमाल हो सके।</li>
                       </ol>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
                 <div className="p-4 bg-brand-bg border-t border-brand-border flex gap-2">
                   <div className="flex-1 border border-brand-border bg-brand-card rounded-sm px-4 py-2 text-sm text-brand-muted font-mono flex items-center">
