@@ -3,8 +3,13 @@
 import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import ArchitectureMap from "@/components/ArchitectureMap";
+import DashboardSidebar from "@/components/DashboardSidebar";
 import { getApiBase } from "@/lib/api";
 import type { ArchitectureMap as ArchMapType } from "@autodev/shared";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertCircle, Loader2, RefreshCw, Play } from "lucide-react";
 
 type AnalysisStatus = "pending" | "analyzing" | "completed" | "failed";
 
@@ -48,7 +53,7 @@ export default function RepoDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [owner, repo]);
+  }, [owner, repo, decodedRepoId]);
 
   useEffect(() => {
     fetchArchitecture();
@@ -76,164 +81,142 @@ export default function RepoDetailPage() {
     }
   }
 
+  const statusConfig: Record<AnalysisStatus, { variant: "default" | "secondary" | "destructive" | "outline"; className: string }> = {
+    completed: { variant: "outline", className: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" },
+    analyzing: { variant: "outline", className: "text-amber-400 border-amber-500/20 bg-amber-500/10 animate-pulse" },
+    failed: { variant: "destructive", className: "text-red-400 border-red-500/20 bg-red-500/10" },
+    pending: { variant: "secondary", className: "text-brand-muted border-brand-border/30" },
+  };
+
   return (
-    <div className="min-h-screen">
-      {/* Sidebar */}
-      <nav className="fixed left-0 top-0 w-64 h-full bg-gray-900 border-r border-gray-800 p-6">
-        <a
-          href="/dashboard"
-          className="text-xl font-bold mb-6 block bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent"
-        >
-          AutoDev
-        </a>
-        <p className="text-sm text-gray-400 mb-4">{decodedRepoId}</p>
-        <ul className="space-y-1">
-          <li>
-            <a href={`/dashboard/${repoId}`} className="block px-3 py-2 rounded-lg bg-gray-800 text-white text-sm">
-              Architecture Map
-            </a>
-          </li>
-          <li>
-            <a href={`/dashboard/${repoId}/animated`} className="block px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-300 text-sm transition-colors">
-              Animated Map
-            </a>
-          </li>
-          <li>
-            <a href={`/dashboard/${repoId}/walkthroughs`} className="block px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-300 text-sm transition-colors">
-              Walkthroughs
-            </a>
-          </li>
-          <li>
-            <a href={`/dashboard/${repoId}/conventions`} className="block px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-300 text-sm transition-colors">
-              Conventions
-            </a>
-          </li>
-          <li>
-            <a href={`/dashboard/${repoId}/env-setup`} className="block px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-300 text-sm transition-colors">
-              Env Setup
-            </a>
-          </li>
-          <li>
-            <a href={`/dashboard/${repoId}/qa`} className="block px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-300 text-sm transition-colors">
-              Q&A
-            </a>
-          </li>
-          <li>
-            <a href={`/dashboard/${repoId}/progress`} className="block px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-300 text-sm transition-colors">
-              My Progress
-            </a>
-          </li>
-          <li>
-            <a href={`/dashboard/${repoId}/team`} className="block px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-300 text-sm transition-colors">
-              Team
-            </a>
-          </li>
-        </ul>
-      </nav>
+    <div className="min-h-screen bg-brand-bg">
+      <DashboardSidebar repoId={repoId} decodedRepoId={decodedRepoId} />
 
       {/* Main content */}
-      <main className="ml-64 p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Architecture Map</h1>
+      <main className="ml-[260px] p-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-heading font-bold tracking-tight text-brand-text">Architecture Map</h1>
+            <p className="text-brand-text-secondary text-sm mt-2">Visual representation of your codebase structure</p>
+          </div>
           <div className="flex gap-3 items-center">
-            <span className={`text-xs px-2.5 py-1 rounded-full ${
-              status === "completed" ? "bg-green-900 text-green-300" :
-              status === "analyzing" ? "bg-yellow-900 text-yellow-300 animate-pulse" :
-              status === "failed" ? "bg-red-900 text-red-300" :
-              "bg-gray-800 text-gray-400"
-            }`}>
+            <Badge variant={statusConfig[status].variant} className={statusConfig[status].className}>
               {status}
-            </span>
+            </Badge>
             {(status === "pending" || status === "failed") && (
-              <button
+              <Button
                 onClick={triggerAnalysis}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-glow hover:shadow-glow-lg text-white border-0"
               >
+                <Play className="w-4 h-4 mr-2" />
                 {status === "failed" ? "Retry Analysis" : "Run Analysis"}
-              </button>
+              </Button>
             )}
             {status === "completed" && (
-              <button
+              <Button
+                variant="outline"
                 onClick={triggerAnalysis}
-                className="px-4 py-2 border border-gray-700 hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors"
+                className="glass-hover border-white/[0.08]"
               >
+                <RefreshCw className="w-4 h-4 mr-2" />
                 Re-analyze
-              </button>
+              </Button>
             )}
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 p-4 border border-red-800 bg-red-950 rounded-lg text-red-300 text-sm">
-            {error}
-          </div>
+          <Card className="mb-6 glass border-red-500/20 bg-transparent">
+            <CardContent className="p-4 flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 shrink-0 text-red-400" />
+              <span className="text-red-300 text-sm">{error}</span>
+            </CardContent>
+          </Card>
         )}
 
         {/* Architecture Map */}
         {loading && !archMap ? (
-          <div className="border border-gray-800 rounded-xl bg-gray-900/50 h-[500px] flex items-center justify-center">
-            <div className="text-center">
-              <div className="inline-block w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-gray-400">Loading architecture...</p>
-            </div>
-          </div>
+          <Card className="glass border-white/[0.08] bg-transparent">
+            <CardContent className="h-[500px] flex items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="w-10 h-10 text-indigo-400 animate-spin mx-auto mb-4" />
+                <p className="text-brand-text-secondary font-medium">Loading architecture...</p>
+              </div>
+            </CardContent>
+          </Card>
         ) : archMap ? (
-          <div className="border border-gray-800 rounded-xl bg-gray-900/50 overflow-hidden">
+          <Card className="glass border-white/[0.08] overflow-hidden bg-transparent">
             <ArchitectureMap data={archMap} />
-          </div>
+          </Card>
         ) : status === "analyzing" ? (
-          <div className="border border-gray-800 rounded-xl bg-gray-900/50 h-[500px] flex items-center justify-center">
-            <div className="text-center">
-              <div className="inline-block w-6 h-6 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-gray-400 text-lg mb-2">Analysis in progress...</p>
-              <p className="text-gray-500 text-sm">This may take a few minutes for large repositories</p>
-            </div>
-          </div>
+          <Card className="glass border-white/[0.08] bg-transparent">
+            <CardContent className="h-[500px] flex items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="w-10 h-10 text-amber-400 animate-spin mx-auto mb-4" />
+                <p className="text-brand-text text-lg mb-2 font-heading font-semibold">Analysis in progress...</p>
+                <p className="text-brand-muted text-sm">This may take a few minutes for large repositories</p>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="border border-gray-800 rounded-xl bg-gray-900/50 h-[500px] flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-gray-400 text-lg mb-2">No architecture analysis yet</p>
-              <p className="text-gray-500 text-sm mb-6">
-                Run analysis to generate the architecture map
-              </p>
-              <button
-                onClick={triggerAnalysis}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
-              >
-                Run Analysis
-              </button>
-            </div>
-          </div>
+          <Card className="glass border-white/[0.08] bg-transparent">
+            <CardContent className="h-[500px] flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mx-auto mb-5">
+                  <Play className="w-8 h-8 text-indigo-400" />
+                </div>
+                <p className="text-brand-text text-lg mb-2 font-heading font-semibold">No architecture analysis yet</p>
+                <p className="text-brand-muted text-sm mb-8 max-w-md mx-auto">
+                  Run analysis to generate the architecture map
+                </p>
+                <Button
+                  onClick={triggerAnalysis}
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-glow hover:shadow-glow-lg text-white border-0"
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  Run Analysis
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Quick stats */}
         <div className="grid grid-cols-3 gap-4 mt-6">
-          <div className="p-4 border border-gray-800 rounded-lg bg-gray-900/50">
-            <p className="text-gray-400 text-sm">Status</p>
-            <p className="text-lg font-medium capitalize">{status}</p>
-          </div>
-          <div className="p-4 border border-gray-800 rounded-lg bg-gray-900/50">
-            <p className="text-gray-400 text-sm">Modules Detected</p>
-            <p className="text-lg font-medium">{archMap ? archMap.nodes.length : "—"}</p>
-          </div>
-          <div className="p-4 border border-gray-800 rounded-lg bg-gray-900/50">
-            <p className="text-gray-400 text-sm">Dependencies</p>
-            <p className="text-lg font-medium">{archMap ? archMap.edges.length : "—"}</p>
-          </div>
+          <Card className="glass border-white/[0.08] bg-transparent">
+            <CardContent className="p-5">
+              <p className="text-brand-text-secondary text-sm mb-1">Status</p>
+              <p className="text-xl font-heading font-semibold capitalize text-brand-text">{status}</p>
+            </CardContent>
+          </Card>
+          <Card className="glass border-white/[0.08] bg-transparent">
+            <CardContent className="p-5">
+              <p className="text-brand-text-secondary text-sm mb-1">Modules Detected</p>
+              <p className="text-xl font-heading font-semibold text-brand-text">{archMap ? archMap.nodes.length : "—"}</p>
+            </CardContent>
+          </Card>
+          <Card className="glass border-white/[0.08] bg-transparent">
+            <CardContent className="p-5">
+              <p className="text-brand-text-secondary text-sm mb-1">Dependencies</p>
+              <p className="text-xl font-heading font-semibold text-brand-text">{archMap ? archMap.edges.length : "—"}</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Tech Stack */}
         {archMap?.techStack && Object.keys(archMap.techStack).length > 0 && (
-          <div className="mt-6 p-4 border border-gray-800 rounded-lg bg-gray-900/50">
-            <p className="text-gray-400 text-sm mb-3">Tech Stack</p>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(archMap.techStack).map(([key, value]) => (
-                <span key={key} className="text-xs px-2.5 py-1 rounded-full bg-gray-800 text-gray-300">
-                  <span className="text-gray-500">{key}:</span> {value}
-                </span>
-              ))}
-            </div>
-          </div>
+          <Card className="mt-6 glass border-white/[0.08] bg-transparent">
+            <CardContent className="p-5">
+              <p className="text-brand-text-secondary text-sm mb-3 font-medium">Tech Stack</p>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(archMap.techStack).map(([key, value]) => (
+                  <Badge key={key} variant="outline" className="bg-white/[0.02] text-brand-text-secondary border-white/[0.06]">
+                    <span className="text-brand-muted">{key}:</span> {value}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
       </main>
     </div>

@@ -2,6 +2,108 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: system-ui, -apple-system, sans-serif;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: rgba(226, 90, 52, 0.3); /* Terracotta selection */
+    color: #F0EEE6;
+  }
+
+  /* Elegant minimal scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2A2726;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #8A8480;
+  }
+
+  :root {
+    --background: 40 5% 7%; /* #111110 */
+    --foreground: 48 30% 92%; /* #F0EEE6 */
+
+    --card: 30 6% 10%; /* #1A1918 */
+    --card-foreground: 48 30% 92%;
+
+    --popover: 30 6% 10%;
+    --popover-foreground: 48 30% 92%;
+
+    --primary: 13 74% 54%; /* #E25A34 Terracotta */
+    --primary-foreground: 40 5% 7%; /* Black text on primary */
+
+    --secondary: 30 6% 10%;
+    --secondary-foreground: 48 30% 92%;
+
+    --muted: 24 5% 15%; /* #2A2726 */
+    --muted-foreground: 24 4% 52%; /* #8A8480 */
+
+    --accent: 24 5% 15%;
+    --accent-foreground: 48 30% 92%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 24 5% 15%; /* #2A2726 */
+    --input: 24 5% 15%;
+    --ring: 13 74% 54%;
+
+    --radius: 0.1rem; /* Sharp OpenAI-like edges, minimal curve */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-brand-bg text-brand-text font-body;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
+}
+
+@layer utilities {
+  .subtle-border {
+    @apply border border-brand-border;
+  }
+  
+  .glass-panel {
+    @apply bg-brand-surface border border-brand-border rounded-lg shadow-xl shadow-black/20;
+  }
+
+  /* Aurora Gradient Animations */
+  .animate-aurora {
+    animation: aurora 20s ease infinite;
+    background-size: 200% 200%;
+  }
+
+  @keyframes aurora {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .glass-minimal {
+    @apply bg-brand-surface/80 backdrop-blur-md border border-brand-border;
+  }
 }

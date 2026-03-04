@@ -39,6 +39,8 @@ export interface WalkthroughStep {
   stepNumber: number;
   file: string;
   lineRange?: { start: number; end: number };
+  lineStart?: number;
+  lineEnd?: number;
   title: string;
   explanation: string;
   codeSnippet?: string;
@@ -82,13 +84,15 @@ export interface SetupConflict {
   description: string;
   sources: string[];
   resolution: string;
+  files?: string[];
 }
 
 export interface MissingPiece {
-  severity: "error" | "warning" | "info";
+  severity: "error" | "warning" | "info" | "critical" | "important";
   description: string;
   evidence: string;
   suggestion: string;
+  what?: string;
 }
 
 export interface EnvVariable {
@@ -105,6 +109,8 @@ export interface DockerSupport {
   hasCompose: boolean;
   composeServices?: string[];
   quickStart?: string;
+  services?: string[];
+  instructions?: string;
 }
 
 export interface EnvSetupGuide {

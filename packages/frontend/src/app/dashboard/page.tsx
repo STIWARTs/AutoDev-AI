@@ -1,7 +1,25 @@
 "use client";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  RefreshCw,
+  Plus,
+  Github,
+  AlertCircle,
+  Loader2,
+  FolderGit2,
+  Code2,
+  LayoutDashboard,
+  Play,
+  ChevronRight,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -12,6 +30,20 @@ interface RepoItem {
   fileCount?: number;
   techStack?: Record<string, string | undefined>;
 }
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 15 },
+  visible: (i: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+  }),
+};
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.05 } },
+};
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -39,139 +71,209 @@ function DashboardContent() {
 
   useEffect(() => {
     fetchRepos();
-    // Poll every 15s so "analyzing" repos update automatically
     const interval = setInterval(fetchRepos, 15_000);
     return () => clearInterval(interval);
   }, [fetchRepos]);
 
-  const statusBadge = (status: RepoItem["analysisStatus"]) => {
-    const map: Record<string, string> = {
-      completed: "bg-green-900 text-green-300",
-      analyzing: "bg-yellow-900 text-yellow-300 animate-pulse",
-      failed: "bg-red-900 text-red-300",
-      pending: "bg-gray-800 text-gray-400",
-    };
-    return map[status] ?? map.pending;
+  const statusConfig: Record<string, { classes: string; dot: string }> = {
+    completed: { classes: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", dot: "bg-emerald-400" },
+    analyzing: { classes: "text-amber-400 bg-amber-400/10 border-amber-400/20", dot: "bg-amber-400 animate-pulse" },
+    failed: { classes: "text-red-400 bg-red-400/10 border-red-400/20", dot: "bg-red-400" },
+    pending: { classes: "text-brand-muted bg-brand-surface border-brand-border", dot: "bg-brand-muted" },
   };
 
   const demoSuffix = isDemo ? "?demo=true" : "";
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-brand-bg font-body selection:bg-brand-DEFAULT/30">
       {/* Demo banner */}
-      {isDemo && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center py-2 text-sm font-medium">
-          Demo Mode — Exploring pre-analyzed sample repositories
-          <a href="/dashboard" className="ml-3 underline opacity-80 hover:opacity-100">Exit demo</a>
-        </div>
-      )}
+      <AnimatePresence>
+        {isDemo && (
+          <motion.div
+            initial={{ y: -40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -40, opacity: 0 }}
+            className="fixed top-0 left-0 right-0 z-50 bg-brand-DEFAULT text-brand-bg text-center py-2 text-sm font-semibold tracking-wide border-b border-brand-border shadow-sm flex items-center justify-center gap-3"
+          >
+            <FolderGit2 className="w-4 h-4" />
+            <span>Demo Mode — Exploring pre-analyzed repositories</span>
+            <Link href="/dashboard" className="ml-2 underline opacity-80 hover:opacity-100 transition-opacity">Exit</Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Sidebar */}
-      <nav className={`fixed left-0 ${isDemo ? "top-10" : "top-0"} w-64 h-full bg-gray-900 border-r border-gray-800 p-6`}>
-        <a href="/">
-          <h2 className="text-xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-            AutoDev
-          </h2>
-        </a>
-        <ul className="space-y-2">
-          <li>
-            <a
+      <nav className={`fixed left-0 ${isDemo ? "top-10" : "top-0"} w-[260px] h-full bg-brand-surface border-r border-brand-border flex flex-col z-40`}>
+        <div className="px-6 py-5">
+          <Link href="/" className="flex items-center gap-3 cursor-pointer group">
+            <div className="w-8 h-8 rounded-sm bg-brand-DEFAULT flex items-center justify-center">
+              <Code2 className="w-4 h-4 text-brand-bg" />
+            </div>
+            <span className="text-xl font-heading font-bold text-brand-text">AutoDev</span>
+          </Link>
+        </div>
+
+        <Separator className="bg-brand-border" />
+
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="space-y-1">
+            <Link
               href={`/dashboard${demoSuffix}`}
-              className="block px-3 py-2 rounded-lg bg-gray-800 text-white text-sm"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-mono transition-colors duration-200 cursor-pointer bg-brand-card border border-brand-border text-brand-DEFAULT relative"
             >
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-brand-DEFAULT" />
+              <LayoutDashboard className="w-4 h-4" />
               Repositories
-            </a>
-          </li>
-        </ul>
+            </Link>
+          </div>
+        </div>
+
+        <div className="px-6 py-4 border-t border-brand-border bg-brand-bg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-xs font-mono text-brand-muted uppercase tracking-wider">Connected</span>
+            </div>
+            <span className="text-xs font-mono text-brand-muted border border-brand-border px-1.5 py-0.5 rounded-sm">V0.1.0</span>
+          </div>
+        </div>
       </nav>
 
       {/* Main content */}
-      <main className={`ml-64 p-8 ${isDemo ? "pt-18" : ""}`}>
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold">
-            {isDemo ? "Sample Repositories" : "Connected Repositories"}
-          </h1>
-          <div className="flex gap-3">
-            <button
-              onClick={fetchRepos}
-              className="px-4 py-2 border border-gray-700 hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors"
-            >
-              Refresh
-            </button>
-            {!isDemo && (
-              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors">
-                + Connect Repo
-              </button>
-            )}
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-6 p-4 border border-red-800 bg-red-950 rounded-lg text-red-300 text-sm">
-            Failed to load repositories: {error}
-          </div>
-        )}
-
-        {loading && repos.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="inline-block w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-gray-400">Loading repositories...</p>
-          </div>
-        ) : repos.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-gray-700 rounded-xl">
-            <p className="text-gray-400 text-lg mb-2">No repositories connected yet</p>
-            <p className="text-gray-500 text-sm mb-6">
-              Install the AutoDev GitHub App to get started
-            </p>
-            <div className="flex gap-3 justify-center">
-              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors">
-                Install GitHub App
-              </button>
-              <a href="/dashboard?demo=true" className="px-4 py-2 border border-purple-600 text-purple-400 hover:bg-purple-950 rounded-lg text-sm font-medium transition-colors">
-                Try Demo Mode
-              </a>
+      <main className={`ml-[260px] p-10 ${isDemo ? "pt-20" : ""}`}>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+        >
+          <motion.div variants={fadeUp} className="flex items-start justify-between mb-10 pb-6 border-b border-brand-border">
+            <div>
+              <h1 className="text-4xl font-heading font-semibold text-brand-text tracking-tight">
+                {isDemo ? "Sample Repositories" : "Connected Repositories"}
+              </h1>
+              <p className="text-brand-muted font-mono text-sm mt-3">
+                {isDemo ? "Explore pre-analyzed repos to see AutoDev in action." : "Manage your connected GitHub repositories."}
+              </p>
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {repos.map((repo) => (
-              <a
-                key={repo.repoId}
-                href={`/dashboard/${encodeURIComponent(repo.repoId)}${demoSuffix}`}
-                className="p-5 border border-gray-800 rounded-xl bg-gray-900/50 hover:border-gray-600 transition-colors group"
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchRepos}
+                className="bg-brand-surface border-brand-border text-brand-text hover:border-brand-muted transition-colors rounded-sm h-10 px-4"
               >
-                <h3 className="font-medium mb-2 group-hover:text-blue-400 transition-colors">
-                  {repo.repoId}
-                </h3>
-                <div className="flex items-center gap-3 mb-3">
-                  <span className={`text-xs px-2 py-1 rounded-full ${statusBadge(repo.analysisStatus)}`}>
-                    {repo.analysisStatus}
-                  </span>
-                  {repo.fileCount && (
-                    <span className="text-xs text-gray-500">{repo.fileCount} files</span>
-                  )}
-                </div>
-                {repo.techStack && Object.keys(repo.techStack).length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {Object.entries(repo.techStack)
-                      .filter(([, v]) => v)
-                      .slice(0, 4)
-                      .map(([k, v]) => (
-                        <span key={k} className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400">
-                          {v}
-                        </span>
-                      ))}
+                <RefreshCw className="w-4 h-4 mr-2" /> Refresh
+              </Button>
+              {!isDemo && (
+                <Button
+                  size="sm"
+                  className="bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg transition-colors border-0 rounded-sm h-10 px-5 font-semibold"
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Connect Repo
+                </Button>
+              )}
+            </div>
+          </motion.div>
+
+          {error && (
+            <motion.div variants={fadeUp} className="mb-8">
+              <Card className="bg-red-950/20 border-red-500/30 rounded-sm shadow-none">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 shrink-0 text-red-400" />
+                  <span className="text-red-300 font-mono text-sm">Failed to load repositories: {error}</span>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {loading && repos.length === 0 ? (
+            <motion.div variants={fadeUp} className="text-center py-32">
+              <Loader2 className="w-8 h-8 text-brand-DEFAULT animate-spin mx-auto mb-4" />
+              <p className="text-brand-muted font-mono text-sm tracking-wide uppercase">Fetching data...</p>
+            </motion.div>
+          ) : repos.length === 0 ? (
+            <motion.div variants={fadeUp}>
+              <Card className="bg-brand-surface border border-brand-border border-dashed rounded-sm shadow-none">
+                <CardContent className="text-center py-24 flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-sm bg-brand-card border border-brand-border flex items-center justify-center mb-6">
+                    <FolderGit2 className="w-8 h-8 text-brand-muted" />
                   </div>
-                )}
-                {repo.lastAnalyzedAt && (
-                  <p className="text-[10px] text-gray-600 mt-2">
-                    Analyzed {new Date(repo.lastAnalyzedAt).toLocaleDateString()}
+                  <h3 className="text-brand-text text-xl mb-2 font-heading font-semibold">No repositories found.</h3>
+                  <p className="text-brand-muted font-mono text-sm mb-8 max-w-md text-center">
+                    Install the AutoDev GitHub App to begin analyzing your codebase structure.
                   </p>
-                )}
-              </a>
-            ))}
-          </div>
-        )}
+                  <div className="flex gap-4 justify-center">
+                    <Button className="bg-brand-text text-brand-bg hover:bg-brand-DEFAULT transition-colors rounded-sm px-6">
+                      <Github className="w-4 h-4 mr-2" /> Install GitHub App
+                    </Button>
+                    <Link href="/dashboard?demo=true">
+                      <Button variant="outline" className="bg-brand-card border-brand-border hover:border-brand-DEFAULT transition-colors rounded-sm px-6 text-brand-text">
+                        <Play className="w-4 h-4 mr-2" /> Try Demo Mode
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ) : (
+            <motion.div variants={stagger} className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+              {repos.map((repo, i) => {
+                const status = statusConfig[repo.analysisStatus] ?? statusConfig.pending;
+                return (
+                  <motion.div
+                    key={repo.repoId}
+                    variants={fadeUp}
+                    custom={i}
+                  >
+                    <Link href={`/dashboard/${encodeURIComponent(repo.repoId)}${demoSuffix}`}>
+                      <Card className="group bg-brand-surface hover:bg-brand-card border-brand-border hover:border-brand-DEFAULT transition-all duration-200 cursor-pointer h-full rounded-sm shadow-none flex flex-col">
+                        <CardContent className="p-6 flex flex-col h-full relative">
+                          <div className="flex items-start justify-between mb-4 gap-4">
+                            <h3 className="font-heading font-semibold text-lg text-brand-text group-hover:text-brand-DEFAULT transition-colors duration-200 truncate flex-1 leading-tight">
+                              {repo.repoId}
+                            </h3>
+                            <ChevronRight className="w-5 h-5 text-brand-muted group-hover:text-brand-DEFAULT group-hover:translate-x-1 transition-all duration-200 shrink-0" />
+                          </div>
+
+                          <div className="flex items-center gap-3 mb-6">
+                            <Badge variant="outline" className={`font-mono text-[10px] uppercase tracking-wider rounded-sm px-2 py-0.5 ${status.classes} border`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${status.dot} mr-1.5`} />
+                              {repo.analysisStatus}
+                            </Badge>
+                            {repo.fileCount && (
+                              <span className="font-mono text-xs text-brand-muted">{repo.fileCount} files</span>
+                            )}
+                          </div>
+
+                          {repo.techStack && Object.keys(repo.techStack).length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4 mt-auto">
+                              {Object.entries(repo.techStack)
+                                .filter(([, v]) => v)
+                                .slice(0, 4)
+                                .map(([k, v]) => (
+                                  <span key={k} className="font-mono text-[10px] bg-brand-bg px-2 py-1 text-brand-muted border border-brand-border rounded-sm">
+                                    {v}
+                                  </span>
+                                ))}
+                            </div>
+                          )}
+
+                          {repo.lastAnalyzedAt && (
+                            <div className="mt-auto pt-4 border-t border-brand-border/50">
+                              <p className="font-mono text-[10px] text-brand-muted uppercase tracking-wider">
+                                ANALYZED ON • {new Date(repo.lastAnalyzedAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
+        </motion.div>
       </main>
     </div>
   );
@@ -179,7 +281,13 @@ function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-brand-DEFAULT animate-spin" />
+        </div>
+      }
+    >
       <DashboardContent />
     </Suspense>
   );
