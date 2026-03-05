@@ -7,9 +7,7 @@
   "engines": {
     "vscode": "^1.90.0"
   },
-  "categories": [
-    "Other"
-  ],
+  "categories": ["Other"],
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
@@ -82,15 +80,7 @@
         "autodev.language": {
           "type": "string",
           "default": "en",
-          "enum": [
-            "en",
-            "hi",
-            "ta",
-            "te",
-            "kn",
-            "bn",
-            "mr"
-          ],
+          "enum": ["en", "hi", "ta", "te", "kn", "bn", "mr"],
           "enumDescriptions": [
             "English",
             "Hindi (हिन्दी)",
@@ -118,9 +108,8 @@
     "package": "vsce package"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
     "@types/vscode": "^1.90.0",
-    "@vscode/vsce": "^3.7.1",
+    "@types/node": "^22.0.0",
     "esbuild": "^0.24.0",
     "typescript": "^5.7.0"
   }

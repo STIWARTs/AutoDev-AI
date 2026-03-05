@@ -1,340 +1,245 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  BarChart3,
-  Clock,
-  BookOpen,
-  MessageCircle,
-  Layers,
-  Target,
-  Flame,
-  TrendingUp,
-  Calendar,
-  Star,
-  Trophy,
-  Award,
-} from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import DemoDashboardLayout from "@/components/DemoDashboardLayout";
+import { getApiBase, fetchApi } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
+import {
+  BarChart3, Clock, Trophy, BookOpen, MessageCircle, Layers, Target, TrendingUp, Flame
+} from "lucide-react";
 
-interface SkillData { skill: string; score: number; modulesViewed: number; totalModules: number; }
-interface TimelineEvent { event: string; timestamp: string; score: number; }
-interface ProgressData {
-  totalScore: number; level: string; timeSpent: number; walkthroughsCompleted: number;
-  questionsAsked: number; modulesExplored: number; skills?: SkillData[];
-  timeline?: TimelineEvent[];
+interface SkillArea {
+  area: string;
+  score: number;
+  modulesExplored: number;
+  totalModules: number;
+  lastActivity: string;
 }
 
-const SKILL_COLORS: Record<string, { bar: string; glow: string }> = {
-  Auth:         { bar: "linear-gradient(90deg, #34d399, #10b981)", glow: "rgba(52,211,153,0.3)" },
-  Architecture: { bar: "linear-gradient(90deg, #818cf8, #6366f1)", glow: "rgba(129,140,248,0.3)" },
-  API:          { bar: "linear-gradient(90deg, #22d3ee, #06b6d4)", glow: "rgba(34,211,238,0.3)" },
-  Database:     { bar: "linear-gradient(90deg, #fbbf24, #f59e0b)", glow: "rgba(251,191,36,0.3)" },
-  Other:        { bar: "linear-gradient(90deg, #fb923c, #f97316)", glow: "rgba(251,146,60,0.3)" },
-  Testing:      { bar: "linear-gradient(90deg, #a78bfa, #8b5cf6)", glow: "rgba(167,139,250,0.3)" },
-  Infra:        { bar: "linear-gradient(90deg, #f87171, #ef4444)", glow: "rgba(248,113,113,0.3)" },
-  DevOps:       { bar: "linear-gradient(90deg, #fb7185, #f43f5e)", glow: "rgba(251,113,133,0.3)" },
+interface TimelineEvent {
+  timestamp: string;
+  overallScore: number;
+  eventDescription: string;
+}
+
+interface Progress {
+  userId: string;
+  overallScore: number;
+  skills: SkillArea[];
+  totalTimeSpentMs: number;
+  walkthroughsCompleted: number;
+  questionsAsked: number;
+  modulesExplored: number;
+  conventionsViewed: number;
+  firstActivity: string;
+  lastActivity: string;
+  timeline: TimelineEvent[];
+}
+
+const AREA_LABELS: Record<string, string> = {
+  architecture: "Architecture",
+  auth: "Auth",
+  api: "API",
+  database: "Database",
+  testing: "Testing",
+  infrastructure: "Infra",
+  frontend: "Frontend",
+  devops: "DevOps",
+  other: "Other",
 };
 
-function LevelBadge({ level }: { level: string }) {
-  const cfg: Record<string, { bg: string; text: string; border: string; icon: typeof Star }> = {
-    Beginner:     { bg: "rgba(52,211,153,0.08)",  text: "#34d399", border: "rgba(52,211,153,0.2)",  icon: Star },
-    Intermediate: { bg: "rgba(251,191,36,0.08)",  text: "#fbbf24", border: "rgba(251,191,36,0.2)",  icon: Flame },
-    Advanced:     { bg: "rgba(99,102,241,0.10)",  text: "#818cf8", border: "rgba(99,102,241,0.25)", icon: Trophy },
-    Expert:       { bg: "rgba(168,85,247,0.10)",  text: "#c084fc", border: "rgba(168,85,247,0.25)", icon: Award },
-  };
-  const c = cfg[level] ?? cfg.Beginner;
-  const Icon = c.icon;
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
-      style={{ background: c.bg, color: c.text, border: `1px solid ${c.border}` }}
-    >
-      <Icon className="w-3 h-3" />
-      {level}
-    </span>
-  );
-}
+const SCORE_COLOR = (score: number) => {
+  if (score >= 75) return "bg-emerald-500";
+  if (score >= 50) return "bg-amber-500";
+  if (score >= 25) return "bg-orange-500";
+  return "bg-red-400";
+};
 
-function RingProgress({ score }: { score: number }) {
-  const r = 52;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (score / 100) * circ;
-  const clr = score >= 80 ? "#818cf8" : score >= 60 ? "#fbbf24" : "#34d399";
-
-  return (
-    <div className="relative w-32 h-32">
-      {/* Glow layer */}
-      <svg className="absolute inset-0 w-full h-full rotate-[-90deg]" viewBox="0 0 120 120">
-        <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="8" />
-        <circle
-          cx="60" cy="60" r={r}
-          fill="none"
-          stroke={clr} strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={circ}
-          strokeDashoffset={offset}
-          style={{ filter: `drop-shadow(0 0 8px ${clr})`, transition: "stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)" }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-heading font-bold text-3xl" style={{ color: "var(--text-primary)" }}>{score}</span>
-        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>/ 100</span>
-      </div>
-    </div>
-  );
+function formatMs(ms: number): string {
+  const h = Math.floor(ms / 3_600_000);
+  const m = Math.floor((ms % 3_600_000) / 60_000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
 export default function ProgressPage() {
-  const [data, setData] = useState<ProgressData | null>(null);
+  const params = useParams();
+  const repoId = params.repoId as string;
+  const decodedRepoId = decodeURIComponent(repoId);
+  const [owner, repo] = decodedRepoId.split("/");
+
+  const [progress, setProgress] = useState<Progress | null>(null);
   const [loading, setLoading] = useState(true);
+  const { getToken } = useAuth();
+  const { track } = useProgressTracker(decodedRepoId);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setData({
-        totalScore: 72, level: "Intermediate", timeSpent: 120,
-        walkthroughsCompleted: 4, questionsAsked: 12, modulesExplored: 6,
-        skills: [
-          { skill: "Auth",         score: 90, modulesViewed: 2, totalModules: 2 },
-          { skill: "Architecture", score: 85, modulesViewed: 5, totalModules: 8 },
-          { skill: "API",          score: 75, modulesViewed: 3, totalModules: 3 },
-          { skill: "Database",     score: 60, modulesViewed: 1, totalModules: 2 },
-          { skill: "Other",        score: 50, modulesViewed: 1, totalModules: 2 },
-          { skill: "Testing",      score: 45, modulesViewed: 1, totalModules: 2 },
-          { skill: "Infra",        score: 30, modulesViewed: 0, totalModules: 2 },
-          { skill: "DevOps",       score: 20, modulesViewed: 0, totalModules: 1 },
-        ],
-        timeline: [
-          { event: "Started onboarding",      timestamp: new Date(Date.now() - 7200000).toISOString(), score: 0  },
-          { event: "Explored Architecture",   timestamp: new Date(Date.now() - 5400000).toISOString(), score: 25 },
-          { event: "Completed Auth walkthrough", timestamp: new Date(Date.now() - 3600000).toISOString(), score: 50 },
-          { event: "Asked 3 Q&A questions",   timestamp: new Date(Date.now() - 1800000).toISOString(), score: 65 },
-          { event: "Reached Intermediate",    timestamp: new Date(Date.now() - 600000).toISOString(),  score: 72 },
-        ],
-      });
+  const fetchProgress = useCallback(async () => {
+    if (!owner || !repo) return;
+    try {
+      setLoading(true);
+      const token = await getToken();
+      const res = await fetchApi(
+        `${getApiBase(decodedRepoId)}/progress/${owner}/${repo}/demo-user`,
+        {},
+        token
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setProgress(data);
+    } catch { /* ignore */ } finally {
       setLoading(false);
-    }, 600);
-    return () => clearTimeout(timeout);
-  }, []);
+    }
+  }, [owner, repo, decodedRepoId]);
 
-  const statCards = data ? [
-    { icon: Clock,          label: "Time Spent",           value: `${Math.floor(data.timeSpent / 60)}h ${data.timeSpent % 60}m`, color: "#22d3ee" },
-    { icon: BookOpen,       label: "Walkthroughs",          value: data.walkthroughsCompleted,              color: "#818cf8" },
-    { icon: MessageCircle,  label: "Questions Asked",       value: data.questionsAsked,                     color: "#c084fc" },
-    { icon: Layers,         label: "Modules Explored",      value: data.modulesExplored,                    color: "#34d399" },
-  ] : [];
+  useEffect(() => { fetchProgress(); }, [fetchProgress]);
+
+  if (loading) {
+    return (
+      <DemoDashboardLayout title="My Progress">
+        <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center gap-3">
+            <BarChart3 className="w-8 h-8 text-indigo-400 animate-pulse" />
+            <p className="text-brand-text-secondary text-sm">Loading your progress...</p>
+          </div>
+        </div>
+      </DemoDashboardLayout>
+    );
+  }
+
+  const scoreColor = progress?.overallScore
+    ? progress.overallScore >= 75 ? "text-emerald-400" : progress.overallScore >= 50 ? "text-amber-400" : "text-orange-400"
+    : "text-brand-muted";
+
+  const skillsSorted = [...(progress?.skills || [])].sort((a, b) => b.score - a.score);
 
   return (
-    <DemoDashboardLayout title="My Progress" subtitle="Track your onboarding journey through this codebase">
-
-      {loading || !data ? (
-        <div className="space-y-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="skeleton h-24 rounded-2xl" />
-          ))}
+    <DemoDashboardLayout
+      title="My Progress"
+      subtitle="Track your onboarding journey through this codebase"
+    >
+      {!progress || progress.overallScore === 0 ? (
+        <div className="glass rounded-xl border border-white/[0.06] flex flex-col items-center justify-center py-20">
+          <Target className="w-12 h-12 text-brand-muted mb-4" />
+          <p className="text-white font-semibold text-lg mb-1">No progress yet</p>
+          <p className="text-brand-muted text-sm text-center max-w-sm">
+            Start exploring the architecture map, walkthroughs, and Q&A to track your learning journey.
+          </p>
         </div>
       ) : (
-        <div className="space-y-6 animate-fade-in">
-
-          {/* ── Hero section ──────────────────────────────────────────────── */}
-          <div
-            className="rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden"
-            style={{
-              background: "linear-gradient(135deg, rgba(15,20,42,0.95) 0%, rgba(10,14,30,1) 100%)",
-              border: "1px solid rgba(99,102,241,0.15)",
-              boxShadow: "0 8px 40px rgba(0,0,0,0.4), 0 0 80px rgba(99,102,241,0.05)",
-            }}
-          >
-            {/* Decorative orb */}
-            <div
-              className="absolute right-0 top-0 w-64 h-64 rounded-full opacity-10 pointer-events-none"
-              style={{ background: "radial-gradient(circle, #6366f1, transparent 70%)", transform: "translate(30%, -30%)" }}
-            />
-
-            {/* Score ring */}
-            <div className="flex-shrink-0">
-              <RingProgress score={data.totalScore} />
-            </div>
-
-            {/* Score info */}
-            <div className="flex-1 text-center md:text-left">
-              <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
-                Overall Score
-              </p>
-              <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
-                <h2 className="font-heading font-bold text-2xl" style={{ color: "var(--text-primary)" }}>
-                  {data.level}
-                </h2>
-                <LevelBadge level={data.level} />
-              </div>
-              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                You&apos;ve been exploring this codebase and making great progress.
-              </p>
-
-              {/* Progress bar toward next level */}
-              <div className="mt-4 max-w-xs">
-                <div className="flex justify-between text-[10px] mb-1.5" style={{ color: "var(--text-muted)" }}>
-                  <span>Progress to Advanced</span>
-                  <span>{data.totalScore}/80</span>
-                </div>
-                <div className="h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${(data.totalScore / 80) * 100}%`,
-                      background: "linear-gradient(90deg, #6366f1, #c084fc)",
-                      boxShadow: "0 0 8px rgba(99,102,241,0.4)",
-                      transition: "width 1.2s ease",
-                    }}
+        <div className="space-y-6">
+          {/* Overall score hero */}
+          <div className="glass rounded-2xl border border-white/[0.06] p-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5" />
+            <div className="relative flex items-center gap-8">
+              {/* Score ring */}
+              <div className="relative w-28 h-28 flex-shrink-0">
+                <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+                  <circle
+                    cx="50" cy="50" r="42" fill="none"
+                    stroke="url(#scoreGrad)" strokeWidth="8" strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 42 * (progress.overallScore / 100)} ${2 * Math.PI * 42}`}
+                    className="transition-all duration-1000"
                   />
+                  <defs>
+                    <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#6366f1" />
+                      <stop offset="100%" stopColor="#a855f7" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className={`text-3xl font-bold ${scoreColor}`}>{progress.overallScore}</span>
+                  <span className="text-xs text-brand-muted">/ 100</span>
                 </div>
               </div>
-            </div>
 
-            {/* Stat grid */}
-            <div className="grid grid-cols-2 gap-3 flex-shrink-0">
-              {statCards.map(({ icon: Icon, label, value, color }) => (
-                <div
-                  key={label}
-                  className="flex flex-col items-center gap-1 p-3 rounded-xl min-w-[80px]"
-                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
-                >
-                  <Icon className="w-4 h-4" style={{ color }} />
-                  <span className="font-heading font-bold text-lg leading-none" style={{ color }}>
-                    {value}
-                  </span>
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-center" style={{ color: "var(--text-muted)" }}>
-                    {label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+              <div className="flex-1">
+                <p className="text-xs text-brand-muted uppercase tracking-widest mb-1">Overall Score</p>
+                <p className="text-2xl font-bold text-white mb-1">
+                  {progress.overallScore >= 75 ? "Proficient" : progress.overallScore >= 50 ? "Intermediate" : progress.overallScore >= 25 ? "Getting Started" : "Beginner"}
+                </p>
+                <p className="text-sm text-brand-text-secondary">
+                  You&apos;ve been exploring this codebase and making great progress.
+                </p>
+              </div>
 
-          {/* ── Skill Breakdown ────────────────────────────────────────────── */}
-          <div
-            className="rounded-2xl p-6"
-            style={{
-              background: "linear-gradient(135deg, rgba(15,20,42,0.9) 0%, rgba(10,14,30,0.95) 100%)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
-            <div className="flex items-center gap-2.5 mb-6">
-              <TrendingUp className="w-4 h-4" style={{ color: "#818cf8" }} />
-              <h3 className="font-heading font-semibold text-sm" style={{ color: "var(--text-primary)" }}>
-                Skill Breakdown
-              </h3>
-            </div>
-
-            <div className="space-y-4">
-              {data.skills?.map((skill, i) => {
-                const colors = SKILL_COLORS[skill.skill] ?? { bar: "linear-gradient(90deg,#818cf8,#6366f1)", glow: "rgba(129,140,248,0.3)" };
-                return (
-                  <div key={skill.skill} className="animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
-                          {skill.skill}
-                        </span>
-                        <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                          {skill.modulesViewed}/{skill.totalModules} modules
-                        </span>
-                      </div>
-                      <span className="text-xs font-bold" style={{ color: "var(--text-secondary)" }}>
-                        {skill.score}%
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${skill.score}%`,
-                          background: colors.bar,
-                          boxShadow: `0 0 8px ${colors.glow}`,
-                          transition: `width 1s cubic-bezier(0.4,0,0.2,1) ${i * 80}ms`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* ── Learning Timeline ──────────────────────────────────────────── */}
-          <div
-            className="rounded-2xl p-6"
-            style={{
-              background: "linear-gradient(135deg, rgba(15,20,42,0.9) 0%, rgba(10,14,30,0.95) 100%)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
-            <div className="flex items-center gap-2.5 mb-6">
-              <Calendar className="w-4 h-4" style={{ color: "#c084fc" }} />
-              <h3 className="font-heading font-semibold text-sm" style={{ color: "var(--text-primary)" }}>
-                Learning Timeline
-              </h3>
-            </div>
-
-            <div className="relative pl-6">
-              {/* Vertical line */}
-              <div
-                className="absolute left-[7px] top-2 bottom-2 w-[1px]"
-                style={{ background: "linear-gradient(180deg, rgba(99,102,241,0.5) 0%, rgba(99,102,241,0.05) 100%)" }}
-              />
-
-              <div className="space-y-5">
-                {data.timeline?.map((event, i) => (
-                  <div key={i} className="flex items-start gap-4 animate-slide-right" style={{ animationDelay: `${i * 80}ms` }}>
-                    {/* Dot */}
-                    <div
-                      className="absolute left-0 w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 mt-0.5"
-                      style={{
-                        borderColor: i === (data.timeline!.length - 1) ? "#818cf8" : "rgba(255,255,255,0.1)",
-                        background: i === (data.timeline!.length - 1) ? "rgba(99,102,241,0.3)" : "rgba(255,255,255,0.04)",
-                        boxShadow: i === (data.timeline!.length - 1) ? "0 0 8px rgba(99,102,241,0.4)" : "none",
-                      }}
-                    />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
-                        {event.event}
-                      </p>
-                      <div className="flex items-center gap-3 mt-0.5">
-                        <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                          {new Date(event.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
-                        </p>
-                        <span
-                          className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-                          style={{ background: "rgba(99,102,241,0.1)", color: "#818cf8" }}
-                        >
-                          +{event.score > 0 ? event.score : 0} pts
-                        </span>
-                      </div>
-                    </div>
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { icon: Clock, label: "Time Spent", value: formatMs(progress.totalTimeSpentMs), color: "text-cyan-400" },
+                  { icon: BookOpen, label: "Walkthroughs", value: progress.walkthroughsCompleted, color: "text-indigo-400" },
+                  { icon: MessageCircle, label: "Questions", value: progress.questionsAsked, color: "text-purple-400" },
+                  { icon: Layers, label: "Modules", value: progress.modulesExplored, color: "text-emerald-400" },
+                ].map((s) => (
+                  <div key={s.label} className="text-center">
+                    <s.icon className={`w-5 h-5 ${s.color} mx-auto mb-1`} />
+                    <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+                    <p className="text-xs text-brand-muted">{s.label}</p>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* ── Achievement hint ───────────────────────────────────────────── */}
-          <div
-            className="flex items-center gap-4 p-4 rounded-xl"
-            style={{
-              background: "rgba(251,191,36,0.06)",
-              border: "1px solid rgba(251,191,36,0.15)",
-            }}
-          >
-            <Target className="w-5 h-5 flex-shrink-0" style={{ color: "#fbbf24" }} />
-            <div>
-              <p className="text-sm font-semibold" style={{ color: "#fbbf24" }}>
-                Next milestone: Advanced Explorer
-              </p>
-              <p className="text-xs mt-0.5" style={{ color: "rgba(251,191,36,0.6)" }}>
-                Explore 3 more modules and complete 2 more walkthroughs to reach Advanced level.
-              </p>
+          {/* Skills breakdown */}
+          <div className="glass rounded-xl border border-white/[0.06] p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <TrendingUp className="w-4 h-4 text-indigo-400" />
+              <h2 className="text-sm font-semibold text-white">Skill Breakdown</h2>
+            </div>
+            <div className="space-y-3">
+              {skillsSorted.filter(s => s.score > 0 || s.totalModules > 0).map((skill) => (
+                <div key={skill.area}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-brand-text-secondary">{AREA_LABELS[skill.area] || skill.area}</span>
+                      <span className="text-xs text-brand-muted">
+                        {skill.modulesExplored}/{skill.totalModules} modules
+                      </span>
+                    </div>
+                    <span className="text-sm font-semibold text-white">{skill.score}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-white/[0.05]">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-700 ${SCORE_COLOR(skill.score)}`}
+                      style={{ width: `${skill.score}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+
+          {/* Timeline */}
+          {progress.timeline && progress.timeline.length > 0 && (
+            <div className="glass rounded-xl border border-white/[0.06] p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <Flame className="w-4 h-4 text-amber-400" />
+                <h2 className="text-sm font-semibold text-white">Learning Timeline</h2>
+              </div>
+              <div className="space-y-3">
+                {progress.timeline.map((event, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 mt-1 flex-shrink-0" />
+                      {i !== progress.timeline.length - 1 && <div className="w-px h-full bg-white/[0.05] flex-1 min-h-[16px]" />}
+                    </div>
+                    <div className="flex-1 pb-3">
+                      <p className="text-sm text-brand-text-secondary">{event.eventDescription}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-xs text-brand-muted">
+                          {new Date(event.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                        <span className="text-xs font-semibold text-indigo-400">Score: {event.overallScore}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </DemoDashboardLayout>
