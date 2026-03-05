@@ -3,16 +3,13 @@
 import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import ArchitectureMap from "@/components/ArchitectureMap";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import DemoDashboardLayout from "@/components/DemoDashboardLayout";
 import { getApiBase, fetchApi } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
-import type { ArchitectureMap as ArchMapType } from "@autodev/shared";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useProgressTracker } from "@/hooks/useProgressTracker";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Loader2, RefreshCw, Play } from "lucide-react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import type { ArchitectureMap as ArchMapType } from "@autodev/shared";
+import { Play, RefreshCw, Loader2, AlertCircle, Cpu, GitBranch, Layers, Code2 } from "lucide-react";
 
 type AnalysisStatus = "pending" | "analyzing" | "completed" | "failed";
 
@@ -21,6 +18,7 @@ export default function RepoDetailPage() {
   const repoId = params.repoId as string;
   const decodedRepoId = decodeURIComponent(repoId);
   const [owner, repo] = decodedRepoId.split("/");
+  const isDemo = decodedRepoId.startsWith("demo/");
 
   const [archMap, setArchMap] = useState<ArchMapType | null>(null);
   const [status, setStatus] = useState<AnalysisStatus>("pending");
@@ -34,7 +32,11 @@ export default function RepoDetailPage() {
     try {
       setLoading(true);
       const token = await getToken();
-      const res = await fetchApi(`${getApiBase(decodedRepoId)}/analysis/${owner}/${repo}/architecture`, {}, token);
+      const res = await fetchApi(
+        `${getApiBase(decodedRepoId)}/analysis/${owner}/${repo}/architecture`,
+        {},
+        token
+      );
       if (res.status === 404) {
         setStatus("pending");
         setArchMap(null);
@@ -43,11 +45,9 @@ export default function RepoDetailPage() {
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-
       if (data.content) {
         setArchMap(data.content as ArchMapType);
         setStatus("completed");
-        // Track that the user explored modules in this repo
         track({ eventType: "module_explored", targetLabel: `${decodedRepoId} architecture` });
       } else if (data.nodes) {
         setArchMap(data as ArchMapType);
@@ -59,16 +59,13 @@ export default function RepoDetailPage() {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load architecture");
+      setStatus("failed");
     } finally {
       setLoading(false);
     }
   }, [owner, repo, decodedRepoId]);
 
-  useEffect(() => {
-    fetchArchitecture();
-  }, [fetchArchitecture]);
-
-  // Poll while analyzing
+  useEffect(() => { fetchArchitecture(); }, [fetchArchitecture]);
   useEffect(() => {
     if (status !== "analyzing") return;
     const interval = setInterval(fetchArchitecture, 10_000);
@@ -79,157 +76,129 @@ export default function RepoDetailPage() {
     try {
       setStatus("analyzing");
       const token = await getToken();
-      await fetchApi(`${getApiBase(decodedRepoId)}/repos/analyze`, {
+      await fetchApi(`${getApiBase(decodedRepoId)}/repos/${owner}/${repo}/analyze`, {
         method: "POST",
-        body: JSON.stringify({ repoId: decodedRepoId }),
       }, token);
-      // Start polling
       setTimeout(fetchArchitecture, 5000);
     } catch {
       setError("Failed to trigger analysis");
+      setStatus("failed");
     }
   }
 
-  const statusConfig: Record<AnalysisStatus, { variant: "default" | "secondary" | "destructive" | "outline"; className: string }> = {
-    completed: { variant: "outline", className: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" },
-    analyzing: { variant: "outline", className: "text-amber-400 border-amber-500/20 bg-amber-500/10 animate-pulse" },
-    failed: { variant: "destructive", className: "text-red-400 border-red-500/20 bg-red-500/10" },
-    pending: { variant: "secondary", className: "text-brand-muted border-brand-border/30" },
+  const statusColors: Record<AnalysisStatus, string> = {
+    completed: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    analyzing: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    failed: "text-red-400 bg-red-500/10 border-red-500/20",
+    pending: "text-slate-400 bg-slate-500/10 border-slate-500/20",
   };
 
+  const statsCards = [
+    { icon: Layers, label: "Modules", value: archMap ? archMap.nodes.length : "—", color: "text-indigo-400" },
+    { icon: GitBranch, label: "Dependencies", value: archMap ? archMap.edges.length : "—", color: "text-purple-400" },
+    { icon: Cpu, label: "Status", value: status, color: statusColors[status].split(" ")[0] },
+    { icon: Code2, label: "Entry Points", value: archMap ? ((archMap as any).entryPoints?.length ?? "—") : "—", color: "text-cyan-400" },
+  ];
+
   return (
-    <div className="min-h-screen bg-brand-bg">
-      <DashboardSidebar repoId={repoId} decodedRepoId={decodedRepoId} />
-
-      {/* Main content */}
-      <main className="ml-[260px] p-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-heading font-bold tracking-tight text-brand-text">Architecture Map</h1>
-            <p className="text-brand-text-secondary text-sm mt-2">Visual representation of your codebase structure</p>
-          </div>
-          <div className="flex gap-3 items-center">
-            <Badge variant={statusConfig[status].variant} className={statusConfig[status].className}>
-              {status}
-            </Badge>
-            {(status === "pending" || status === "failed") && (
-              <Button
-                onClick={triggerAnalysis}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-glow hover:shadow-glow-lg text-white border-0"
-              >
-                <Play className="w-4 h-4 mr-2" />
-                {status === "failed" ? "Retry Analysis" : "Run Analysis"}
-              </Button>
-            )}
-            {status === "completed" && (
-              <Button
-                variant="outline"
-                onClick={triggerAnalysis}
-                className="glass-hover border-white/[0.08]"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Re-analyze
-              </Button>
-            )}
-          </div>
+    <DemoDashboardLayout
+      title="Architecture Map"
+      subtitle="Visual representation of your codebase structure and module dependencies"
+      action={
+        <div className="flex items-center gap-3">
+          <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${statusColors[status]}`}>
+            {status}
+          </span>
+          {status === "completed" ? (
+            <button onClick={triggerAnalysis} className="flex items-center gap-2 px-4 py-2 glass-hover rounded-lg text-sm font-medium text-brand-text-secondary hover:text-white transition-all border border-white/[0.08]">
+              <RefreshCw className="w-3.5 h-3.5" />
+              Re-analyze
+            </button>
+          ) : (status === "pending" || status === "failed") && !isDemo ? (
+            <button onClick={triggerAnalysis} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-indigo-500/20">
+              <Play className="w-3.5 h-3.5" fill="white" />
+              Run Analysis
+            </button>
+          ) : null}
         </div>
+      }
+    >
+      {/* Error */}
+      {error && (
+        <div className="mb-6 flex items-center gap-3 p-4 rounded-xl border border-red-500/20 bg-red-400/5 text-red-300 text-sm">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          {error}
+        </div>
+      )}
 
-        {error && (
-          <Card className="mb-6 glass border-red-500/20 bg-transparent">
-            <CardContent className="p-4 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 shrink-0 text-red-400" />
-              <span className="text-red-300 text-sm">{error}</span>
-            </CardContent>
-          </Card>
-        )}
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        {statsCards.map((s) => (
+          <div key={s.label} className="glass rounded-xl p-4 border border-white/[0.06]">
+            <div className="flex items-center gap-2 mb-2">
+              <s.icon className={`w-4 h-4 ${s.color}`} />
+              <p className="text-xs text-brand-muted font-medium uppercase tracking-wide">{s.label}</p>
+            </div>
+            <p className={`text-2xl font-bold capitalize ${s.color}`}>{s.value}</p>
+          </div>
+        ))}
+      </div>
 
-        {/* Architecture Map */}
+      {/* Architecture map panel */}
+      <div className="glass rounded-xl border border-white/[0.06] overflow-hidden" style={{ minHeight: 520 }}>
         {loading && !archMap ? (
-          <Card className="glass border-white/[0.08] bg-transparent">
-            <CardContent className="h-[500px] flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="w-10 h-10 text-indigo-400 animate-spin mx-auto mb-4" />
-                <p className="text-brand-text-secondary font-medium">Loading architecture...</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-center justify-center h-[520px]">
+            <div className="text-center">
+              <Loader2 className="w-10 h-10 text-indigo-400 animate-spin mx-auto mb-4" />
+              <p className="text-brand-text-secondary font-medium">Loading architecture...</p>
+            </div>
+          </div>
         ) : archMap ? (
-          <Card className="glass border-white/[0.08] overflow-hidden bg-transparent">
-            <ErrorBoundary>
-              <ArchitectureMap data={archMap} />
-            </ErrorBoundary>
-          </Card>
+          <ErrorBoundary>
+            <ArchitectureMap data={archMap} />
+          </ErrorBoundary>
         ) : status === "analyzing" ? (
-          <Card className="glass border-white/[0.08] bg-transparent">
-            <CardContent className="h-[500px] flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="w-10 h-10 text-amber-400 animate-spin mx-auto mb-4" />
-                <p className="text-brand-text text-lg mb-2 font-heading font-semibold">Analysis in progress...</p>
-                <p className="text-brand-muted text-sm">This may take a few minutes for large repositories</p>
+          <div className="flex items-center justify-center h-[520px]">
+            <div className="text-center">
+              <div className="relative w-16 h-16 mx-auto mb-5">
+                <Loader2 className="w-16 h-16 text-amber-400/20 absolute" />
+                <Loader2 className="w-16 h-16 text-amber-400 animate-spin absolute" style={{ clipPath: "inset(0 75% 0 0)" }} />
               </div>
-            </CardContent>
-          </Card>
+              <p className="text-white font-semibold text-lg mb-2">Analyzing codebase...</p>
+              <p className="text-brand-muted text-sm max-w-xs mx-auto">This takes 1-3 minutes for large repositories. The page will update automatically.</p>
+            </div>
+          </div>
         ) : (
-          <Card className="glass border-white/[0.08] bg-transparent">
-            <CardContent className="h-[500px] flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mx-auto mb-5">
-                  <Play className="w-8 h-8 text-indigo-400" />
-                </div>
-                <p className="text-brand-text text-lg mb-2 font-heading font-semibold">No architecture analysis yet</p>
-                <p className="text-brand-muted text-sm mb-8 max-w-md mx-auto">
-                  Run analysis to generate the architecture map
-                </p>
-                <Button
-                  onClick={triggerAnalysis}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-glow hover:shadow-glow-lg text-white border-0"
-                >
-                  <Play className="w-4 h-4 mr-2" />
+          <div className="flex items-center justify-center h-[520px]">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto mb-5">
+                <Play className="w-7 h-7 text-indigo-400" />
+              </div>
+              <p className="text-white font-semibold text-lg mb-2">No architecture analysis yet</p>
+              <p className="text-brand-muted text-sm mb-6 max-w-sm mx-auto">Connect your repository and run analysis to generate an interactive architecture map.</p>
+              {!isDemo && (
+                <button onClick={triggerAnalysis} className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-xl text-sm font-semibold text-white transition-all shadow-lg shadow-indigo-500/20">
                   Run Analysis
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                </button>
+              )}
+            </div>
+          </div>
         )}
+      </div>
 
-        {/* Quick stats */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
-          <Card className="glass border-white/[0.08] bg-transparent">
-            <CardContent className="p-5">
-              <p className="text-brand-text-secondary text-sm mb-1">Status</p>
-              <p className="text-xl font-heading font-semibold capitalize text-brand-text">{status}</p>
-            </CardContent>
-          </Card>
-          <Card className="glass border-white/[0.08] bg-transparent">
-            <CardContent className="p-5">
-              <p className="text-brand-text-secondary text-sm mb-1">Modules Detected</p>
-              <p className="text-xl font-heading font-semibold text-brand-text">{archMap ? archMap.nodes.length : "—"}</p>
-            </CardContent>
-          </Card>
-          <Card className="glass border-white/[0.08] bg-transparent">
-            <CardContent className="p-5">
-              <p className="text-brand-text-secondary text-sm mb-1">Dependencies</p>
-              <p className="text-xl font-heading font-semibold text-brand-text">{archMap ? archMap.edges.length : "—"}</p>
-            </CardContent>
-          </Card>
+      {/* Tech stack */}
+      {archMap?.techStack && Object.keys(archMap.techStack).length > 0 && (
+        <div className="mt-4 glass rounded-xl border border-white/[0.06] p-5">
+          <p className="text-xs text-brand-muted uppercase tracking-widest font-semibold mb-3">Tech Stack</p>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(archMap.techStack).map(([key, value]) => (
+              <span key={key} className="text-xs px-3 py-1.5 rounded-lg bg-brand-surface border border-white/[0.06] text-brand-text-secondary">
+                <span className="text-brand-muted">{key}:</span> {value}
+              </span>
+            ))}
+          </div>
         </div>
-
-        {/* Tech Stack */}
-        {archMap?.techStack && Object.keys(archMap.techStack).length > 0 && (
-          <Card className="mt-6 glass border-white/[0.08] bg-transparent">
-            <CardContent className="p-5">
-              <p className="text-brand-text-secondary text-sm mb-3 font-medium">Tech Stack</p>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(archMap.techStack).map(([key, value]) => (
-                  <Badge key={key} variant="outline" className="bg-white/[0.02] text-brand-text-secondary border-white/[0.06]">
-                    <span className="text-brand-muted">{key}:</span> {value}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </main>
-    </div>
+      )}
+    </DemoDashboardLayout>
   );
 }

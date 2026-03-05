@@ -2,10 +2,11 @@
 
 import { useParams } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import DemoDashboardLayout from "@/components/DemoDashboardLayout";
 import { getApiBase, fetchApi } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 import { useProgressTracker } from "@/hooks/useProgressTracker";
+import { Send, Loader2, MessageSquare, FileCode, ChevronRight, Bot, User } from "lucide-react";
 
 interface RelevantFile {
   path: string;
@@ -19,6 +20,13 @@ interface Message {
   relatedQuestions?: string[];
 }
 
+const STARTER_QUESTIONS = [
+  "How is the project structured?",
+  "What are the main entry points?",
+  "How does authentication work?",
+  "What patterns does this codebase use?",
+];
+
 export default function QAPage() {
   const params = useParams();
   const repoId = params.repoId as string;
@@ -28,6 +36,7 @@ export default function QAPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { getToken } = useAuth();
   const { track } = useProgressTracker(decodedRepoId);
 
@@ -38,18 +47,17 @@ export default function QAPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim() || loading) return;
-
     const question = input.trim();
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setLoading(true);
-
     try {
       const token = await getToken();
-      const res = await fetchApi(`${getApiBase(decodedRepoId)}/qa/${decodedRepoId}`, {
-        method: "POST",
-        body: JSON.stringify({ question }),
-      }, token);
+      const res = await fetchApi(
+        `${getApiBase(decodedRepoId)}/qa/${decodedRepoId}`,
+        { method: "POST", body: JSON.stringify({ question }) },
+        token
+      );
       const data = await res.json();
       setMessages((prev) => [
         ...prev,
@@ -66,91 +74,41 @@ export default function QAPage() {
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Failed to get a response. Is the backend running?" },
+        { role: "assistant", content: "Failed to get a response. Please try again." },
       ]);
     } finally {
       setLoading(false);
     }
   }
 
-  function askFollowUp(question: string) {
-    setInput(question);
+  function useStarter(q: string) {
+    setInput(q);
+    inputRef.current?.focus();
   }
 
   return (
-    <div className="min-h-screen">
-      <nav className="fixed left-0 top-0 w-64 h-full glass-strong border-r border-white/[0.06] p-6">
-        <Link
-          href="/dashboard"
-          className="text-xl font-bold mb-6 block text-gradient font-heading"
-        >
-          AutoDev
-        </Link>
-        <p className="text-sm text-brand-text-secondary mb-4">{decodedRepoId}</p>
-        <ul className="space-y-1">
-          <li>
-            <Link href={`/dashboard/${repoId}`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Architecture Map
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/animated`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Animated Map
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/walkthroughs`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Walkthroughs
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/conventions`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Conventions
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/env-setup`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Env Setup
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/qa`} className="block px-3 py-2 rounded-lg bg-white/[0.06] text-brand-text text-sm font-medium">
-              Q&A
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/progress`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              My Progress
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/team`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Team
-            </Link>
-          </li>
-        </ul>
-      </nav>
-
-      <main className="ml-64 p-8 flex flex-col h-screen">
-        <h1 className="text-2xl font-bold font-heading mb-6">Ask About This Codebase</h1>
-
-        <div className="flex-1 overflow-y-auto mb-4 space-y-3">
+    <DemoDashboardLayout
+      title="Q&A"
+      subtitle="Ask anything about this codebase — get instant, context-aware answers"
+    >
+      <div className="flex flex-col" style={{ height: "calc(100vh - 200px)" }}>
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-1">
           {messages.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-brand-text-secondary text-lg mb-2">Ask anything about this codebase</p>
-              <p className="text-brand-muted text-sm mb-6">
-                Try: &quot;How is the project structured?&quot; or &quot;Where is the auth logic?&quot;
+            <div className="flex flex-col items-center justify-center h-full text-center py-10">
+              <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5">
+                <MessageSquare className="w-7 h-7 text-indigo-400" />
+              </div>
+              <p className="text-white font-semibold text-lg mb-1">Ask about this codebase</p>
+              <p className="text-brand-muted text-sm mb-8 max-w-sm">
+                Get instant answers about architecture, patterns, and code flows.
               </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {[
-                  "How is the project structured?",
-                  "What are the main entry points?",
-                  "What patterns does this codebase use?",
-                ].map((q) => (
+              <div className="grid grid-cols-2 gap-2 max-w-md w-full">
+                {STARTER_QUESTIONS.map((q) => (
                   <button
                     key={q}
-                    onClick={() => askFollowUp(q)}
-                    className="text-xs px-3 py-1.5 border border-white/[0.06] rounded-full hover:bg-white/[0.04] text-brand-text-secondary transition-colors duration-200"
+                    onClick={() => useStarter(q)}
+                    className="text-left px-4 py-3 glass rounded-xl border border-white/[0.06] hover:border-indigo-500/20 hover:bg-indigo-500/5 text-sm text-brand-text-secondary hover:text-indigo-300 transition-all cursor-pointer"
                   >
                     {q}
                   </button>
@@ -158,71 +116,93 @@ export default function QAPage() {
               </div>
             </div>
           )}
+
           {messages.map((msg, i) => (
-            <div key={i}>
-              <div
-                className={`p-4 rounded-xl max-w-2xl ${
+            <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              {msg.role === "assistant" && (
+                <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Bot className="w-4 h-4 text-indigo-400" />
+                </div>
+              )}
+              <div className={`flex flex-col gap-2 max-w-2xl ${msg.role === "user" ? "items-end" : "items-start"}`}>
+                <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                   msg.role === "user"
-                    ? "bg-blue-600/20 border border-blue-800 ml-auto"
-                    : "glass border border-white/[0.06]"
-                }`}
-              >
-                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-              </div>
-              {/* Relevant files */}
-              {msg.relevantFiles && msg.relevantFiles.length > 0 && (
-                <div className="mt-2 max-w-2xl">
-                  <p className="text-[10px] uppercase text-brand-muted mb-1">Relevant Files</p>
+                    ? "bg-indigo-600/30 border border-indigo-500/30 text-white rounded-tr-sm"
+                    : "glass border border-white/[0.06] text-brand-text rounded-tl-sm"
+                }`}>
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                </div>
+
+                {msg.relevantFiles && msg.relevantFiles.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {msg.relevantFiles.map((f, j) => (
-                      <span key={j} className="text-xs px-2 py-0.5 rounded bg-brand-surface text-brand-text-secondary font-mono">
-                        {f.path}{f.lineRange ? `:${f.lineRange.start}-${f.lineRange.end}` : ""}
+                      <span key={j} className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-brand-surface border border-white/[0.06] text-brand-text-secondary font-mono">
+                        <FileCode className="w-3 h-3 text-brand-muted" />
+                        {f.path}
+                        {f.lineRange ? `:${f.lineRange.start}-${f.lineRange.end}` : ""}
                       </span>
                     ))}
                   </div>
-                </div>
-              )}
-              {/* Related questions */}
-              {msg.relatedQuestions && msg.relatedQuestions.length > 0 && (
-                <div className="mt-2 max-w-2xl flex flex-wrap gap-1.5">
-                  {msg.relatedQuestions.map((q, j) => (
-                    <button
-                      key={j}
-                      onClick={() => askFollowUp(q)}
-                      className="text-xs px-2.5 py-1 border border-white/[0.06] rounded-full hover:bg-white/[0.04] text-brand-text-secondary transition-colors duration-200"
-                    >
-                      {q}
-                    </button>
-                  ))}
+                )}
+
+                {msg.relatedQuestions && msg.relatedQuestions.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {msg.relatedQuestions.map((q, j) => (
+                      <button
+                        key={j}
+                        onClick={() => useStarter(q)}
+                        className="flex items-center gap-1 text-xs px-3 py-1.5 border border-white/[0.06] rounded-full hover:border-indigo-500/30 text-brand-text-secondary hover:text-indigo-300 transition-all cursor-pointer"
+                      >
+                        {q} <ChevronRight className="w-3 h-3" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {msg.role === "user" && (
+                <div className="w-8 h-8 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <User className="w-4 h-4 text-violet-400" />
                 </div>
               )}
             </div>
           ))}
+
           {loading && (
-            <div className="p-4 rounded-xl glass border border-white/[0.06] max-w-2xl">
-              <p className="text-sm text-brand-text-secondary animate-pulse">Thinking...</p>
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+                <Bot className="w-4 h-4 text-indigo-400" />
+              </div>
+              <div className="px-4 py-3 glass border border-white/[0.06] rounded-2xl rounded-tl-sm">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Input */}
         <form onSubmit={handleSubmit} className="flex gap-3">
           <input
+            ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask a question about this codebase..."
-            className="flex-1 px-4 py-3 glass border border-white/[0.06] rounded-lg text-sm focus:outline-none focus:border-blue-500"
+            className="flex-1 px-4 py-3 glass border border-white/[0.06] rounded-xl text-sm text-white placeholder-brand-muted focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500/40 transition-all"
           />
           <button
             type="submit"
-            disabled={loading}
-            className="px-6 py-3 bg-gradient-to-r from-accent-blue to-accent-purple hover:from-accent-blue/90 hover:to-accent-purple/90 shadow-glow disabled:opacity-50 rounded-lg text-sm font-medium transition-colors"
+            disabled={loading || !input.trim()}
+            className="px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
           >
-            Ask
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </form>
-      </main>
-    </div>
+      </div>
+    </DemoDashboardLayout>
   );
 }

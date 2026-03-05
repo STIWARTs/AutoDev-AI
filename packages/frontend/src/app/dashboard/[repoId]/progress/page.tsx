@@ -2,15 +2,66 @@
 
 import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import SkillRadar from "@/components/SkillRadar";
-import ProgressTimeline from "@/components/ProgressTimeline";
-import ModuleCompletionGrid from "@/components/ModuleCompletionGrid";
+import DemoDashboardLayout from "@/components/DemoDashboardLayout";
 import { getApiBase, fetchApi } from "@/lib/api";
-import { useAuth, useUser } from "@clerk/nextjs";
-import type { DeveloperProgress } from "@autodev/shared";
+import { useAuth } from "@clerk/nextjs";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
+import {
+  BarChart3, Clock, Trophy, BookOpen, MessageCircle, Layers, Target, TrendingUp, Flame
+} from "lucide-react";
 
-const DEFAULT_USER = "anonymous";
+interface SkillArea {
+  area: string;
+  score: number;
+  modulesExplored: number;
+  totalModules: number;
+  lastActivity: string;
+}
+
+interface TimelineEvent {
+  timestamp: string;
+  overallScore: number;
+  eventDescription: string;
+}
+
+interface Progress {
+  userId: string;
+  overallScore: number;
+  skills: SkillArea[];
+  totalTimeSpentMs: number;
+  walkthroughsCompleted: number;
+  questionsAsked: number;
+  modulesExplored: number;
+  conventionsViewed: number;
+  firstActivity: string;
+  lastActivity: string;
+  timeline: TimelineEvent[];
+}
+
+const AREA_LABELS: Record<string, string> = {
+  architecture: "Architecture",
+  auth: "Auth",
+  api: "API",
+  database: "Database",
+  testing: "Testing",
+  infrastructure: "Infra",
+  frontend: "Frontend",
+  devops: "DevOps",
+  other: "Other",
+};
+
+const SCORE_COLOR = (score: number) => {
+  if (score >= 75) return "bg-emerald-500";
+  if (score >= 50) return "bg-amber-500";
+  if (score >= 25) return "bg-orange-500";
+  return "bg-red-400";
+};
+
+function formatMs(ms: number): string {
+  const h = Math.floor(ms / 3_600_000);
+  const m = Math.floor((ms % 3_600_000) / 60_000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
 
 export default function ProgressPage() {
   const params = useParams();
@@ -18,208 +69,179 @@ export default function ProgressPage() {
   const decodedRepoId = decodeURIComponent(repoId);
   const [owner, repo] = decodedRepoId.split("/");
 
-  const [progress, setProgress] = useState<DeveloperProgress | null>(null);
+  const [progress, setProgress] = useState<Progress | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { getToken } = useAuth();
-  const { user } = useUser();
+  const { track } = useProgressTracker(decodedRepoId);
 
   const fetchProgress = useCallback(async () => {
     if (!owner || !repo) return;
     try {
       setLoading(true);
-      const userId = user?.id || DEFAULT_USER;
       const token = await getToken();
       const res = await fetchApi(
-        `${getApiBase(decodedRepoId)}/progress/${owner}/${repo}/${userId}`, {}, token
+        `${getApiBase(decodedRepoId)}/progress/${owner}/${repo}/demo-user`,
+        {},
+        token
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: DeveloperProgress = await res.json();
+      const data = await res.json();
       setProgress(data);
-      setError(null);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load progress"
-      );
-    } finally {
+    } catch { /* ignore */ } finally {
       setLoading(false);
     }
-  }, [owner, repo]);
+  }, [owner, repo, decodedRepoId]);
 
-  useEffect(() => {
-    fetchProgress();
-  }, [fetchProgress]);
+  useEffect(() => { fetchProgress(); }, [fetchProgress]);
 
-  // Auto-refresh every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(fetchProgress, 30_000);
-    return () => clearInterval(interval);
-  }, [fetchProgress]);
+  if (loading) {
+    return (
+      <DemoDashboardLayout title="My Progress">
+        <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center gap-3">
+            <BarChart3 className="w-8 h-8 text-indigo-400 animate-pulse" />
+            <p className="text-brand-text-secondary text-sm">Loading your progress...</p>
+          </div>
+        </div>
+      </DemoDashboardLayout>
+    );
+  }
+
+  const scoreColor = progress?.overallScore
+    ? progress.overallScore >= 75 ? "text-emerald-400" : progress.overallScore >= 50 ? "text-amber-400" : "text-orange-400"
+    : "text-brand-muted";
+
+  const skillsSorted = [...(progress?.skills || [])].sort((a, b) => b.score - a.score);
 
   return (
-    <div className="min-h-screen">
-      {/* Sidebar */}
-      <nav className="fixed left-0 top-0 w-64 h-full glass-strong border-r border-white/[0.06] p-6">
-        <Link
-          href="/dashboard"
-          className="text-xl font-bold mb-6 block text-gradient font-heading"
-        >
-          AutoDev
-        </Link>
-        <p className="text-sm text-brand-text-secondary mb-4">{decodedRepoId}</p>
-        <ul className="space-y-1">
-          <li>
-            <Link href={`/dashboard/${repoId}`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Architecture Map
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/animated`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Animated Map
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/walkthroughs`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Walkthroughs
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/conventions`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Conventions
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/env-setup`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Env Setup
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/qa`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Q&A
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/progress`} className="block px-3 py-2 rounded-lg bg-white/[0.06] text-brand-text text-sm font-medium">
-              My Progress
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/team`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Team
-            </Link>
-          </li>
-        </ul>
-      </nav>
-
-      {/* Main content */}
-      <main className="ml-64 p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold font-heading">My Learning Progress</h1>
-          <button
-            onClick={fetchProgress}
-            className="px-4 py-2 glass-hover rounded-lg text-sm font-medium transition-colors"
-          >
-            Refresh
-          </button>
+    <DemoDashboardLayout
+      title="My Progress"
+      subtitle="Track your onboarding journey through this codebase"
+    >
+      {!progress || progress.overallScore === 0 ? (
+        <div className="glass rounded-xl border border-white/[0.06] flex flex-col items-center justify-center py-20">
+          <Target className="w-12 h-12 text-brand-muted mb-4" />
+          <p className="text-white font-semibold text-lg mb-1">No progress yet</p>
+          <p className="text-brand-muted text-sm text-center max-w-sm">
+            Start exploring the architecture map, walkthroughs, and Q&A to track your learning journey.
+          </p>
         </div>
-
-        {error && (
-          <div className="mb-4 p-4 border border-red-500/20 bg-red-400/10 rounded-xl text-red-400 text-sm">
-            {error}
-          </div>
-        )}
-
-        {loading && !progress ? (
-          <div className="glass rounded-xl h-[400px] flex items-center justify-center">
-            <div className="text-center">
-              <div className="inline-block w-6 h-6 border-2 border-accent-blue border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-brand-text-secondary">Loading progress...</p>
-            </div>
-          </div>
-        ) : progress ? (
-          <div className="space-y-8">
-            {/* Top row: Skill Radar + Timeline */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Skill Radar */}
-              <div className="glass rounded-xl p-6">
-                <h2 className="text-lg font-semibold font-heading mb-4 text-white">
-                  Skill Distribution
-                </h2>
-                <SkillRadar skills={progress.skills} size={320} />
+      ) : (
+        <div className="space-y-6">
+          {/* Overall score hero */}
+          <div className="glass rounded-2xl border border-white/[0.06] p-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5" />
+            <div className="relative flex items-center gap-8">
+              {/* Score ring */}
+              <div className="relative w-28 h-28 flex-shrink-0">
+                <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+                  <circle
+                    cx="50" cy="50" r="42" fill="none"
+                    stroke="url(#scoreGrad)" strokeWidth="8" strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 42 * (progress.overallScore / 100)} ${2 * Math.PI * 42}`}
+                    className="transition-all duration-1000"
+                  />
+                  <defs>
+                    <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#6366f1" />
+                      <stop offset="100%" stopColor="#a855f7" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className={`text-3xl font-bold ${scoreColor}`}>{progress.overallScore}</span>
+                  <span className="text-xs text-brand-muted">/ 100</span>
+                </div>
               </div>
 
-              {/* Progress Timeline */}
-              <div className="glass rounded-xl p-6">
-                <h2 className="text-lg font-semibold font-heading mb-4 text-white">
-                  Progress Over Time
-                </h2>
-                <ProgressTimeline
-                  timeline={progress.timeline}
-                  firstActivity={progress.firstActivity}
-                  lastActivity={progress.lastActivity}
-                  currentScore={progress.overallScore}
-                />
+              <div className="flex-1">
+                <p className="text-xs text-brand-muted uppercase tracking-widest mb-1">Overall Score</p>
+                <p className="text-2xl font-bold text-white mb-1">
+                  {progress.overallScore >= 75 ? "Proficient" : progress.overallScore >= 50 ? "Intermediate" : progress.overallScore >= 25 ? "Getting Started" : "Beginner"}
+                </p>
+                <p className="text-sm text-brand-text-secondary">
+                  You&apos;ve been exploring this codebase and making great progress.
+                </p>
               </div>
-            </div>
 
-            {/* Module Completion Grid */}
-            <div className="glass rounded-xl p-6">
-              <h2 className="text-lg font-semibold font-heading mb-4 text-white">
-                Module Completion
-              </h2>
-              <ModuleCompletionGrid
-                skills={progress.skills}
-                totalWalkthroughs={10}
-                walkthroughsCompleted={progress.walkthroughsCompleted}
-                totalConventions={8}
-                conventionsViewed={progress.conventionsViewed}
-                questionsAsked={progress.questionsAsked}
-              />
-            </div>
-
-            {/* Summary stats row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="glass rounded-xl p-5">
-                <p className="text-3xl font-bold text-white">
-                  {progress.overallScore}%
-                </p>
-                <p className="text-brand-text-secondary text-sm mt-1">Overall Score</p>
-              </div>
-              <div className="glass rounded-xl p-5">
-                <p className="text-3xl font-bold text-white">
-                  {progress.modulesExplored}
-                </p>
-                <p className="text-brand-text-secondary text-sm mt-1">Modules Explored</p>
-              </div>
-              <div className="glass rounded-xl p-5">
-                <p className="text-3xl font-bold text-white">
-                  {progress.walkthroughsCompleted}
-                </p>
-                <p className="text-brand-text-secondary text-sm mt-1">
-                  Walkthroughs Done
-                </p>
-              </div>
-              <div className="glass rounded-xl p-5">
-                <p className="text-3xl font-bold text-white">
-                  {progress.questionsAsked}
-                </p>
-                <p className="text-brand-text-secondary text-sm mt-1">Questions Asked</p>
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { icon: Clock, label: "Time Spent", value: formatMs(progress.totalTimeSpentMs), color: "text-cyan-400" },
+                  { icon: BookOpen, label: "Walkthroughs", value: progress.walkthroughsCompleted, color: "text-indigo-400" },
+                  { icon: MessageCircle, label: "Questions", value: progress.questionsAsked, color: "text-purple-400" },
+                  { icon: Layers, label: "Modules", value: progress.modulesExplored, color: "text-emerald-400" },
+                ].map((s) => (
+                  <div key={s.label} className="text-center">
+                    <s.icon className={`w-5 h-5 ${s.color} mx-auto mb-1`} />
+                    <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+                    <p className="text-xs text-brand-muted">{s.label}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        ) : (
-          <div className="glass rounded-xl h-[400px] flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-brand-text-secondary text-lg mb-2">
-                No progress data yet
-              </p>
-              <p className="text-brand-muted text-sm">
-                Start exploring the codebase to track your learning journey!
-              </p>
+
+          {/* Skills breakdown */}
+          <div className="glass rounded-xl border border-white/[0.06] p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <TrendingUp className="w-4 h-4 text-indigo-400" />
+              <h2 className="text-sm font-semibold text-white">Skill Breakdown</h2>
+            </div>
+            <div className="space-y-3">
+              {skillsSorted.filter(s => s.score > 0 || s.totalModules > 0).map((skill) => (
+                <div key={skill.area}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-brand-text-secondary">{AREA_LABELS[skill.area] || skill.area}</span>
+                      <span className="text-xs text-brand-muted">
+                        {skill.modulesExplored}/{skill.totalModules} modules
+                      </span>
+                    </div>
+                    <span className="text-sm font-semibold text-white">{skill.score}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-white/[0.05]">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-700 ${SCORE_COLOR(skill.score)}`}
+                      style={{ width: `${skill.score}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        )}
-      </main>
-    </div>
+
+          {/* Timeline */}
+          {progress.timeline && progress.timeline.length > 0 && (
+            <div className="glass rounded-xl border border-white/[0.06] p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <Flame className="w-4 h-4 text-amber-400" />
+                <h2 className="text-sm font-semibold text-white">Learning Timeline</h2>
+              </div>
+              <div className="space-y-3">
+                {progress.timeline.map((event, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 mt-1 flex-shrink-0" />
+                      {i !== progress.timeline.length - 1 && <div className="w-px h-full bg-white/[0.05] flex-1 min-h-[16px]" />}
+                    </div>
+                    <div className="flex-1 pb-3">
+                      <p className="text-sm text-brand-text-secondary">{event.eventDescription}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-xs text-brand-muted">
+                          {new Date(event.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                        <span className="text-xs font-semibold text-indigo-400">Score: {event.overallScore}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </DemoDashboardLayout>
   );
 }

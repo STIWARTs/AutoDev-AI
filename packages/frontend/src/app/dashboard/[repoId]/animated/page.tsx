@@ -4,8 +4,7 @@ import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import AnimatedArchitectureMap from "@/components/AnimatedArchitectureMap";
 import LanguageSelector from "@/components/LanguageSelector";
-import DashboardSidebar from "@/components/DashboardSidebar";
-import Link from "next/link";
+import DemoDashboardLayout from "@/components/DemoDashboardLayout";
 import { getApiBase, fetchApi } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 import { useProgressTracker } from "@/hooks/useProgressTracker";
@@ -14,10 +13,7 @@ import type {
   AnimationSequence,
   SupportedLanguage,
 } from "@autodev/shared";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Loader2, Play, RefreshCw } from "lucide-react";
+import { Loader2, Play, Sparkles, Zap, ChevronRight, MessageSquare, Globe, GraduationCap } from "lucide-react";
 
 export default function AnimatedPage() {
   const params = useParams();
@@ -27,20 +23,18 @@ export default function AnimatedPage() {
 
   const [archMap, setArchMap] = useState<ArchMapType | null>(null);
   const [sequences, setSequences] = useState<AnimationSequence[]>([]);
+  const [selectedSeq, setSelectedSeq] = useState<AnimationSequence | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const [language, setLanguage] = useState<SupportedLanguage>("en");
   const [fresherMode, setFresherMode] = useState(false);
 
-  // Node explanation state
   const [explaining, setExplaining] = useState(false);
   const [explanation, setExplanation] = useState<{ nodeId: string; text: string } | null>(null);
   const { getToken } = useAuth();
   const { track } = useProgressTracker(decodedRepoId);
 
-  // Fetch architecture
   const fetchArch = useCallback(async () => {
     if (!owner || !repo) return;
     try {
@@ -49,12 +43,9 @@ export default function AnimatedPage() {
       if (!res.ok) return;
       const data = await res.json();
       setArchMap(data.content ?? data);
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   }, [owner, repo, decodedRepoId]);
 
-  // Fetch animation sequences
   const fetchSequences = useCallback(async () => {
     if (!owner || !repo) return;
     try {
@@ -66,10 +57,9 @@ export default function AnimatedPage() {
       setSequences(seqList);
       if (seqList.length > 0) {
         track({ eventType: "animated_viewed", targetLabel: `${decodedRepoId} animated` });
+        setSelectedSeq(seqList[0]);
       }
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   }, [owner, repo, decodedRepoId]);
 
   useEffect(() => {
@@ -82,236 +72,180 @@ export default function AnimatedPage() {
   }, [fetchArch, fetchSequences]);
 
   async function generateSequences() {
+    if (!owner || !repo) return;
     try {
       setGenerating(true);
-      setError(null);
       const token = await getToken();
-      const res = await fetchApi(`${getApiBase(decodedRepoId)}/animated/${owner}/${repo}/generate`, {
-        method: "POST",
-        body: JSON.stringify({ fresherMode }),
-      }, token);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const res = await fetchApi(`${getApiBase(decodedRepoId)}/animated/${owner}/${repo}/generate`, { method: "POST" }, token);
+      if (!res.ok) return;
       const data = await res.json();
-      setSequences(data.sequences || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate animated sequences");
-    } finally {
+      const seqList = data.sequences || [];
+      setSequences(seqList);
+      if (seqList.length > 0) setSelectedSeq(seqList[0]);
+    } catch { /* ignore */ } finally {
       setGenerating(false);
     }
   }
 
-  async function handleNodeClick(nodeId: string) {
+  async function explainNode(nodeId: string) {
+    if (!owner || !repo) return;
     try {
       setExplaining(true);
-      setExplanation(null);
       const token = await getToken();
-      const res = await fetchApi(`${getApiBase(decodedRepoId)}/animated/${owner}/${repo}/explain-node`, {
-        method: "POST",
-        body: JSON.stringify({ nodeId, fresherMode }),
-      }, token);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const res = await fetchApi(
+        `${getApiBase(decodedRepoId)}/animated/${owner}/${repo}/explain-node`,
+        { method: "POST", body: JSON.stringify({ nodeId, language, fresherMode }) },
+        token
+      );
+      if (!res.ok) return;
       const data = await res.json();
-      let text = data.explanation || "No explanation available.";
-
-      // Translate if non-English
-      if (language !== "en") {
-        try {
-          const tRes = await fetchApi(`${getApiBase(decodedRepoId)}/i18n/translate`, {
-            method: "POST",
-            body: JSON.stringify({ text, targetLanguage: language, repoId: decodedRepoId, fresherMode }),
-          }, token);
-          if (tRes.ok) {
-            const tData = await tRes.json();
-            text = tData.translatedText || text;
-          }
-        } catch {
-          // keep English text on failure
-        }
-      }
-
-      setExplanation({ nodeId, text });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to explain node");
-    } finally {
+      setExplanation({ nodeId, text: data.explanation || data.text || "" });
+    } catch { /* ignore */ } finally {
       setExplaining(false);
     }
   }
 
-  return (
-    <div className="min-h-screen bg-brand-bg">
-      <DashboardSidebar repoId={repoId} decodedRepoId={decodedRepoId} />
+  const CATEGORY_COLORS: Record<string, string> = {
+    "auth-flow": "text-purple-400 bg-purple-500/10 border-purple-500/20",
+    "request-flow": "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    "data-pipeline": "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    default: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+  };
 
-      {/* Main content */}
-      <main className="ml-[260px] p-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-heading font-bold tracking-tight text-brand-text">Animated Architecture</h1>
-            <p className="text-brand-text-secondary text-sm mt-2">Watch request flows light up step-by-step</p>
+  return (
+    <DemoDashboardLayout
+      title="Animated Map"
+      subtitle="Watch data flow through your codebase in real-time"
+      action={
+        <div className="flex items-center gap-3">
+          {/* Language selector */}
+          <LanguageSelector value={language} onChange={setLanguage} />
+          {/* Fresher mode */}
+          <button
+            onClick={() => setFresherMode(!fresherMode)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+              fresherMode
+                ? "bg-amber-500/15 border-amber-500/30 text-amber-300"
+                : "glass-hover border-white/[0.08] text-brand-text-secondary hover:text-white"
+            }`}
+          >
+            <GraduationCap className="w-3.5 h-3.5" />
+            Fresher Mode
+          </button>
+          {/* Generate */}
+          <button
+            onClick={generateSequences}
+            disabled={generating}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-indigo-500/20"
+          >
+            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+            {generating ? "Generating..." : "Generate Flows"}
+          </button>
+        </div>
+      }
+    >
+      {loading ? (
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <Loader2 className="w-10 h-10 text-indigo-400 animate-spin mx-auto mb-4" />
+            <p className="text-brand-text-secondary">Loading animated map...</p>
           </div>
-          <div className="flex items-center gap-4">
-            <LanguageSelector
-              value={language}
-              onChange={setLanguage}
-              fresherMode={fresherMode}
-              onFresherToggle={setFresherMode}
-            />
-            {sequences.length === 0 && !generating && archMap && (
-              <Button
-                onClick={generateSequences}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-glow hover:shadow-glow-lg text-white border-0"
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Generate Animations
-              </Button>
+        </div>
+      ) : !archMap ? (
+        <div className="glass rounded-xl border border-white/[0.06] flex flex-col items-center justify-center py-20">
+          <Play className="w-12 h-12 text-brand-muted mb-4 opacity-50" />
+          <p className="text-white font-semibold mb-1">No architecture data yet</p>
+          <p className="text-brand-muted text-sm">Run analysis on the Architecture Map page first.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-[260px_1fr] gap-5">
+          {/* Sequences sidebar */}
+          <div className="space-y-3">
+            <p className="text-xs text-brand-muted uppercase tracking-widest font-semibold">Flows</p>
+            {sequences.length === 0 ? (
+              <div className="glass rounded-xl border border-white/[0.06] p-4 text-center">
+                <Sparkles className="w-6 h-6 text-brand-muted mx-auto mb-2" />
+                <p className="text-xs text-brand-muted">No flows yet. Click Generate to create animations.</p>
+              </div>
+            ) : (
+              sequences.map((seq) => {
+                const catColor = CATEGORY_COLORS[seq.category || "default"] || CATEGORY_COLORS.default;
+                const isActive = selectedSeq?.id === seq.id;
+                return (
+                  <button
+                    key={seq.id}
+                    onClick={() => setSelectedSeq(seq)}
+                    className={`w-full text-left p-4 rounded-xl border transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-indigo-500/10 border-indigo-500/25"
+                        : "glass border-white/[0.06] hover:border-white/[0.1]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold uppercase tracking-wide ${catColor}`}>
+                        {seq.category?.replace("-", " ") || "flow"}
+                      </span>
+                      {isActive && <ChevronRight className="w-3.5 h-3.5 text-indigo-400" />}
+                    </div>
+                    <p className={`text-sm font-semibold mb-1 ${isActive ? "text-indigo-300" : "text-white"}`}>{seq.title}</p>
+                    <p className="text-xs text-brand-muted line-clamp-2">{seq.description}</p>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-brand-muted">
+                      <span>{seq.steps.length} steps</span>
+                      {seq.estimatedDuration && <span>~{seq.estimatedDuration}s</span>}
+                    </div>
+                  </button>
+                );
+              })
             )}
-            {sequences.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={generateSequences}
-                disabled={generating}
-                className="glass-hover border-white/[0.08]"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                {generating ? "Regenerating..." : "Regenerate"}
-              </Button>
+          </div>
+
+          {/* Map & explanation */}
+          <div className="space-y-4">
+            {/* Animated map */}
+            <div className="glass rounded-xl border border-white/[0.06] overflow-hidden" style={{ minHeight: 420 }}>
+              {archMap && selectedSeq ? (
+                <AnimatedArchitectureMap
+                  data={archMap}
+                  sequences={sequences}
+                  fresherMode={fresherMode}
+                  onNodeClick={explainNode}
+                />
+              ) : archMap ? (
+                <AnimatedArchitectureMap
+                  data={archMap}
+                  sequences={[]}
+                  fresherMode={fresherMode}
+                  onNodeClick={explainNode}
+                />
+              ) : null}
+            </div>
+
+            {/* Node explanation panel */}
+            {explanation && (
+              <div className="glass rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  {explaining ? (
+                    <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+                  ) : (
+                    <MessageSquare className="w-4 h-4 text-indigo-400" />
+                  )}
+                  <p className="text-xs font-semibold text-indigo-300 uppercase tracking-wide">
+                    {explanation.nodeId} — Explanation
+                    {language !== "en" && <span className="ml-2 flex items-center gap-1 inline-flex"><Globe className="w-3 h-3" /></span>}
+                  </p>
+                  <button onClick={() => setExplanation(null)} className="ml-auto text-xs text-brand-muted hover:text-white transition-colors">✕</button>
+                </div>
+                <p className="text-sm text-brand-text-secondary leading-relaxed">{explanation.text}</p>
+              </div>
+            )}
+
+            {/* Click prompt */}
+            {!explanation && archMap && (
+              <p className="text-xs text-brand-muted text-center">Click any node on the map to get an explanation</p>
             )}
           </div>
         </div>
-
-        {error && (
-          <Card className="mb-6 glass border-red-500/20 bg-transparent">
-            <CardContent className="p-4 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 shrink-0 text-red-400" />
-              <span className="text-red-300 text-sm">{error}</span>
-            </CardContent>
-          </Card>
-        )}
-
-        {loading ? (
-          <Card className="glass border-white/[0.08] bg-transparent">
-            <CardContent className="h-[600px] flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="w-10 h-10 text-indigo-400 animate-spin mx-auto mb-4" />
-                <p className="text-brand-text-secondary font-medium">Loading architecture &amp; animations...</p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : generating ? (
-          <Card className="glass border-white/[0.08] bg-transparent">
-            <CardContent className="h-[600px] flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="w-10 h-10 text-amber-400 animate-spin mx-auto mb-4" />
-                <p className="text-brand-text text-lg mb-2 font-heading font-semibold">Generating animation sequences...</p>
-                <p className="text-brand-muted text-sm">
-                  AI is creating step-by-step visual walkthroughs
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : archMap && sequences.length > 0 ? (
-          <Card className="glass border-white/[0.08] overflow-hidden bg-transparent">
-            <AnimatedArchitectureMap
-              data={archMap}
-              sequences={sequences}
-              fresherMode={fresherMode}
-              onNodeClick={handleNodeClick}
-            />
-          </Card>
-        ) : archMap ? (
-          <Card className="glass border-white/[0.08] bg-transparent">
-            <CardContent className="h-[600px] flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mx-auto mb-5">
-                  <Play className="w-8 h-8 text-indigo-400" />
-                </div>
-                <p className="text-brand-text text-lg mb-2 font-heading font-semibold">No animation sequences yet</p>
-                <p className="text-brand-muted text-sm mb-8 max-w-md mx-auto">
-                  Generate AI-powered animated walkthroughs of your architecture
-                </p>
-                <Button
-                  onClick={generateSequences}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-glow hover:shadow-glow-lg text-white border-0"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  Generate Animations
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="glass border-white/[0.08] bg-transparent">
-            <CardContent className="h-[600px] flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-brand-text text-lg mb-2 font-heading font-semibold">
-                  Architecture map required
-                </p>
-                <p className="text-brand-muted text-sm mb-4">
-                  Run an analysis first from the Architecture Map page.
-                </p>
-                <Link
-                  href={`/dashboard/${repoId}`}
-                  className="text-indigo-400 hover:text-indigo-300 text-sm underline"
-                >
-                  Go to Architecture Map
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Node explanation panel */}
-        {(explaining || explanation) && (
-          <Card className="mt-6 glass border-white/[0.08] bg-transparent">
-            <CardContent className="p-5">
-              <h2 className="text-sm font-medium font-heading text-brand-text-secondary uppercase tracking-wide mb-3">
-                Node Explanation
-              </h2>
-              {explaining ? (
-                <div className="flex items-center gap-3 text-brand-text-secondary">
-                  <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
-                  Generating explanation...
-                </div>
-              ) : explanation ? (
-                <div>
-                  <Badge variant="outline" className="mb-3 bg-white/[0.02] text-brand-text-secondary border-white/[0.06]">
-                    {explanation.nodeId}
-                  </Badge>
-                  <p className="text-sm text-brand-text whitespace-pre-line leading-relaxed">
-                    {explanation.text}
-                  </p>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Sequence info cards */}
-        {sequences.length > 0 && (
-          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {sequences.map((seq, idx) => (
-              <Card
-                key={seq.id || idx}
-                className="glass-hover border-white/[0.08] bg-transparent cursor-default"
-              >
-                <CardContent className="p-5">
-                  <h3 className="font-heading font-semibold text-sm mb-1 text-brand-text">{seq.title}</h3>
-                  <p className="text-xs text-brand-text-secondary mb-3 line-clamp-2">
-                    {seq.description}
-                  </p>
-                  <div className="flex items-center gap-3 text-xs text-brand-muted">
-                    <span>{seq.steps?.length || 0} steps</span>
-                    {seq.category && (
-                      <Badge variant="outline" className="bg-white/[0.02] text-brand-text-secondary border-white/[0.06]">
-                        {seq.category}
-                      </Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </main>
-    </div>
+      )}
+    </DemoDashboardLayout>
   );
 }

@@ -2,36 +2,52 @@
 
 import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import SkillRadar from "@/components/SkillRadar";
+import DemoDashboardLayout from "@/components/DemoDashboardLayout";
 import { getApiBase, fetchApi } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
-import type { TeamProgress, DeveloperProgress } from "@autodev/shared";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
+import { Users, Trophy, Clock, BookOpen, MessageCircle, Layers, Copy, Check, TrendingUp } from "lucide-react";
+
+interface DeveloperProgress {
+  userId: string;
+  overallScore: number;
+  walkthroughsCompleted: number;
+  questionsAsked: number;
+  modulesExplored: number;
+  totalTimeSpentMs: number;
+  lastActivity: string;
+}
+
+interface TeamData {
+  repoId: string;
+  members: DeveloperProgress[];
+  averageScore: number;
+  topAreas: { area: string; score: number }[];
+  weakAreas: { area: string; score: number }[];
+}
 
 interface LeaderboardEntry {
   rank: number;
   userId: string;
   overallScore: number;
-  totalTimeSpentMs: number;
+  strongestArea: string;
   walkthroughsCompleted: number;
   questionsAsked: number;
   modulesExplored: number;
-  strongestArea: string;
+  totalTimeSpentMs: number;
 }
 
-function formatDuration(ms: number): string {
-  const minutes = Math.floor(ms / 60000);
-  const hours = Math.floor(minutes / 60);
-  if (hours > 0) return `${hours}h ${minutes % 60}m`;
-  return `${minutes}m`;
+function formatMs(ms: number): string {
+  const h = Math.floor(ms / 3_600_000);
+  const m = Math.floor((ms % 3_600_000) / 60_000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
-function getMedalEmoji(rank: number): string {
-  if (rank === 1) return "🥇";
-  if (rank === 2) return "🥈";
-  if (rank === 3) return "🥉";
-  return `#${rank}`;
-}
+const RANK_STYLES = [
+  "from-amber-400 to-yellow-500",
+  "from-slate-300 to-slate-400",
+  "from-amber-600 to-amber-700",
+];
 
 export default function TeamPage() {
   const params = useParams();
@@ -39,11 +55,9 @@ export default function TeamPage() {
   const decodedRepoId = decodeURIComponent(repoId);
   const [owner, repo] = decodedRepoId.split("/");
 
-  const [teamProgress, setTeamProgress] = useState<TeamProgress | null>(null);
+  const [teamData, setTeamData] = useState<TeamData | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [selectedMember, setSelectedMember] = useState<DeveloperProgress | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showInvite, setShowInvite] = useState(false);
   const [copied, setCopied] = useState(false);
   const { getToken } = useAuth();
@@ -57,378 +71,198 @@ export default function TeamPage() {
         fetchApi(`${getApiBase(decodedRepoId)}/progress/${owner}/${repo}/team`, {}, token),
         fetchApi(`${getApiBase(decodedRepoId)}/progress/${owner}/${repo}/leaderboard`, {}, token),
       ]);
-
-      if (!teamRes.ok) throw new Error(`Team HTTP ${teamRes.status}`);
-      if (!lbRes.ok) throw new Error(`Leaderboard HTTP ${lbRes.status}`);
-
-      const teamData: TeamProgress = await teamRes.json();
-      const lbData = await lbRes.json();
-
-      setTeamProgress(teamData);
-      setLeaderboard(lbData.leaderboard || []);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load team data");
-    } finally {
+      if (teamRes.ok) {
+        const d = await teamRes.json();
+        setTeamData(d);
+      }
+      if (lbRes.ok) {
+        const d = await lbRes.json();
+        setLeaderboard(d.leaderboard || []);
+      }
+    } catch { /* ignore */ } finally {
       setLoading(false);
     }
-  }, [owner, repo]);
+  }, [owner, repo, decodedRepoId]);
 
-  useEffect(() => {
-    fetchTeamData();
-  }, [fetchTeamData]);
+  useEffect(() => { fetchTeamData(); }, [fetchTeamData]);
+
+  function copyInviteLink() {
+    if (typeof window === "undefined") return;
+    navigator.clipboard?.writeText(`${window.location.origin}/dashboard/${repoId}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   return (
-    <div className="min-h-screen">
-      {/* Sidebar */}
-      <nav className="fixed left-0 top-0 w-64 h-full glass-strong border-r border-white/[0.06] p-6">
-        <Link
-          href="/dashboard"
-          className="text-xl font-bold mb-6 block text-gradient font-heading"
-        >
-          AutoDev
-        </Link>
-        <p className="text-sm text-brand-text-secondary mb-4">{decodedRepoId}</p>
-        <ul className="space-y-1">
-          <li>
-            <Link href={`/dashboard/${repoId}`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Architecture Map
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/animated`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Animated Map
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/walkthroughs`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Walkthroughs
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/conventions`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Conventions
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/env-setup`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Env Setup
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/qa`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              Q&A
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/progress`} className="block px-3 py-2 rounded-lg hover:bg-white/[0.04] text-brand-text-secondary text-sm transition-colors duration-200">
-              My Progress
-            </Link>
-          </li>
-          <li>
-            <Link href={`/dashboard/${repoId}/team`} className="block px-3 py-2 rounded-lg bg-white/[0.06] text-brand-text text-sm font-medium">
-              Team
-            </Link>
-          </li>
-        </ul>
-      </nav>
-
-      {/* Main content */}
-      <main className="ml-64 p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold font-heading">Team Progress</h1>
-          <div className="flex gap-3">
+    <DemoDashboardLayout
+      title="Team Progress"
+      subtitle="Track your team's collective onboarding journey"
+      action={
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchTeamData}
+            className="px-4 py-2 glass-hover border border-white/[0.08] rounded-lg text-sm font-medium text-brand-text-secondary hover:text-white transition-all"
+          >
+            Refresh
+          </button>
+          <button
+            onClick={() => setShowInvite(!showInvite)}
+            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-indigo-500/20"
+          >
+            + Invite Member
+          </button>
+        </div>
+      }
+    >
+      {/* Invite panel */}
+      {showInvite && (
+        <div className="mb-6 p-5 glass rounded-xl border border-indigo-500/20 bg-indigo-500/5">
+          <h2 className="text-sm font-semibold text-white mb-1">Invite a Team Member</h2>
+          <p className="text-xs text-brand-text-secondary mb-3">Share this link so colleagues can join this repository&apos;s workspace on AutoDev.</p>
+          <div className="flex gap-2">
+            <input
+              readOnly
+              value={`${typeof window !== "undefined" ? window.location.origin : ""}/dashboard/${repoId}`}
+              className="flex-1 px-3 py-2 bg-brand-surface border border-white/[0.06] rounded-lg text-xs font-mono text-brand-text-secondary focus:outline-none select-all"
+            />
             <button
-              onClick={fetchTeamData}
-              className="px-4 py-2 glass-hover rounded-lg text-sm font-medium transition-colors"
+              onClick={copyInviteLink}
+              className="flex items-center gap-2 px-4 py-2 glass-hover border border-white/[0.08] rounded-lg text-xs font-medium transition-colors"
             >
-              Refresh
-            </button>
-            <button
-              onClick={() => setShowInvite(!showInvite)}
-              className="px-4 py-2 bg-gradient-to-r from-accent-blue to-accent-purple hover:from-accent-blue/90 hover:to-accent-purple/90 rounded-lg text-sm font-semibold transition-all shadow-glow"
-            >
-              + Invite Member
+              {copied ? <><Check className="w-3.5 h-3.5 text-emerald-400" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
             </button>
           </div>
         </div>
+      )}
 
-        {/* Invite panel */}
-        {showInvite && (
-          <div className="mb-6 p-5 glass rounded-xl border border-accent-blue/20">
-            <h2 className="text-sm font-semibold text-white mb-1">Invite a Team Member</h2>
-            <p className="text-xs text-brand-text-secondary mb-3">
-              Share this link so colleagues can join this repository&apos;s workspace on AutoDev.
-            </p>
-            <div className="flex gap-2">
-              <input
-                readOnly
-                value={`${typeof window !== "undefined" ? window.location.origin : ""}/dashboard/${repoId}`}
-                className="flex-1 px-3 py-2 bg-brand-surface border border-white/[0.06] rounded-lg text-xs font-mono text-brand-text-secondary focus:outline-none select-all"
-              />
-              <button
-                onClick={() => {
-                  navigator.clipboard?.writeText(`${window.location.origin}/dashboard/${repoId}`);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-                className="px-4 py-2 bg-brand-surface border border-white/[0.06] hover:border-accent-blue/40 rounded-lg text-xs font-medium transition-colors"
-              >
-                {copied ? "✓ Copied!" : "Copy"}
-              </button>
-            </div>
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center gap-3">
+            <Users className="w-8 h-8 text-indigo-400 animate-pulse" />
+            <p className="text-brand-text-secondary text-sm">Loading team data...</p>
           </div>
-        )}
-
-        {error && (
-          <div className="mb-4 p-4 border border-red-500/20 bg-red-400/10 rounded-xl text-red-400 text-sm">
-            {error}
-          </div>
-        )}
-
-        {loading && !teamProgress ? (
-          <div className="glass rounded-xl h-[400px] flex items-center justify-center">
-            <div className="text-center">
-              <div className="inline-block w-6 h-6 border-2 border-accent-blue border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-brand-text-secondary">Loading team data...</p>
-            </div>
-          </div>
-        ) : teamProgress ? (
-          <div className="space-y-8">
-            {/* Team summary stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="glass rounded-xl p-5">
-                <p className="text-3xl font-bold text-white">
-                  {teamProgress.members.length}
-                </p>
-                <p className="text-brand-text-secondary text-sm mt-1">Team Members</p>
-              </div>
-              <div className="glass rounded-xl p-5">
-                <p className="text-3xl font-bold text-white">
-                  {teamProgress.averageScore}%
-                </p>
-                <p className="text-brand-text-secondary text-sm mt-1">Average Score</p>
-              </div>
-              <div className="glass rounded-xl p-5">
-                <p className="text-3xl font-bold text-white">
-                  {formatDuration(teamProgress.averageTimeToOnboard)}
-                </p>
-                <p className="text-brand-text-secondary text-sm mt-1">Avg. Time</p>
-              </div>
-              <div className="glass rounded-xl p-5">
-                <p className="text-3xl font-bold text-white">
-                  {teamProgress.topAreas[0]?.area || "—"}
-                </p>
-                <p className="text-brand-text-secondary text-sm mt-1">Strongest Area</p>
-              </div>
-            </div>
-
-            {/* Top row: Team Skill Radar + Leaderboard */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Team Average Skills */}
-              <div className="glass rounded-xl p-6">
-                <h2 className="text-lg font-semibold font-heading mb-4 text-white">
-                  Team Skill Distribution
-                </h2>
-                {teamProgress.topAreas.length > 0 ? (
-                  <SkillRadar skills={teamProgress.topAreas} size={320} />
-                ) : (
-                  <div className="flex items-center justify-center h-48 text-brand-muted">
-                    No skill data yet
-                  </div>
-                )}
-              </div>
-
-              {/* Leaderboard */}
-              <div className="glass rounded-xl p-6">
-                <h2 className="text-lg font-semibold font-heading mb-4 text-white">
-                  Leaderboard
-                </h2>
-                {leaderboard.length > 0 ? (
-                  <div className="space-y-3">
-                    {leaderboard.map((entry) => (
-                      <button
-                        key={entry.userId}
-                        onClick={() => {
-                          const member = teamProgress.members.find(
-                            (m) => m.userId === entry.userId
-                          );
-                          setSelectedMember(
-                            selectedMember?.userId === entry.userId ? null : member || null
-                          );
-                        }}
-                        className={`w-full flex items-center gap-4 p-3 rounded-xl border transition-all text-left ${
-                          selectedMember?.userId === entry.userId
-                            ? "border-indigo-600 bg-indigo-900/20"
-                            : "border-white/[0.06] glass hover:bg-white/[0.04]"
-                        }`}
-                      >
-                        <span className="text-lg w-8 text-center flex-shrink-0">
-                          {getMedalEmoji(entry.rank)}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white truncate">
-                            {entry.userId}
-                          </p>
-                          <p className="text-xs text-brand-muted">
-                            Strongest: {entry.strongestArea} &middot;{" "}
-                            {entry.modulesExplored} modules &middot;{" "}
-                            {entry.questionsAsked} Q&As
-                          </p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-lg font-bold text-white">
-                            {entry.overallScore}%
-                          </p>
-                          <p className="text-xs text-brand-muted">
-                            {formatDuration(entry.totalTimeSpentMs)}
-                          </p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-48 text-brand-muted">
-                    No team members yet
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Selected member detail panel */}
-            {selectedMember && (
-              <div className="border border-indigo-800 rounded-xl bg-indigo-900/10 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold font-heading text-white">
-                    {selectedMember.userId}&apos;s Progress
-                  </h2>
-                  <button
-                    onClick={() => setSelectedMember(null)}
-                    className="text-brand-text-secondary hover:text-white text-sm"
-                  >
-                    Close
-                  </button>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* Team stats */}
+          <div className="grid grid-cols-4 gap-4">
+            {[
+              { label: "Team Members", value: teamData?.members.length || 0, icon: Users, color: "text-indigo-400" },
+              { label: "Avg. Score", value: teamData?.averageScore || 0, icon: Trophy, color: "text-amber-400" },
+              { label: "Top Area", value: teamData?.topAreas?.[0]?.area || "—", icon: TrendingUp, color: "text-emerald-400" },
+              { label: "Needs Work", value: teamData?.weakAreas?.[0]?.area || "—", icon: TrendingUp, color: "text-red-400" },
+            ].map((s) => (
+              <div key={s.label} className="glass rounded-xl border border-white/[0.06] p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <s.icon className={`w-4 h-4 ${s.color}`} />
+                  <p className="text-xs text-brand-muted uppercase tracking-wide">{s.label}</p>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-                  <div className="p-3 rounded-xl glass">
-                    <p className="text-xl font-bold text-white">
-                      {selectedMember.overallScore}%
-                    </p>
-                    <p className="text-brand-text-secondary text-xs">Score</p>
+                <p className={`text-2xl font-bold capitalize ${s.color}`}>{s.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Leaderboard */}
+          {leaderboard.length > 0 && (
+            <div className="glass rounded-xl border border-white/[0.06] overflow-hidden">
+              <div className="flex items-center gap-2 p-5 border-b border-white/[0.05]">
+                <Trophy className="w-4 h-4 text-amber-400" />
+                <h2 className="text-sm font-semibold text-white">Leaderboard</h2>
+              </div>
+              <div className="divide-y divide-white/[0.04]">
+                {leaderboard.map((entry) => (
+                  <div key={entry.rank} className="flex items-center gap-4 p-4 hover:bg-white/[0.02] transition-colors">
+                    {/* Rank */}
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                      entry.rank <= 3
+                        ? `bg-gradient-to-br ${RANK_STYLES[entry.rank - 1]} text-black/80`
+                        : "bg-white/[0.05] border border-white/[0.08] text-brand-muted"
+                    }`}>
+                      {entry.rank}
+                    </div>
+
+                    {/* Avatar + name */}
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-bold text-white">{entry.userId.charAt(0).toUpperCase()}</span>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white truncate">{entry.userId}</p>
+                      <p className="text-xs text-brand-muted">Strongest: <span className="text-brand-text-secondary capitalize">{entry.strongestArea}</span></p>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-6 text-xs text-brand-muted">
+                      <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" />{entry.walkthroughsCompleted}</span>
+                      <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" />{entry.questionsAsked}</span>
+                      <span className="flex items-center gap-1"><Layers className="w-3 h-3" />{entry.modulesExplored}</span>
+                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{formatMs(entry.totalTimeSpentMs)}</span>
+                    </div>
+
+                    {/* Score */}
+                    <div className="text-right flex-shrink-0">
+                      <p className={`text-lg font-bold ${entry.overallScore >= 70 ? "text-emerald-400" : entry.overallScore >= 40 ? "text-amber-400" : "text-red-400"}`}>
+                        {entry.overallScore}
+                      </p>
+                      <p className="text-[10px] text-brand-muted">score</p>
+                    </div>
+
+                    {/* Score bar */}
+                    <div className="w-20 h-1.5 rounded-full bg-white/[0.05] flex-shrink-0">
+                      <div
+                        className={`h-1.5 rounded-full ${entry.overallScore >= 70 ? "bg-emerald-500" : entry.overallScore >= 40 ? "bg-amber-500" : "bg-red-400"}`}
+                        style={{ width: `${entry.overallScore}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="p-3 rounded-xl glass">
-                    <p className="text-xl font-bold text-white">
-                      {selectedMember.modulesExplored}
-                    </p>
-                    <p className="text-brand-text-secondary text-xs">Modules</p>
-                  </div>
-                  <div className="p-3 rounded-xl glass">
-                    <p className="text-xl font-bold text-white">
-                      {selectedMember.walkthroughsCompleted}
-                    </p>
-                    <p className="text-brand-text-secondary text-xs">Walkthroughs</p>
-                  </div>
-                  <div className="p-3 rounded-xl glass">
-                    <p className="text-xl font-bold text-white">
-                      {selectedMember.questionsAsked}
-                    </p>
-                    <p className="text-brand-text-secondary text-xs">Questions</p>
-                  </div>
-                  <div className="p-3 rounded-xl glass">
-                    <p className="text-xl font-bold text-white">
-                      {formatDuration(selectedMember.totalTimeSpentMs)}
-                    </p>
-                    <p className="text-brand-text-secondary text-xs">Time Spent</p>
-                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Strength & weakness areas */}
+          {teamData && (teamData.topAreas.length > 0 || teamData.weakAreas.length > 0) && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="glass rounded-xl border border-emerald-500/15 p-5">
+                <h3 className="text-xs text-emerald-400 uppercase tracking-widest font-semibold mb-3 flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5" /> Team Strengths
+                </h3>
+                <div className="space-y-2">
+                  {teamData.topAreas.map((a) => (
+                    <div key={a.area} className="flex items-center justify-between">
+                      <span className="text-sm text-brand-text-secondary capitalize">{a.area}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-1.5 rounded-full bg-white/[0.05]">
+                          <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${a.score}%` }} />
+                        </div>
+                        <span className="text-xs text-emerald-400 font-semibold w-8 text-right">{a.score}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <SkillRadar skills={selectedMember.skills} size={280} />
               </div>
-            )}
-
-            {/* Strengths & Weaknesses */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="glass rounded-xl p-6">
-                <h2 className="text-lg font-semibold font-heading mb-4 text-green-400">
-                  Team Strengths
-                </h2>
-                {teamProgress.topAreas.length > 0 ? (
-                  <div className="space-y-3">
-                    {teamProgress.topAreas
-                      .sort((a, b) => b.score - a.score)
-                      .slice(0, 5)
-                      .map((area) => (
-                        <div key={area.area} className="flex items-center gap-3">
-                          <div className="flex-1">
-                            <div className="flex justify-between mb-1">
-                              <span className="text-sm text-brand-text-secondary capitalize">
-                                {area.area}
-                              </span>
-                              <span className="text-sm font-medium text-white">
-                                {area.score}%
-                              </span>
-                            </div>
-                            <div className="h-1.5 bg-brand-surface rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-green-500 rounded-full"
-                                style={{ width: `${area.score}%` }}
-                              />
-                            </div>
-                          </div>
+              <div className="glass rounded-xl border border-red-500/15 p-5">
+                <h3 className="text-xs text-red-400 uppercase tracking-widest font-semibold mb-3 flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 rotate-180" /> Needs More Focus
+                </h3>
+                <div className="space-y-2">
+                  {teamData.weakAreas.map((a) => (
+                    <div key={a.area} className="flex items-center justify-between">
+                      <span className="text-sm text-brand-text-secondary capitalize">{a.area}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-1.5 rounded-full bg-white/[0.05]">
+                          <div className="h-1.5 rounded-full bg-red-500" style={{ width: `${a.score}%` }} />
                         </div>
-                      ))}
-                  </div>
-                ) : (
-                  <p className="text-brand-muted text-sm">No data yet</p>
-                )}
-              </div>
-
-              <div className="glass rounded-xl p-6">
-                <h2 className="text-lg font-semibold font-heading mb-4 text-orange-400">
-                  Areas to Improve
-                </h2>
-                {teamProgress.weakAreas.length > 0 ? (
-                  <div className="space-y-3">
-                    {teamProgress.weakAreas
-                      .sort((a, b) => a.score - b.score)
-                      .slice(0, 5)
-                      .map((area) => (
-                        <div key={area.area} className="flex items-center gap-3">
-                          <div className="flex-1">
-                            <div className="flex justify-between mb-1">
-                              <span className="text-sm text-brand-text-secondary capitalize">
-                                {area.area}
-                              </span>
-                              <span className="text-sm font-medium text-white">
-                                {area.score}%
-                              </span>
-                            </div>
-                            <div className="h-1.5 bg-brand-surface rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-orange-500 rounded-full"
-                                style={{ width: `${area.score}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <p className="text-brand-muted text-sm">No data yet</p>
-                )}
+                        <span className="text-xs text-red-400 font-semibold w-8 text-right">{a.score}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="glass rounded-xl h-[400px] flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-brand-text-secondary text-lg mb-2">No team data yet</p>
-              <p className="text-brand-muted text-sm">
-                Team progress will appear as members explore the codebase
-              </p>
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
+          )}
+        </div>
+      )}
+    </DemoDashboardLayout>
   );
 }
