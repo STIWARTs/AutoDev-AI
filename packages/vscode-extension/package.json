@@ -35,6 +35,10 @@
       {
         "command": "autodev.selectLanguage",
         "title": "AutoDev: Select Language"
+      },
+      {
+        "command": "autodev.setApiToken",
+        "title": "AutoDev: Set API Token"
       }
     ],
     "viewsContainers": {
@@ -58,10 +62,20 @@
     "configuration": {
       "title": "AutoDev",
       "properties": {
+        "autodev.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:3001/api",
+          "description": "AutoDev backend API base URL (e.g. http://localhost:3001/api or https://api.autodev.example.com/api)"
+        },
+        "autodev.apiToken": {
+          "type": "string",
+          "default": "",
+          "description": "Your AutoDev API token from the web dashboard (Settings → API Token). Required for secure access."
+        },
         "autodev.repoId": {
           "type": "string",
           "default": "",
-          "description": "Repository identifier (owner/repo) for AutoDev"
+          "description": "Repository identifier (owner/repo) for AutoDev — leave empty to auto-detect from git remote"
         },
         "autodev.language": {
           "type": "string",

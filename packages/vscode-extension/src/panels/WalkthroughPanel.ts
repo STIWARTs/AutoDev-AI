@@ -106,6 +106,10 @@ export class WalkthroughPanel {
     });
   }
 
+  public sendGenerateRequest(question: string) {
+    this._panel.webview.postMessage({ type: "triggerGenerate", question });
+  }
+
   private async _loadWalkthroughs() {
     const repoId = vscode.workspace
       .getConfiguration("autodev")
@@ -508,6 +512,16 @@ export class WalkthroughPanel {
             walkthroughs.push(msg.data);
           }
           renderWalkthrough();
+          break;
+        case 'triggerGenerate':
+          // Pre-fill and auto-trigger a walkthrough generation from extension
+          walkthroughs = [];
+          renderList();
+          setTimeout(() => {
+            const qi = document.getElementById('question');
+            if (qi) { qi.value = msg.question || ''; }
+            generate();
+          }, 100);
           break;
       }
     });
