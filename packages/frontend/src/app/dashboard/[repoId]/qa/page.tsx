@@ -3,7 +3,9 @@
 import { useParams } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { getApiBase } from "@/lib/api";
+import { getApiBase, fetchApi } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
 
 interface RelevantFile {
   path: string;
@@ -26,6 +28,8 @@ export default function QAPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { getToken } = useAuth();
+  const { track } = useProgressTracker(decodedRepoId);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -41,11 +45,11 @@ export default function QAPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${getApiBase(decodedRepoId)}/qa/${decodedRepoId}`, {
+      const token = await getToken();
+      const res = await fetchApi(`${getApiBase(decodedRepoId)}/qa/${decodedRepoId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question }),
-      });
+      }, token);
       const data = await res.json();
       setMessages((prev) => [
         ...prev,
@@ -56,6 +60,9 @@ export default function QAPage() {
           relatedQuestions: data.relatedQuestions,
         },
       ]);
+      if (data.answer) {
+        track({ eventType: "qa_asked", targetLabel: question });
+      }
     } catch {
       setMessages((prev) => [
         ...prev,

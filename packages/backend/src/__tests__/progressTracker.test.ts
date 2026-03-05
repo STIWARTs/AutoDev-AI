@@ -88,12 +88,14 @@ describe("getAreasFromArchitecture", () => {
   it("maps architecture nodes to skill areas", () => {
     const archMap: ArchitectureMap = {
       nodes: [
-        { id: "n1", label: "Auth Service", type: "service" },
-        { id: "n2", label: "API Gateway", type: "service" },
-        { id: "n3", label: "Database Layer", type: "database" },
-        { id: "n4", label: "React Frontend", type: "frontend" },
+        { id: "n1", label: "Auth Service", type: "service", files: [], description: "" },
+        { id: "n2", label: "API Gateway", type: "service", files: [], description: "" },
+        { id: "n3", label: "Database Layer", type: "database", files: [], description: "" },
+        { id: "n4", label: "React Frontend", type: "module", files: [], description: "" },
       ],
       edges: [],
+      techStack: {},
+      summary: "",
     };
 
     const result = getAreasFromArchitecture(archMap);
@@ -107,11 +109,13 @@ describe("getAreasFromArchitecture", () => {
   it("groups multiple nodes under the same area", () => {
     const archMap: ArchitectureMap = {
       nodes: [
-        { id: "n1", label: "Auth middleware", type: "service" },
-        { id: "n2", label: "Login handler", type: "service" },
-        { id: "n3", label: "JWT utils", type: "service" },
+        { id: "n1", label: "Auth middleware", type: "service", files: [], description: "" },
+        { id: "n2", label: "Login handler", type: "service", files: [], description: "" },
+        { id: "n3", label: "JWT utils", type: "service", files: [], description: "" },
       ],
       edges: [],
+      techStack: {},
+      summary: "",
     };
 
     const result = getAreasFromArchitecture(archMap);
@@ -119,7 +123,7 @@ describe("getAreasFromArchitecture", () => {
   });
 
   it("handles empty architecture map", () => {
-    const archMap: ArchitectureMap = { nodes: [], edges: [] };
+    const archMap: ArchitectureMap = { nodes: [], edges: [], techStack: {}, summary: "" };
     const result = getAreasFromArchitecture(archMap);
     expect(result.size).toBe(0);
   });
@@ -217,11 +221,13 @@ describe("computeSkillScores", () => {
   it("uses architecture map for module coverage", () => {
     const archMap: ArchitectureMap = {
       nodes: [
-        { id: "auth1", label: "Auth Service", type: "service" },
-        { id: "auth2", label: "Auth Middleware", type: "service" },
-        { id: "auth3", label: "Session Manager", type: "service" },
+        { id: "auth1", label: "Auth Service", type: "service", files: [], description: "" },
+        { id: "auth2", label: "Auth Middleware", type: "service", files: [], description: "" },
+        { id: "auth3", label: "Session Manager", type: "service", files: [], description: "" },
       ],
       edges: [],
+      techStack: {},
+      summary: "",
     };
 
     const events = [

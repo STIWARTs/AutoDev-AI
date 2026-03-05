@@ -7,14 +7,16 @@ import {
   classifyArea,
 } from "../services/progressTracker.js";
 import { getArchitectureAnalysis } from "../services/analysisOrchestrator.js";
+import { getRepoById } from "../services/dynamodb.js";
+import { requireAuthMiddleware } from "../middleware/auth.js";
 import type { ArchitectureMap, SkillArea } from "@autodev/shared";
 
 export const skillTrackerRoutes: RouterType = Router();
 
 // POST /api/progress/:owner/:repo/event — record a progress event
-skillTrackerRoutes.post("/:owner/:repo/event", async (req, res) => {
+skillTrackerRoutes.post("/:owner/:repo/event", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
-  const { userId, eventType, targetId, targetLabel, area, durationMs } = req.body as {
+  const { eventType, targetId, targetLabel, area, durationMs } = req.body as {
     userId: string;
     eventType: string;
     targetId?: string;
@@ -23,6 +25,7 @@ skillTrackerRoutes.post("/:owner/:repo/event", async (req, res) => {
     durationMs?: number;
   };
 
+  const userId = req.auth?.userId;
   if (!userId || !eventType) {
     res.status(400).json({ error: "userId and eventType are required" });
     return;
@@ -42,6 +45,12 @@ skillTrackerRoutes.post("/:owner/:repo/event", async (req, res) => {
   }
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+    
     const event = await recordProgressEvent({
       userId,
       repoId,
@@ -59,11 +68,17 @@ skillTrackerRoutes.post("/:owner/:repo/event", async (req, res) => {
 });
 
 // GET /api/progress/:owner/:repo/:userId — get developer progress
-skillTrackerRoutes.get("/:owner/:repo/:userId", async (req, res) => {
+skillTrackerRoutes.get("/:owner/:repo/:userId", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   const { userId } = req.params;
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     const [events, architecture] = await Promise.all([
       getProgressEvents(repoId, userId),
       getArchitectureAnalysis(repoId).catch(() => null),
@@ -79,12 +94,18 @@ skillTrackerRoutes.get("/:owner/:repo/:userId", async (req, res) => {
 });
 
 // GET /api/progress/:owner/:repo/:userId/events — get raw events
-skillTrackerRoutes.get("/:owner/:repo/:userId/events", async (req, res) => {
+skillTrackerRoutes.get("/:owner/:repo/:userId/events", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   const { userId } = req.params;
   const limit = parseInt(req.query.limit as string) || 200;
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     const events = await getProgressEvents(repoId, userId, limit);
     res.json({ repoId, userId, events, count: events.length });
   } catch (err) {
@@ -94,10 +115,16 @@ skillTrackerRoutes.get("/:owner/:repo/:userId/events", async (req, res) => {
 });
 
 // GET /api/progress/:owner/:repo/team — get team-wide progress
-skillTrackerRoutes.get("/:owner/:repo/team", async (req, res) => {
+skillTrackerRoutes.get("/:owner/:repo/team", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     const architecture = await getArchitectureAnalysis(repoId).catch(() => null);
     const archMap = architecture as ArchitectureMap | null;
     const teamProgress = await computeTeamProgress(repoId, archMap);
@@ -109,10 +136,16 @@ skillTrackerRoutes.get("/:owner/:repo/team", async (req, res) => {
 });
 
 // GET /api/progress/:owner/:repo/leaderboard — get ranked team members
-skillTrackerRoutes.get("/:owner/:repo/leaderboard", async (req, res) => {
+skillTrackerRoutes.get("/:owner/:repo/leaderboard", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     const architecture = await getArchitectureAnalysis(repoId).catch(() => null);
     const archMap = architecture as ArchitectureMap | null;
     const teamProgress = await computeTeamProgress(repoId, archMap);

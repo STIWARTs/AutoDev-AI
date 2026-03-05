@@ -4,7 +4,9 @@ import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ConventionList } from "@/components/ConventionCard";
-import { getApiBase } from "@/lib/api";
+import { getApiBase, fetchApi } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
 import type { Convention } from "@autodev/shared";
 
 export default function ConventionsPage() {
@@ -17,15 +19,21 @@ export default function ConventionsPage() {
   const [loading, setLoading] = useState(true);
   const [detecting, setDetecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { getToken } = useAuth();
+  const { track } = useProgressTracker(decodedRepoId);
 
   const fetchConventions = useCallback(async () => {
     if (!owner || !repo) return;
     try {
       setLoading(true);
-      const res = await fetch(`${getApiBase(decodedRepoId)}/conventions/${owner}/${repo}`);
+      const token = await getToken();
+      const res = await fetchApi(`${getApiBase(decodedRepoId)}/conventions/${owner}/${repo}`, {}, token);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setConventions(data.conventions || []);
+      if ((data.conventions || []).length > 0) {
+        track({ eventType: "convention_viewed", targetLabel: `${decodedRepoId} conventions` });
+      }
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load conventions");
@@ -41,7 +49,8 @@ export default function ConventionsPage() {
   async function triggerDetection() {
     try {
       setDetecting(true);
-      await fetch(`${getApiBase(decodedRepoId)}/conventions/${owner}/${repo}`, { method: "POST" });
+      const token = await getToken();
+      await fetchApi(`${getApiBase(decodedRepoId)}/conventions/${owner}/${repo}`, { method: "POST" }, token);
       // Poll for results
       setTimeout(fetchConventions, 15_000);
       setTimeout(fetchConventions, 30_000);

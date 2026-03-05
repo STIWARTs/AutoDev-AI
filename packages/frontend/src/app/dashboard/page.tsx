@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import {
   RefreshCw,
   Plus,
@@ -20,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { fetchApi } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -31,7 +33,7 @@ interface RepoItem {
   techStack?: Record<string, string | undefined>;
 }
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 15 },
   visible: (i: number = 0) => ({
     opacity: 1,
@@ -40,7 +42,7 @@ const fadeUp = {
   }),
 };
 
-const stagger = {
+const stagger: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.05 } },
 };
@@ -52,12 +54,14 @@ function DashboardContent() {
   const [repos, setRepos] = useState<RepoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { getToken } = useAuth();
 
   const fetchRepos = useCallback(async () => {
     try {
       setLoading(true);
+      const token = await getToken();
       const endpoint = isDemo ? `${API_BASE}/demo/repos` : `${API_BASE}/repos`;
-      const res = await fetch(endpoint);
+      const res = await fetchApi(endpoint, {}, token);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setRepos(Array.isArray(data) ? data : data.repos ?? []);
@@ -165,12 +169,14 @@ function DashboardContent() {
                 <RefreshCw className="w-4 h-4 mr-2" /> Refresh
               </Button>
               {!isDemo && (
-                <Button
-                  size="sm"
-                  className="bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg transition-colors border-0 rounded-sm h-10 px-5 font-semibold"
+                <a
+                  href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "https://github.com/apps/autodev/installations/new"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center whitespace-nowrap bg-brand-text text-brand-bg hover:bg-brand-DEFAULT transition-colors border-0 rounded-sm h-10 px-5 font-semibold text-sm"
                 >
                   <Plus className="w-4 h-4 mr-2" /> Connect Repo
-                </Button>
+                </a>
               )}
             </div>
           </motion.div>
@@ -203,9 +209,14 @@ function DashboardContent() {
                     Install the AutoDev GitHub App to begin analyzing your codebase structure.
                   </p>
                   <div className="flex gap-4 justify-center">
-                    <Button className="bg-brand-text text-brand-bg hover:bg-brand-DEFAULT transition-colors rounded-sm px-6">
+                    <a
+                      href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "https://github.com/apps/autodev/installations/new"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center whitespace-nowrap bg-brand-text text-brand-bg hover:bg-brand-DEFAULT transition-colors rounded-sm px-6 h-10 text-sm font-medium"
+                    >
                       <Github className="w-4 h-4 mr-2" /> Install GitHub App
-                    </Button>
+                    </a>
                     <Link href="/dashboard?demo=true">
                       <Button variant="outline" className="bg-brand-card border-brand-border hover:border-brand-DEFAULT transition-colors rounded-sm px-6 text-brand-text">
                         <Play className="w-4 h-4 mr-2" /> Try Demo Mode

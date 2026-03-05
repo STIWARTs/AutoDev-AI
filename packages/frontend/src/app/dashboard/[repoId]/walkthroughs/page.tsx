@@ -4,7 +4,9 @@ import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import WalkthroughViewer from "@/components/WalkthroughViewer";
-import { getApiBase } from "@/lib/api";
+import { getApiBase, fetchApi } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
 import type { Walkthrough } from "@autodev/shared";
 
 export default function WalkthroughsPage() {
@@ -19,12 +21,15 @@ export default function WalkthroughsPage() {
   const [generating, setGenerating] = useState(false);
   const [question, setQuestion] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const { getToken } = useAuth();
+  const { track } = useProgressTracker(decodedRepoId);
 
   const fetchWalkthroughs = useCallback(async () => {
     if (!owner || !repo) return;
     try {
       setLoading(true);
-      const res = await fetch(`${getApiBase(decodedRepoId)}/walkthroughs/${owner}/${repo}`);
+      const token = await getToken();
+      const res = await fetchApi(`${getApiBase(decodedRepoId)}/walkthroughs/${owner}/${repo}`, {}, token);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setWalkthroughs(data.walkthroughs || []);
@@ -44,16 +49,21 @@ export default function WalkthroughsPage() {
     if (!question.trim()) return;
     try {
       setGenerating(true);
-      const res = await fetch(`${getApiBase(decodedRepoId)}/walkthroughs/${owner}/${repo}`, {
+      const token = await getToken();
+      const res = await fetchApi(`${getApiBase(decodedRepoId)}/walkthroughs/${owner}/${repo}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: question.trim() }),
-      });
+      }, token);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.walkthrough) {
         setSelected(data.walkthrough);
         setWalkthroughs((prev) => [...prev, data.walkthrough]);
+        track({
+          eventType: "walkthrough_viewed",
+          targetId: data.walkthrough.id,
+          targetLabel: data.walkthrough.title || question,
+        });
       }
       setQuestion("");
       setError(null);
@@ -182,7 +192,14 @@ export default function WalkthroughsPage() {
                 {walkthroughs.map((w, i) => (
                   <button
                     key={w.id || i}
-                    onClick={() => setSelected(w)}
+                    onClick={() => {
+                      setSelected(w);
+                      track({
+                        eventType: "walkthrough_viewed",
+                        targetId: w.id,
+                        targetLabel: w.title || w.question,
+                      });
+                    }}
                     className="text-left p-5 glass rounded-xl hover:border-white/[0.06] hover:bg-white/[0.04] transition-all group"
                   >
                     <div className="flex items-start justify-between mb-2">

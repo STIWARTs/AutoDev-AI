@@ -4,7 +4,9 @@ import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import EnvSetupGuideView from "@/components/EnvSetupGuide";
-import { getApiBase } from "@/lib/api";
+import { getApiBase, fetchApi } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
 import type { EnvSetupGuide } from "@autodev/shared";
 
 export default function EnvSetupPage() {
@@ -17,15 +19,21 @@ export default function EnvSetupPage() {
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { getToken } = useAuth();
+  const { track } = useProgressTracker(decodedRepoId);
 
   const fetchGuide = useCallback(async () => {
     if (!owner || !repo) return;
     try {
       setLoading(true);
-      const res = await fetch(`${getApiBase(decodedRepoId)}/env-setup/${owner}/${repo}`);
+      const token = await getToken();
+      const res = await fetchApi(`${getApiBase(decodedRepoId)}/env-setup/${owner}/${repo}`, {}, token);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setGuide(data.envSetup || null);
+      if (data.envSetup) {
+        track({ eventType: "env_setup_viewed", targetLabel: `${decodedRepoId} env-setup` });
+      }
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load env setup guide");
@@ -41,7 +49,8 @@ export default function EnvSetupPage() {
   async function triggerAnalysis() {
     try {
       setAnalyzing(true);
-      await fetch(`${getApiBase(decodedRepoId)}/env-setup/${owner}/${repo}`, { method: "POST" });
+      const token = await getToken();
+      await fetchApi(`${getApiBase(decodedRepoId)}/env-setup/${owner}/${repo}`, { method: "POST" }, token);
       // Poll for results
       setTimeout(fetchGuide, 15_000);
       setTimeout(fetchGuide, 30_000);

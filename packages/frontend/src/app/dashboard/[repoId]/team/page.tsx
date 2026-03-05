@@ -4,7 +4,8 @@ import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import SkillRadar from "@/components/SkillRadar";
-import { getApiBase } from "@/lib/api";
+import { getApiBase, fetchApi } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
 import type { TeamProgress, DeveloperProgress } from "@autodev/shared";
 
 interface LeaderboardEntry {
@@ -43,14 +44,18 @@ export default function TeamPage() {
   const [selectedMember, setSelectedMember] = useState<DeveloperProgress | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showInvite, setShowInvite] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { getToken } = useAuth();
 
   const fetchTeamData = useCallback(async () => {
     if (!owner || !repo) return;
     try {
       setLoading(true);
+      const token = await getToken();
       const [teamRes, lbRes] = await Promise.all([
-        fetch(`${getApiBase(decodedRepoId)}/progress/${owner}/${repo}/team`),
-        fetch(`${getApiBase(decodedRepoId)}/progress/${owner}/${repo}/leaderboard`),
+        fetchApi(`${getApiBase(decodedRepoId)}/progress/${owner}/${repo}/team`, {}, token),
+        fetchApi(`${getApiBase(decodedRepoId)}/progress/${owner}/${repo}/leaderboard`, {}, token),
       ]);
 
       if (!teamRes.ok) throw new Error(`Team HTTP ${teamRes.status}`);
@@ -132,13 +137,48 @@ export default function TeamPage() {
       <main className="ml-64 p-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold font-heading">Team Progress</h1>
-          <button
-            onClick={fetchTeamData}
-            className="px-4 py-2 glass-hover rounded-lg text-sm font-medium transition-colors"
-          >
-            Refresh
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={fetchTeamData}
+              className="px-4 py-2 glass-hover rounded-lg text-sm font-medium transition-colors"
+            >
+              Refresh
+            </button>
+            <button
+              onClick={() => setShowInvite(!showInvite)}
+              className="px-4 py-2 bg-gradient-to-r from-accent-blue to-accent-purple hover:from-accent-blue/90 hover:to-accent-purple/90 rounded-lg text-sm font-semibold transition-all shadow-glow"
+            >
+              + Invite Member
+            </button>
+          </div>
         </div>
+
+        {/* Invite panel */}
+        {showInvite && (
+          <div className="mb-6 p-5 glass rounded-xl border border-accent-blue/20">
+            <h2 className="text-sm font-semibold text-white mb-1">Invite a Team Member</h2>
+            <p className="text-xs text-brand-text-secondary mb-3">
+              Share this link so colleagues can join this repository&apos;s workspace on AutoDev.
+            </p>
+            <div className="flex gap-2">
+              <input
+                readOnly
+                value={`${typeof window !== "undefined" ? window.location.origin : ""}/dashboard/${repoId}`}
+                className="flex-1 px-3 py-2 bg-brand-surface border border-white/[0.06] rounded-lg text-xs font-mono text-brand-text-secondary focus:outline-none select-all"
+              />
+              <button
+                onClick={() => {
+                  navigator.clipboard?.writeText(`${window.location.origin}/dashboard/${repoId}`);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="px-4 py-2 bg-brand-surface border border-white/[0.06] hover:border-accent-blue/40 rounded-lg text-xs font-medium transition-colors"
+              >
+                {copied ? "✓ Copied!" : "Copy"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mb-4 p-4 border border-red-500/20 bg-red-400/10 rounded-xl text-red-400 text-sm">

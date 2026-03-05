@@ -29,16 +29,20 @@ export const metadata: Metadata = {
     "Understand any codebase in minutes. AI-powered architecture maps, walkthroughs, and Q&A.",
 };
 
+import { ClerkProvider } from '@clerk/nextjs'
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${playfairDisplay.variable} ${inter.variable} ${jetbrainsMono.variable} dark`}>
-      <body className="bg-brand-bg text-brand-text min-h-screen font-body antialiased selection:bg-brand-DEFAULT/30 selection:text-white">
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className={`${playfairDisplay.variable} ${inter.variable} ${jetbrainsMono.variable} dark`}>
+        <body className="bg-brand-bg text-brand-text min-h-screen font-body antialiased selection:bg-brand-DEFAULT/30 selection:text-white">
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

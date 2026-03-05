@@ -6,12 +6,13 @@ import { getArchitectureAnalysis } from "../services/analysisOrchestrator.js";
 import { getLatestCodeIndex } from "../services/s3.js";
 import { searchCodebase } from "../services/semanticSearch.js";
 import { translateContent } from "../services/i18n.js";
+import { requireAuthMiddleware } from "../middleware/auth.js";
 import type { SupportedLanguage } from "@autodev/shared";
 
 export const qaRoutes: RouterType = Router();
 
 // POST /api/qa/:owner/:repo — ask a question about the codebase
-qaRoutes.post("/:owner/:repo", async (req, res) => {
+qaRoutes.post("/:owner/:repo", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   const { question, language, fresherMode } = req.body as {
     question: string;
@@ -23,6 +24,14 @@ qaRoutes.post("/:owner/:repo", async (req, res) => {
     res.status(400).json({ error: "question is required" });
     return;
   }
+
+  // Ensure user has access
+  const userId = req.auth?.userId;
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
 
   try {
     // Check cache first

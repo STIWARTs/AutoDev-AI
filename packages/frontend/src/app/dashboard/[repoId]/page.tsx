@@ -4,7 +4,8 @@ import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import ArchitectureMap from "@/components/ArchitectureMap";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { getApiBase } from "@/lib/api";
+import { getApiBase, fetchApi } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
 import type { ArchitectureMap as ArchMapType } from "@autodev/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,12 +24,14 @@ export default function RepoDetailPage() {
   const [status, setStatus] = useState<AnalysisStatus>("pending");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { getToken } = useAuth();
 
   const fetchArchitecture = useCallback(async () => {
     if (!owner || !repo) return;
     try {
       setLoading(true);
-      const res = await fetch(`${getApiBase(decodedRepoId)}/analysis/${owner}/${repo}/architecture`);
+      const token = await getToken();
+      const res = await fetchApi(`${getApiBase(decodedRepoId)}/analysis/${owner}/${repo}/architecture`, {}, token);
       if (res.status === 404) {
         setStatus("pending");
         setArchMap(null);
@@ -69,11 +72,11 @@ export default function RepoDetailPage() {
   async function triggerAnalysis() {
     try {
       setStatus("analyzing");
-      await fetch(`${getApiBase(decodedRepoId)}/repos/analyze`, {
+      const token = await getToken();
+      await fetchApi(`${getApiBase(decodedRepoId)}/repos/analyze`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ repoId: decodedRepoId }),
-      });
+      }, token);
       // Start polling
       setTimeout(fetchArchitecture, 5000);
     } catch {

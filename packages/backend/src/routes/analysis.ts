@@ -3,14 +3,21 @@ import {
   getArchitectureAnalysis,
   runArchitectureAnalysis,
 } from "../services/analysisOrchestrator.js";
-import { getAnalysis } from "../services/dynamodb.js";
+import { getAnalysis, getRepoById } from "../services/dynamodb.js";
+import { requireAuthMiddleware } from "../middleware/auth.js";
 
 export const analysisRoutes: RouterType = Router();
 
 // GET /api/analysis/:owner/:repo/architecture — get architecture map
-analysisRoutes.get("/:owner/:repo/architecture", async (req, res) => {
+analysisRoutes.get("/:owner/:repo/architecture", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     const architecture = await getArchitectureAnalysis(repoId);
     res.json({ repoId, architecture });
   } catch (error) {
@@ -20,9 +27,15 @@ analysisRoutes.get("/:owner/:repo/architecture", async (req, res) => {
 });
 
 // POST /api/analysis/:owner/:repo/architecture — trigger architecture analysis
-analysisRoutes.post("/:owner/:repo/architecture", async (req, res) => {
+analysisRoutes.post("/:owner/:repo/architecture", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     // Fire-and-forget: respond immediately, run analysis in background
     res.json({ repoId, status: "analysis_started" });
 
@@ -36,9 +49,15 @@ analysisRoutes.post("/:owner/:repo/architecture", async (req, res) => {
 });
 
 // GET /api/analysis/:owner/:repo/conventions — get detected conventions
-analysisRoutes.get("/:owner/:repo/conventions", async (req, res) => {
+analysisRoutes.get("/:owner/:repo/conventions", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     const record = await getAnalysis(repoId, "conventions");
     const conventions = record?.content || [];
     res.json({ repoId, conventions });
@@ -49,9 +68,15 @@ analysisRoutes.get("/:owner/:repo/conventions", async (req, res) => {
 });
 
 // GET /api/analysis/:owner/:repo/walkthroughs — get walkthroughs
-analysisRoutes.get("/:owner/:repo/walkthroughs", async (req, res) => {
+analysisRoutes.get("/:owner/:repo/walkthroughs", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     const record = await getAnalysis(repoId, "walkthrough");
     const walkthroughs = record?.content ? [record.content] : [];
     res.json({ repoId, walkthroughs });

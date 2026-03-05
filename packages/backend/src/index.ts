@@ -47,18 +47,23 @@ app.get("/api/warmup", async (_req, res) => {
   });
 });
 
-// API routes
+// Unauthenticated internal boundaries
+app.use("/api/internal", internalRoutes);
+app.use("/api/demo", demoRoutes);
+
+import { authMiddleware } from "./middleware/auth.js";
+app.use(authMiddleware);
+
+// Authenticated API routes
 app.use("/api/repos", repoRoutes);
 app.use("/api/analysis", analysisRoutes);
 app.use("/api/qa", qaRoutes);
-app.use("/api/internal", internalRoutes);
 app.use("/api/walkthroughs", walkthroughRoutes);
 app.use("/api/conventions", conventionRoutes);
 app.use("/api/env-setup", envSetupRoutes);
 app.use("/api/animated", animatedRoutes);
 app.use("/api/i18n", i18nRoutes);
 app.use("/api/progress", skillTrackerRoutes);
-app.use("/api/demo", demoRoutes);
 
 app.listen(PORT, () => {
   console.log(`AutoDev backend running on http://localhost:${PORT}`);

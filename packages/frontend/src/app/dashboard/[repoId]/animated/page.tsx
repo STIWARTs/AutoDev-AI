@@ -6,7 +6,8 @@ import AnimatedArchitectureMap from "@/components/AnimatedArchitectureMap";
 import LanguageSelector from "@/components/LanguageSelector";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import Link from "next/link";
-import { getApiBase } from "@/lib/api";
+import { getApiBase, fetchApi } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
 import type {
   ArchitectureMap as ArchMapType,
   AnimationSequence,
@@ -35,12 +36,14 @@ export default function AnimatedPage() {
   // Node explanation state
   const [explaining, setExplaining] = useState(false);
   const [explanation, setExplanation] = useState<{ nodeId: string; text: string } | null>(null);
+  const { getToken } = useAuth();
 
   // Fetch architecture
   const fetchArch = useCallback(async () => {
     if (!owner || !repo) return;
     try {
-      const res = await fetch(`${getApiBase(decodedRepoId)}/analysis/${owner}/${repo}/architecture`);
+      const token = await getToken();
+      const res = await fetchApi(`${getApiBase(decodedRepoId)}/analysis/${owner}/${repo}/architecture`, {}, token);
       if (!res.ok) return;
       const data = await res.json();
       setArchMap(data.content ?? data);
@@ -53,7 +56,8 @@ export default function AnimatedPage() {
   const fetchSequences = useCallback(async () => {
     if (!owner || !repo) return;
     try {
-      const res = await fetch(`${getApiBase(decodedRepoId)}/animated/${owner}/${repo}`);
+      const token = await getToken();
+      const res = await fetchApi(`${getApiBase(decodedRepoId)}/animated/${owner}/${repo}`, {}, token);
       if (!res.ok) return;
       const data = await res.json();
       setSequences(data.sequences || []);
@@ -75,11 +79,11 @@ export default function AnimatedPage() {
     try {
       setGenerating(true);
       setError(null);
-      const res = await fetch(`${getApiBase(decodedRepoId)}/animated/${owner}/${repo}/generate`, {
+      const token = await getToken();
+      const res = await fetchApi(`${getApiBase(decodedRepoId)}/animated/${owner}/${repo}/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fresherMode }),
-      });
+      }, token);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setSequences(data.sequences || []);
@@ -94,11 +98,11 @@ export default function AnimatedPage() {
     try {
       setExplaining(true);
       setExplanation(null);
-      const res = await fetch(`${getApiBase(decodedRepoId)}/animated/${owner}/${repo}/explain-node`, {
+      const token = await getToken();
+      const res = await fetchApi(`${getApiBase(decodedRepoId)}/animated/${owner}/${repo}/explain-node`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nodeId, fresherMode }),
-      });
+      }, token);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       let text = data.explanation || "No explanation available.";
@@ -106,11 +110,10 @@ export default function AnimatedPage() {
       // Translate if non-English
       if (language !== "en") {
         try {
-          const tRes = await fetch(`${getApiBase(decodedRepoId)}/i18n/translate`, {
+          const tRes = await fetchApi(`${getApiBase(decodedRepoId)}/i18n/translate`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text, targetLanguage: language, repoId: decodedRepoId, fresherMode }),
-          });
+          }, token);
           if (tRes.ok) {
             const tData = await tRes.json();
             text = tData.translatedText || text;

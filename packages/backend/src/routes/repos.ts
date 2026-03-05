@@ -1,4 +1,5 @@
 import { Router, type Router as RouterType } from "express";
+import { requireAuthMiddleware } from "../middleware/auth.js";
 import {
   getRepoById,
   getReposByUser,
@@ -8,10 +9,11 @@ import { runArchitectureAnalysis } from "../services/analysisOrchestrator.js";
 
 export const repoRoutes: RouterType = Router();
 
-// GET /api/repos — list connected repos for the user
-repoRoutes.get("/", async (req, res) => {
+repoRoutes.get("/", requireAuthMiddleware, async (req: any, res) => {
   try {
-    const userId = (req.query.userId as string) || undefined;
+    const userId = req.auth?.userId;
+    // Fall back to listing all repos if we're in a demo/no-auth situation that slipped through, 
+    // though requireAuthMiddleware should catch it.
     const repos = userId ? await getReposByUser(userId) : await listAllRepos();
     res.json({ repos });
   } catch (error) {
@@ -21,14 +23,17 @@ repoRoutes.get("/", async (req, res) => {
 });
 
 // GET /api/repos/:owner/:repo — get repo details
-repoRoutes.get("/:owner/:repo", async (req, res) => {
+repoRoutes.get("/:owner/:repo", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   try {
     const repo = await getRepoById(repoId);
-    if (!repo) {
+    
+    // Ensure the user requesting this has access
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
       res.status(404).json({ repoId, error: "Repository not found" });
       return;
     }
+    
     res.json(repo);
   } catch (error) {
     console.error(`[route] Failed to get repo ${repoId}:`, error);
@@ -37,9 +42,17 @@ repoRoutes.get("/:owner/:repo", async (req, res) => {
 });
 
 // POST /api/repos/:owner/:repo/analyze — trigger analysis
-repoRoutes.post("/:owner/:repo/analyze", async (req, res) => {
+repoRoutes.post("/:owner/:repo/analyze", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   try {
+    const repo = await getRepoById(repoId);
+    
+    // Ensure the user requesting this has access
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     res.json({ repoId, status: "analysis_queued" });
 
     // Run analysis in background

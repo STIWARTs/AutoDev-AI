@@ -7,6 +7,8 @@ import type { AnimationSequence } from "@autodev/shared";
 import { invokeBedrock } from "../services/bedrock.js";
 import { getArchitectureAnalysis } from "../services/analysisOrchestrator.js";
 import { getAnalysisOutput, uploadAnalysisOutput, getLatestCodeIndex } from "../services/s3.js";
+import { getRepoById } from "../services/dynamodb.js";
+import { requireAuthMiddleware } from "../middleware/auth.js";
 import { cacheThroughAsync } from "../services/cache.js";
 import {
   ANIMATED_FLOW_SYSTEM_PROMPT,
@@ -31,10 +33,16 @@ function parseJson<T>(text: string): T {
 }
 
 // GET /api/animated/:owner/:repo — get animation sequences for a repo
-animatedRoutes.get("/:owner/:repo", async (req, res) => {
+animatedRoutes.get("/:owner/:repo", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     // Try S3 first (pre-generated sequences)
     const fromS3 = await getAnalysisOutput<AnimationSequence[]>(
       repoId,
@@ -53,10 +61,16 @@ animatedRoutes.get("/:owner/:repo", async (req, res) => {
 });
 
 // POST /api/animated/:owner/:repo/generate — generate animation sequences
-animatedRoutes.post("/:owner/:repo/generate", async (req, res) => {
+animatedRoutes.post("/:owner/:repo/generate", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     // Get architecture analysis (required)
     const architecture = await getArchitectureAnalysis(repoId);
     if (!architecture) {
@@ -94,7 +108,7 @@ animatedRoutes.post("/:owner/:repo/generate", async (req, res) => {
 });
 
 // POST /api/animated/:owner/:repo/explain-node — explain a specific node on click
-animatedRoutes.post("/:owner/:repo/explain-node", async (req, res) => {
+animatedRoutes.post("/:owner/:repo/explain-node", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   const { nodeId } = req.body as { nodeId: string };
 
@@ -104,6 +118,12 @@ animatedRoutes.post("/:owner/:repo/explain-node", async (req, res) => {
   }
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     const explanation = await cacheThroughAsync(
       "animation",
       repoId,
@@ -150,7 +170,7 @@ animatedRoutes.post("/:owner/:repo/explain-node", async (req, res) => {
           { model: "haiku", maxTokens: 2048 }
         );
 
-        return parseJson(raw);
+        return parseJson(raw) as any;
       },
       3600 // cache for 1 hour
     );

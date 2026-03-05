@@ -7,8 +7,9 @@ import type { Walkthrough } from "@autodev/shared";
 import { invokeBedrock } from "../services/bedrock.js";
 import { getArchitectureAnalysis } from "../services/analysisOrchestrator.js";
 import { getLatestCodeIndex } from "../services/s3.js";
-import { getAnalysis, putAnalysis } from "../services/dynamodb.js";
+import { getAnalysis, putAnalysis, getRepoById } from "../services/dynamodb.js";
 import { getAnalysisOutput, uploadAnalysisOutput } from "../services/s3.js";
+import { requireAuthMiddleware } from "../middleware/auth.js";
 import {
   WALKTHROUGH_SYSTEM_PROMPT,
   WALKTHROUGH_USER_PROMPT,
@@ -17,9 +18,15 @@ import {
 export const walkthroughRoutes: RouterType = Router();
 
 // GET /api/walkthroughs/:owner/:repo — list all walkthroughs for a repo
-walkthroughRoutes.get("/:owner/:repo", async (req, res) => {
+walkthroughRoutes.get("/:owner/:repo", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     // Try S3 first (pre-generated walkthroughs)
     const fromS3 = await getAnalysisOutput<Walkthrough[]>(repoId, "walkthroughs");
     if (fromS3 && fromS3.length > 0) {
@@ -38,7 +45,7 @@ walkthroughRoutes.get("/:owner/:repo", async (req, res) => {
 });
 
 // POST /api/walkthroughs/:owner/:repo — generate a custom walkthrough from a question
-walkthroughRoutes.post("/:owner/:repo", async (req, res) => {
+walkthroughRoutes.post("/:owner/:repo", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   const { question } = req.body as { question: string };
 
@@ -48,6 +55,12 @@ walkthroughRoutes.post("/:owner/:repo", async (req, res) => {
   }
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     // Get architecture context
     const architecture = await getArchitectureAnalysis(repoId);
     const architectureContext = architecture
@@ -109,11 +122,17 @@ walkthroughRoutes.post("/:owner/:repo", async (req, res) => {
 });
 
 // GET /api/walkthroughs/:owner/:repo/:walkthroughId — get a specific walkthrough
-walkthroughRoutes.get("/:owner/:repo/:walkthroughId", async (req, res) => {
+walkthroughRoutes.get("/:owner/:repo/:walkthroughId", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   const { walkthroughId } = req.params;
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     const all = await getAnalysisOutput<Walkthrough[]>(repoId, "walkthroughs");
     const walkthrough = all?.find((w) => w.id === walkthroughId);
 

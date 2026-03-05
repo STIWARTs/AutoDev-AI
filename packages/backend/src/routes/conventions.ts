@@ -7,8 +7,9 @@ import type { Convention } from "@autodev/shared";
 import { invokeBedrock } from "../services/bedrock.js";
 import { getArchitectureAnalysis } from "../services/analysisOrchestrator.js";
 import { getLatestCodeIndex } from "../services/s3.js";
-import { getAnalysis, putAnalysis } from "../services/dynamodb.js";
+import { getAnalysis, putAnalysis, getRepoById } from "../services/dynamodb.js";
 import { getAnalysisOutput, uploadAnalysisOutput } from "../services/s3.js";
+import { requireAuthMiddleware } from "../middleware/auth.js";
 import {
   CONVENTIONS_SYSTEM_PROMPT,
   CONVENTIONS_USER_PROMPT,
@@ -18,9 +19,15 @@ import { buildKeyFileContents } from "../prompts/architecture.js";
 export const conventionRoutes: RouterType = Router();
 
 // GET /api/conventions/:owner/:repo — get detected conventions
-conventionRoutes.get("/:owner/:repo", async (req, res) => {
+conventionRoutes.get("/:owner/:repo", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     // Try S3 first
     const fromS3 = await getAnalysisOutput<Convention[]>(repoId, "conventions");
     if (fromS3 && fromS3.length > 0) {
@@ -39,10 +46,16 @@ conventionRoutes.get("/:owner/:repo", async (req, res) => {
 });
 
 // POST /api/conventions/:owner/:repo — trigger convention detection
-conventionRoutes.post("/:owner/:repo", async (req, res) => {
+conventionRoutes.post("/:owner/:repo", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     // Respond immediately, run in background
     res.json({ repoId, status: "convention_detection_started" });
 

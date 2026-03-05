@@ -6,7 +6,8 @@ import Link from "next/link";
 import SkillRadar from "@/components/SkillRadar";
 import ProgressTimeline from "@/components/ProgressTimeline";
 import ModuleCompletionGrid from "@/components/ModuleCompletionGrid";
-import { getApiBase } from "@/lib/api";
+import { getApiBase, fetchApi } from "@/lib/api";
+import { useAuth, useUser } from "@clerk/nextjs";
 import type { DeveloperProgress } from "@autodev/shared";
 
 const DEFAULT_USER = "anonymous";
@@ -20,13 +21,17 @@ export default function ProgressPage() {
   const [progress, setProgress] = useState<DeveloperProgress | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { getToken } = useAuth();
+  const { user } = useUser();
 
   const fetchProgress = useCallback(async () => {
     if (!owner || !repo) return;
     try {
       setLoading(true);
-      const res = await fetch(
-        `${getApiBase(decodedRepoId)}/progress/${owner}/${repo}/${DEFAULT_USER}`
+      const userId = user?.id || DEFAULT_USER;
+      const token = await getToken();
+      const res = await fetchApi(
+        `${getApiBase(decodedRepoId)}/progress/${owner}/${repo}/${userId}`, {}, token
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: DeveloperProgress = await res.json();

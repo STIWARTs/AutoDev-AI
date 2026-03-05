@@ -42,4 +42,26 @@ export function apiUrl(repoId: string, ...pathSegments: string[]): string {
   return `${base}/${segments}`;
 }
 
+/**
+ * Perform a fetch request with an optionally provided Clerk authentication token.
+ * Automatically handles the Authorization header if the token is present.
+ */
+export async function fetchApi(url: string, options: RequestInit = {}, token?: string | null): Promise<Response> {
+  const headers = new Headers(options.headers || {});
+  
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  
+  // Default to application/json for POST/PUT if body exists and content-type isn't manually set
+  if (options.body && typeof options.body === 'string' && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  return fetch(url, {
+    ...options,
+    headers,
+  });
+}
+
 export { API_BASE };

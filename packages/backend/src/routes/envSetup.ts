@@ -5,16 +5,23 @@
 import { Router, type Router as RouterType } from "express";
 import type { EnvSetupGuide } from "@autodev/shared";
 import { getLatestCodeIndex } from "../services/s3.js";
-import { getAnalysis, putAnalysis } from "../services/dynamodb.js";
+import { getAnalysis, putAnalysis, getRepoById } from "../services/dynamodb.js";
 import { getAnalysisOutput, uploadAnalysisOutput } from "../services/s3.js";
+import { requireAuthMiddleware } from "../middleware/auth.js";
 import { analyzeEnvironmentSetup } from "../services/envAnalyzer.js";
 
 export const envSetupRoutes: RouterType = Router();
 
 // GET /api/env-setup/:owner/:repo — get environment setup guide
-envSetupRoutes.get("/:owner/:repo", async (req, res) => {
+envSetupRoutes.get("/:owner/:repo", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     // Try S3 first
     const fromS3 = await getAnalysisOutput<EnvSetupGuide>(repoId, "env-setup");
     if (fromS3) {
@@ -37,10 +44,16 @@ envSetupRoutes.get("/:owner/:repo", async (req, res) => {
 });
 
 // POST /api/env-setup/:owner/:repo — trigger environment setup analysis
-envSetupRoutes.post("/:owner/:repo", async (req, res) => {
+envSetupRoutes.post("/:owner/:repo", requireAuthMiddleware, async (req: any, res) => {
   const repoId = `${req.params.owner}/${req.params.repo}`;
 
   try {
+    const repo = await getRepoById(repoId);
+    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+      res.status(404).json({ repoId, error: "Repository not found" });
+      return;
+    }
+
     // Respond immediately
     res.json({ repoId, status: "env_setup_analysis_started" });
 

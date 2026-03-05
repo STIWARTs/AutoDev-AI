@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import {
   Sparkles,
   ChevronDown,
@@ -106,7 +106,7 @@ const DEMO_STEPS: DemoStep[] = [
   },
 ];
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 16 },
   visible: (i: number = 0) => ({
     opacity: 1,
@@ -115,7 +115,7 @@ const fadeUp = {
   }),
 };
 
-const stagger = {
+const stagger: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.08 } },
 };
