@@ -3,23 +3,21 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence, Variants } from "framer-motion";
 import {
   RefreshCw,
-  Plus,
   Github,
   AlertCircle,
   Loader2,
   FolderGit2,
-  Code2,
-  LayoutDashboard,
   Play,
   ChevronRight,
+  LayoutDashboard,
+  Code2,
+  Plus,
+  GitBranch,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { fetchApi } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 
@@ -33,24 +31,16 @@ interface RepoItem {
   techStack?: Record<string, string | undefined>;
 }
 
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: (i: number = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-  }),
-};
-
-const stagger: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.05 } },
+const STATUS = {
+  completed: { label: "Completed", color: "text-emerald-400", dot: "bg-emerald-400", border: "border-emerald-400/20", bg: "bg-emerald-400/5" },
+  analyzing: { label: "Analyzing", color: "text-amber-400",   dot: "bg-amber-400 animate-pulse", border: "border-amber-400/20", bg: "bg-amber-400/5" },
+  failed:    { label: "Failed",    color: "text-red-400",     dot: "bg-red-400",   border: "border-red-400/20",   bg: "bg-red-400/5"   },
+  pending:   { label: "Pending",   color: "text-brand-muted", dot: "bg-brand-muted", border: "border-brand-border", bg: "bg-brand-surface" },
 };
 
 function DashboardContent() {
   const searchParams = useSearchParams();
   const isDemo = searchParams.get("demo") === "true";
-
   const [repos, setRepos] = useState<RepoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +61,7 @@ function DashboardContent() {
     } finally {
       setLoading(false);
     }
-  }, [isDemo]);
+  }, [isDemo, getToken]);
 
   useEffect(() => {
     fetchRepos();
@@ -79,212 +69,234 @@ function DashboardContent() {
     return () => clearInterval(interval);
   }, [fetchRepos]);
 
-  const statusConfig: Record<string, { classes: string; dot: string }> = {
-    completed: { classes: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", dot: "bg-emerald-400" },
-    analyzing: { classes: "text-amber-400 bg-amber-400/10 border-amber-400/20", dot: "bg-amber-400 animate-pulse" },
-    failed: { classes: "text-red-400 bg-red-400/10 border-red-400/20", dot: "bg-red-400" },
-    pending: { classes: "text-brand-muted bg-brand-surface border-brand-border", dot: "bg-brand-muted" },
-  };
-
   const demoSuffix = isDemo ? "?demo=true" : "";
 
   return (
-    <div className="min-h-screen bg-brand-bg font-body selection:bg-brand-DEFAULT/30">
-      {/* Demo banner */}
-      <AnimatePresence>
-        {isDemo && (
-          <motion.div
-            initial={{ y: -40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -40, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-50 bg-brand-DEFAULT text-brand-bg text-center py-2 text-sm font-semibold tracking-wide border-b border-brand-border shadow-sm flex items-center justify-center gap-3"
-          >
-            <FolderGit2 className="w-4 h-4" />
-            <span>Demo Mode — Exploring pre-analyzed repositories</span>
-            <Link href="/dashboard" className="ml-2 underline opacity-80 hover:opacity-100 transition-opacity">Exit</Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div className="flex min-h-screen bg-brand-bg font-body">
 
-      {/* Sidebar */}
-      <nav className={`fixed left-0 ${isDemo ? "top-10" : "top-0"} w-[260px] h-full bg-brand-surface border-r border-brand-border flex flex-col z-40`}>
-        <div className="px-6 py-5">
-          <Link href="/" className="flex items-center gap-3 cursor-pointer group">
-            <div className="w-8 h-8 rounded-sm bg-brand-DEFAULT flex items-center justify-center">
-              <Code2 className="w-4 h-4 text-brand-bg" />
+      {/* Grid texture */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(226,90,52,0.4) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(226,90,52,0.4) 1px, transparent 1px)
+          `,
+          backgroundSize: "80px 80px",
+        }}
+      />
+
+      {/* ── Sidebar ────────────────────────────────────────────────────────── */}
+      <nav className="fixed left-0 top-0 w-[248px] h-full flex flex-col z-40 bg-brand-bg border-r border-brand-border">
+
+        {/* Logo */}
+        <div className="px-5 pt-6 pb-5">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-7 h-7 bg-brand-DEFAULT flex items-center justify-center flex-shrink-0">
+              <Code2 className="w-3.5 h-3.5 text-brand-bg" />
             </div>
-            <span className="text-xl font-heading font-bold text-brand-text">AutoDev</span>
+            <span className="font-heading font-semibold text-brand-text text-base tracking-tight">AutoDev</span>
           </Link>
         </div>
 
-        <Separator className="bg-brand-border" />
+        <div className="h-px bg-brand-border mx-5" />
 
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="space-y-1">
-            <Link
-              href={`/dashboard${demoSuffix}`}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-mono transition-colors duration-200 cursor-pointer bg-brand-card border border-brand-border text-brand-DEFAULT relative"
-            >
-              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-brand-DEFAULT" />
-              <LayoutDashboard className="w-4 h-4" />
-              Repositories
-            </Link>
-          </div>
+        {/* Nav */}
+        <div className="flex-1 px-3 py-3">
+          <p className="px-3 mb-2 text-[9px] uppercase tracking-widest text-brand-muted font-semibold">Workspace</p>
+          <Link
+            href={`/dashboard${demoSuffix}`}
+            className="flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium text-brand-DEFAULT bg-brand-DEFAULT/5 border border-brand-DEFAULT/20 relative"
+          >
+            <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand-DEFAULT" />
+            <LayoutDashboard className="w-[14px] h-[14px] text-brand-DEFAULT" />
+            Repositories
+          </Link>
         </div>
 
-        <div className="px-6 py-4 border-t border-brand-border bg-brand-bg">
-          <div className="flex items-center justify-between">
+        {/* Footer */}
+        <div className="p-4 border-t border-brand-border">
+          <div className="flex items-center justify-between px-3">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-xs font-mono text-brand-muted uppercase tracking-wider">Connected</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span className="text-[10px] font-mono text-brand-muted uppercase tracking-wider">Connected</span>
             </div>
-            <span className="text-xs font-mono text-brand-muted border border-brand-border px-1.5 py-0.5 rounded-sm">V0.1.0</span>
+            <span className="text-[10px] font-mono text-brand-muted border border-brand-border px-1.5 py-0.5">v0.1.0</span>
           </div>
         </div>
       </nav>
 
-      {/* Main content */}
-      <main className={`ml-[260px] p-10 ${isDemo ? "pt-20" : ""}`}>
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={stagger}
-        >
-          <motion.div variants={fadeUp} className="flex items-start justify-between mb-10 pb-6 border-b border-brand-border">
-            <div>
-              <h1 className="text-4xl font-heading font-semibold text-brand-text tracking-tight">
-                {isDemo ? "Sample Repositories" : "Connected Repositories"}
-              </h1>
-              <p className="text-brand-muted font-mono text-sm mt-3">
-                {isDemo ? "Explore pre-analyzed repos to see AutoDev in action." : "Manage your connected GitHub repositories."}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchRepos}
-                className="bg-brand-surface border-brand-border text-brand-text hover:border-brand-muted transition-colors rounded-sm h-10 px-4"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" /> Refresh
-              </Button>
-              {!isDemo && (
-                <a
-                  href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "https://github.com/apps/autodev/installations/new"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center whitespace-nowrap bg-brand-text text-brand-bg hover:bg-brand-DEFAULT transition-colors border-0 rounded-sm h-10 px-5 font-semibold text-sm"
-                >
-                  <Plus className="w-4 h-4 mr-2" /> Connect Repo
-                </a>
-              )}
-            </div>
-          </motion.div>
+      {/* ── Main ──────────────────────────────────────────────────────────── */}
+      <main className="ml-[248px] flex-1 relative z-10">
 
+        {/* Demo banner */}
+        {isDemo && (
+          <div className="flex items-center justify-center gap-3 py-2 text-xs font-mono bg-brand-DEFAULT/5 border-b border-brand-DEFAULT/20 text-brand-DEFAULT">
+            <Zap className="w-3 h-3" />
+            Demo Mode — Exploring pre-analyzed repositories
+            <Link href="/dashboard" className="ml-2 underline opacity-60 hover:opacity-100 transition-opacity">Exit</Link>
+          </div>
+        )}
+
+        {/* Header */}
+        <div className="flex items-start justify-between px-8 py-6 border-b border-brand-border bg-brand-bg sticky top-0 z-30">
+          <div>
+            <h1 className="text-xl font-heading font-semibold text-brand-text tracking-tight">
+              {isDemo ? "Sample Repositories" : "Connected Repositories"}
+            </h1>
+            <p className="text-brand-muted text-xs mt-1 font-mono">
+              {isDemo ? "Explore pre-analyzed repos to see AutoDev in action." : "Manage your connected GitHub repositories."}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchRepos}
+              className="bg-transparent border-brand-border text-brand-muted hover:border-brand-muted hover:text-brand-text rounded-none h-8 px-3 text-xs font-mono transition-colors"
+            >
+              <RefreshCw className="w-3 h-3 mr-1.5" /> Refresh
+            </Button>
+            {!isDemo && (
+              <a
+                href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "https://github.com/apps/autodev/installations/new"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg transition-colors px-4 h-8 text-xs font-semibold rounded-none"
+              >
+                <Plus className="w-3.5 h-3.5" /> Connect Repo
+              </a>
+            )}
+          </div>
+        </div>
+
+        <div className="p-8">
+          {/* Error */}
           {error && (
-            <motion.div variants={fadeUp} className="mb-8">
-              <Card className="bg-red-950/20 border-red-500/30 rounded-sm shadow-none">
-                <CardContent className="p-4 flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 shrink-0 text-red-400" />
-                  <span className="text-red-300 font-mono text-sm">Failed to load repositories: {error}</span>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <div className="flex items-center gap-3 p-4 border border-red-500/20 bg-red-500/5 mb-6 text-sm text-red-400 font-mono">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              Failed to load repositories: {error}
+            </div>
           )}
 
+          {/* Loading */}
           {loading && repos.length === 0 ? (
-            <motion.div variants={fadeUp} className="text-center py-32">
-              <Loader2 className="w-8 h-8 text-brand-DEFAULT animate-spin mx-auto mb-4" />
-              <p className="text-brand-muted font-mono text-sm tracking-wide uppercase">Fetching data...</p>
-            </motion.div>
+            <div className="flex flex-col items-center justify-center py-40">
+              <Loader2 className="w-6 h-6 text-brand-DEFAULT animate-spin mb-4" />
+              <p className="text-brand-muted font-mono text-xs uppercase tracking-widest">Fetching data…</p>
+            </div>
+
           ) : repos.length === 0 ? (
-            <motion.div variants={fadeUp}>
-              <Card className="bg-brand-surface border border-brand-border border-dashed rounded-sm shadow-none">
-                <CardContent className="text-center py-24 flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-sm bg-brand-card border border-brand-border flex items-center justify-center mb-6">
-                    <FolderGit2 className="w-8 h-8 text-brand-muted" />
-                  </div>
-                  <h3 className="text-brand-text text-xl mb-2 font-heading font-semibold">No repositories found.</h3>
-                  <p className="text-brand-muted font-mono text-sm mb-8 max-w-md text-center">
-                    Install the AutoDev GitHub App to begin analyzing your codebase structure.
-                  </p>
-                  <div className="flex gap-4 justify-center">
-                    <a
-                      href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "https://github.com/apps/autodev/installations/new"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center whitespace-nowrap bg-brand-text text-brand-bg hover:bg-brand-DEFAULT transition-colors rounded-sm px-6 h-10 text-sm font-medium"
-                    >
-                      <Github className="w-4 h-4 mr-2" /> Install GitHub App
-                    </a>
-                    <Link href="/dashboard?demo=true">
-                      <Button variant="outline" className="bg-brand-card border-brand-border hover:border-brand-DEFAULT transition-colors rounded-sm px-6 text-brand-text">
-                        <Play className="w-4 h-4 mr-2" /> Try Demo Mode
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ) : (
-            <motion.div variants={stagger} className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-              {repos.map((repo, i) => {
-                const status = statusConfig[repo.analysisStatus] ?? statusConfig.pending;
-                return (
-                  <motion.div
-                    key={repo.repoId}
-                    variants={fadeUp}
-                    custom={i}
+            /* ── Empty state ──────────────────────────────────────────────── */
+            <div className="border border-brand-border border-dashed">
+              <div className="flex flex-col items-center text-center py-24 px-8">
+                {/* Icon */}
+                <div className="w-14 h-14 border border-brand-border bg-brand-surface flex items-center justify-center mb-6">
+                  <FolderGit2 className="w-6 h-6 text-brand-muted" />
+                </div>
+
+                <h3 className="font-heading text-xl font-semibold text-brand-text mb-2">No repositories found.</h3>
+                <p className="text-brand-muted font-mono text-sm mb-8 max-w-md leading-relaxed">
+                  Install the AutoDev GitHub App to begin analyzing your codebase structure.
+                </p>
+
+                <div className="flex items-center gap-3">
+                  <a
+                    href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "https://github.com/apps/autodev/installations/new"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg transition-colors px-5 py-2.5 text-sm font-medium rounded-none"
                   >
-                    <Link href={`/dashboard/${encodeURIComponent(repo.repoId)}${demoSuffix}`}>
-                      <Card className="group bg-brand-surface hover:bg-brand-card border-brand-border hover:border-brand-DEFAULT transition-all duration-200 cursor-pointer h-full rounded-sm shadow-none flex flex-col">
-                        <CardContent className="p-6 flex flex-col h-full relative">
-                          <div className="flex items-start justify-between mb-4 gap-4">
-                            <h3 className="font-heading font-semibold text-lg text-brand-text group-hover:text-brand-DEFAULT transition-colors duration-200 truncate flex-1 leading-tight">
-                              {repo.repoId}
-                            </h3>
-                            <ChevronRight className="w-5 h-5 text-brand-muted group-hover:text-brand-DEFAULT group-hover:translate-x-1 transition-all duration-200 shrink-0" />
-                          </div>
+                    <Github className="w-4 h-4" /> Install GitHub App
+                  </a>
+                  <Link href="/dashboard?demo=true">
+                    <button className="inline-flex items-center gap-2 bg-transparent border border-brand-border text-brand-text hover:border-brand-DEFAULT hover:text-brand-DEFAULT transition-colors px-5 py-2.5 text-sm font-medium rounded-none cursor-pointer">
+                      <Play className="w-4 h-4" /> Try Demo Mode
+                    </button>
+                  </Link>
+                </div>
 
-                          <div className="flex items-center gap-3 mb-6">
-                            <Badge variant="outline" className={`font-mono text-[10px] uppercase tracking-wider rounded-sm px-2 py-0.5 ${status.classes} border`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${status.dot} mr-1.5`} />
-                              {repo.analysisStatus}
-                            </Badge>
-                            {repo.fileCount && (
-                              <span className="font-mono text-xs text-brand-muted">{repo.fileCount} files</span>
-                            )}
-                          </div>
+                {/* Feature grid */}
+                <div className="mt-12 grid grid-cols-3 gap-px border border-brand-border max-w-md w-full">
+                  {[
+                    { icon: Code2, label: "Architecture Map", desc: "Module dependency graph" },
+                    { icon: GitBranch, label: "Q&A", desc: "Ask about your codebase" },
+                    { icon: Zap, label: "Walkthroughs", desc: "Step-by-step code guides" },
+                  ].map(({ icon: Icon, label, desc }) => (
+                    <div key={label} className="flex flex-col items-center text-center p-5 bg-brand-surface">
+                      <Icon className="w-4 h-4 text-brand-DEFAULT mb-2" />
+                      <p className="text-xs font-semibold text-brand-text mb-1">{label}</p>
+                      <p className="text-[11px] text-brand-muted font-mono">{desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-                          {repo.techStack && Object.keys(repo.techStack).length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-4 mt-auto">
-                              {Object.entries(repo.techStack)
-                                .filter(([, v]) => v)
-                                .slice(0, 4)
-                                .map(([k, v]) => (
-                                  <span key={k} className="font-mono text-[10px] bg-brand-bg px-2 py-1 text-brand-muted border border-brand-border rounded-sm">
-                                    {v}
-                                  </span>
-                                ))}
-                            </div>
-                          )}
+          ) : (
+            /* ── Repository grid ───────────────────────────────────────────── */
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+              {repos.map((repo) => {
+                const s = STATUS[repo.analysisStatus] ?? STATUS.pending;
+                return (
+                  <Link
+                    key={repo.repoId}
+                    href={`/dashboard/${encodeURIComponent(repo.repoId)}${demoSuffix}`}
+                  >
+                    <div className="group border border-brand-border bg-brand-surface hover:border-brand-DEFAULT/40 hover:bg-brand-card transition-all duration-200 cursor-pointer h-full flex flex-col p-5 relative">
+                      {/* Hover accent line top */}
+                      <div className="absolute top-0 left-0 right-0 h-[1px] bg-brand-DEFAULT scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
 
-                          {repo.lastAnalyzedAt && (
-                            <div className="mt-auto pt-4 border-t border-brand-border/50">
-                              <p className="font-mono text-[10px] text-brand-muted uppercase tracking-wider">
-                                ANALYZED ON • {new Date(repo.lastAnalyzedAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  </motion.div>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="w-9 h-9 bg-brand-card border border-brand-border flex items-center justify-center flex-shrink-0">
+                          <FolderGit2 className="w-4 h-4 text-brand-muted" />
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-brand-muted group-hover:text-brand-DEFAULT group-hover:translate-x-0.5 transition-all duration-200" />
+                      </div>
+
+                      <h3 className="font-heading font-semibold text-sm text-brand-text group-hover:text-brand-DEFAULT transition-colors leading-tight mb-3">
+                        {repo.repoId}
+                      </h3>
+
+                      {/* Status */}
+                      <div className="flex items-center gap-2.5 mb-4">
+                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider px-2 py-1 border ${s.color} ${s.border} ${s.bg}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                          {s.label}
+                        </span>
+                        {repo.fileCount && (
+                          <span className="text-[11px] font-mono text-brand-muted">{repo.fileCount.toLocaleString()} files</span>
+                        )}
+                      </div>
+
+                      {/* Tech pills */}
+                      {repo.techStack && Object.keys(repo.techStack).length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-4 mt-auto">
+                          {Object.entries(repo.techStack)
+                            .filter(([, v]) => v)
+                            .slice(0, 4)
+                            .map(([k, v]) => (
+                              <span key={k} className="font-mono text-[10px] bg-brand-bg border border-brand-border px-2 py-0.5 text-brand-muted">
+                                {v}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+
+                      {repo.lastAnalyzedAt && (
+                        <div className="mt-auto pt-3 border-t border-brand-border">
+                          <p className="font-mono text-[10px] text-brand-muted uppercase tracking-wider">
+                            Analyzed • {new Date(repo.lastAnalyzedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
                 );
               })}
-            </motion.div>
+            </div>
           )}
-        </motion.div>
+        </div>
       </main>
     </div>
   );
@@ -295,7 +307,7 @@ export default function DashboardPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-brand-bg flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-brand-DEFAULT animate-spin" />
+          <Loader2 className="w-6 h-6 text-brand-DEFAULT animate-spin" />
         </div>
       }
     >

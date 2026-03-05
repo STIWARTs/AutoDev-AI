@@ -12,18 +12,18 @@ import {
   BarChart3,
   Users,
   ChevronLeft,
-  Zap,
+  Code2,
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { href: "", label: "Architecture Map", icon: Map },
-  { href: "/animated", label: "Animated Map", icon: Play },
-  { href: "/walkthroughs", label: "Walkthroughs", icon: BookOpen },
-  { href: "/conventions", label: "Conventions", icon: FileText },
-  { href: "/env-setup", label: "Env Setup", icon: Terminal },
-  { href: "/qa", label: "Q&A", icon: MessageCircle },
-  { href: "/progress", label: "My Progress", icon: BarChart3 },
-  { href: "/team", label: "Team", icon: Users },
+  { href: "",             label: "Architecture Map", icon: Map },
+  { href: "/animated",   label: "Animated Map",    icon: Play },
+  { href: "/walkthroughs", label: "Walkthroughs",  icon: BookOpen },
+  { href: "/conventions", label: "Conventions",    icon: FileText },
+  { href: "/env-setup",  label: "Env Setup",       icon: Terminal },
+  { href: "/qa",         label: "Q&A",             icon: MessageCircle },
+  { href: "/progress",   label: "My Progress",     icon: BarChart3 },
+  { href: "/team",       label: "Team",            icon: Users },
 ];
 
 interface DemoDashboardLayoutProps {
@@ -46,36 +46,51 @@ export default function DemoDashboardLayout({
   const basePath = `/dashboard/${repoId}`;
 
   return (
-    <div className="flex min-h-screen bg-[#090b10]">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-64 flex flex-col border-r border-white/[0.05] bg-[#0c0f16]/95 backdrop-blur-xl z-40">
+    <div className="flex min-h-screen bg-brand-bg font-body">
+
+      {/* ── Subtle grid texture — same as landing page ── */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(226,90,52,0.4) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(226,90,52,0.4) 1px, transparent 1px)
+          `,
+          backgroundSize: "80px 80px",
+        }}
+      />
+
+      {/* ── Sidebar ──────────────────────────────────────────────────────── */}
+      <aside className="fixed left-0 top-0 h-full w-[248px] flex flex-col z-40 bg-brand-bg border-r border-brand-border">
+
         {/* Logo */}
-        <div className="px-5 pt-6 pb-4">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2.5 mb-5 group"
-          >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <Zap className="w-4 h-4 text-white" fill="white" />
+        <div className="px-5 pt-6 pb-5">
+          <Link href="/dashboard" className="flex items-center gap-2.5 group mb-5">
+            <div className="w-7 h-7 bg-brand-DEFAULT flex items-center justify-center flex-shrink-0">
+              <Code2 className="w-3.5 h-3.5 text-brand-bg" />
             </div>
-            <span className="font-bold text-white text-sm tracking-tight">AutoDev</span>
+            <span className="font-heading font-semibold text-brand-text text-base tracking-tight">
+              AutoDev
+            </span>
           </Link>
 
           {/* Repo badge */}
           <Link
             href="/dashboard"
-            className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-colors group"
+            className="flex items-center gap-2 px-3 py-2.5 border border-brand-border hover:border-brand-DEFAULT/40 transition-colors duration-200 group"
           >
-            <ChevronLeft className="w-3.5 h-3.5 text-brand-muted group-hover:text-white transition-colors" />
+            <ChevronLeft className="w-3 h-3 text-brand-muted group-hover:text-brand-DEFAULT transition-colors flex-shrink-0" />
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] text-brand-muted uppercase tracking-widest font-medium">Repository</p>
-              <p className="text-xs text-brand-text-secondary font-medium truncate mt-0.5">{decodedRepoId}</p>
+              <p className="text-[9px] text-brand-muted uppercase tracking-widest font-medium">Repository</p>
+              <p className="text-xs text-brand-text font-medium truncate mt-0.5">{decodedRepoId}</p>
             </div>
           </Link>
         </div>
 
+        <div className="h-px bg-brand-border mx-5" />
+
         {/* Navigation */}
-        <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-3 space-y-px overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const href = `${basePath}${item.href}`;
             const isActive =
@@ -88,15 +103,21 @@ export default function DemoDashboardLayout({
               <Link
                 key={item.href}
                 href={href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group ${
+                className={`flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium transition-all duration-150 group relative ${
                   isActive
-                    ? "bg-indigo-500/15 text-indigo-300 border border-indigo-500/20"
-                    : "text-brand-text-secondary hover:bg-white/[0.04] hover:text-white"
+                    ? "text-brand-DEFAULT bg-brand-DEFAULT/5 border border-brand-DEFAULT/20"
+                    : "text-brand-muted hover:text-brand-text hover:bg-brand-surface"
                 }`}
               >
+                {/* Active left accent */}
+                {isActive && (
+                  <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand-DEFAULT" />
+                )}
                 <Icon
-                  className={`w-4 h-4 flex-shrink-0 transition-colors ${
-                    isActive ? "text-indigo-400" : "text-brand-muted group-hover:text-brand-text-secondary"
+                  className={`w-[14px] h-[14px] flex-shrink-0 transition-colors ${
+                    isActive
+                      ? "text-brand-DEFAULT"
+                      : "text-brand-muted group-hover:text-brand-muted"
                   }`}
                 />
                 {item.label}
@@ -105,29 +126,36 @@ export default function DemoDashboardLayout({
           })}
         </nav>
 
-        {/* Demo badge */}
-        <div className="p-4 border-t border-white/[0.05]">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <p className="text-xs text-amber-400 font-medium">Demo Mode</p>
+        {/* Demo Mode footer */}
+        <div className="p-4 border-t border-brand-border">
+          <div className="flex items-center gap-2 px-3 py-2 bg-brand-DEFAULT/5 border border-brand-DEFAULT/20">
+            <div className="w-1.5 h-1.5 bg-brand-DEFAULT rounded-full animate-pulse flex-shrink-0" />
+            <p className="text-[11px] text-brand-DEFAULT font-medium tracking-wide">Demo Mode</p>
           </div>
         </div>
       </aside>
 
-      {/* Main */}
-      <main className="ml-64 flex-1 p-8 min-h-screen">
-        {/* Page header */}
-        <div className="flex items-start justify-between mb-8">
+      {/* ── Main Content ─────────────────────────────────────────────────── */}
+      <main className="ml-[248px] flex-1 min-h-screen relative z-10">
+        {/* Top header bar */}
+        <div className="flex items-start justify-between px-8 py-6 border-b border-brand-border bg-brand-bg sticky top-0 z-30">
           <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">{title}</h1>
+            <h1 className="text-xl font-heading font-semibold text-brand-text tracking-tight">
+              {title}
+            </h1>
             {subtitle && (
-              <p className="text-brand-text-secondary text-sm mt-1">{subtitle}</p>
+              <p className="text-brand-muted text-xs mt-1 font-mono">
+                {subtitle}
+              </p>
             )}
           </div>
-          {action && <div>{action}</div>}
+          {action && <div className="flex items-center gap-2">{action}</div>}
         </div>
 
-        {children}
+        {/* Page body */}
+        <div className="p-8">
+          {children}
+        </div>
       </main>
     </div>
   );
