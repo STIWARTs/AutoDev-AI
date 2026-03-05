@@ -3,23 +3,21 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence, Variants } from "framer-motion";
 import {
   RefreshCw,
-  Plus,
   Github,
   AlertCircle,
   Loader2,
   FolderGit2,
-  Code2,
-  LayoutDashboard,
   Play,
   ChevronRight,
+  LayoutDashboard,
+  Zap,
+  Plus,
+  Sparkles,
+  Code2,
+  GitBranch,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { fetchApi } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 
@@ -33,18 +31,39 @@ interface RepoItem {
   techStack?: Record<string, string | undefined>;
 }
 
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: (i: number = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-  }),
-};
-
-const stagger: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.05 } },
+const STATUS_CONFIG = {
+  completed: {
+    label: "Ready",
+    text: "#34d399",
+    bg: "rgba(52,211,153,0.08)",
+    border: "rgba(52,211,153,0.2)",
+    dot: "#34d399",
+    glow: "rgba(52,211,153,0.3)",
+  },
+  analyzing: {
+    label: "Analyzing",
+    text: "#fbbf24",
+    bg: "rgba(251,191,36,0.08)",
+    border: "rgba(251,191,36,0.2)",
+    dot: "#fbbf24",
+    glow: "rgba(251,191,36,0.3)",
+  },
+  failed: {
+    label: "Failed",
+    text: "#fb7185",
+    bg: "rgba(251,113,133,0.08)",
+    border: "rgba(251,113,133,0.2)",
+    dot: "#fb7185",
+    glow: "rgba(251,113,133,0.3)",
+  },
+  pending: {
+    label: "Pending",
+    text: "#9ba8c5",
+    bg: "rgba(155,168,197,0.06)",
+    border: "rgba(155,168,197,0.15)",
+    dot: "#4f5e80",
+    glow: "transparent",
+  },
 };
 
 function DashboardContent() {
@@ -71,7 +90,7 @@ function DashboardContent() {
     } finally {
       setLoading(false);
     }
-  }, [isDemo]);
+  }, [isDemo, getToken]);
 
   useEffect(() => {
     fetchRepos();
@@ -79,212 +98,316 @@ function DashboardContent() {
     return () => clearInterval(interval);
   }, [fetchRepos]);
 
-  const statusConfig: Record<string, { classes: string; dot: string }> = {
-    completed: { classes: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", dot: "bg-emerald-400" },
-    analyzing: { classes: "text-amber-400 bg-amber-400/10 border-amber-400/20", dot: "bg-amber-400 animate-pulse" },
-    failed: { classes: "text-red-400 bg-red-400/10 border-red-400/20", dot: "bg-red-400" },
-    pending: { classes: "text-brand-muted bg-brand-surface border-brand-border", dot: "bg-brand-muted" },
-  };
-
   const demoSuffix = isDemo ? "?demo=true" : "";
 
   return (
-    <div className="min-h-screen bg-brand-bg font-body selection:bg-brand-DEFAULT/30">
-      {/* Demo banner */}
-      <AnimatePresence>
-        {isDemo && (
-          <motion.div
-            initial={{ y: -40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -40, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-50 bg-brand-DEFAULT text-brand-bg text-center py-2 text-sm font-semibold tracking-wide border-b border-brand-border shadow-sm flex items-center justify-center gap-3"
-          >
-            <FolderGit2 className="w-4 h-4" />
-            <span>Demo Mode — Exploring pre-analyzed repositories</span>
-            <Link href="/dashboard" className="ml-2 underline opacity-80 hover:opacity-100 transition-opacity">Exit</Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div className="flex min-h-screen" style={{ background: "var(--bg-mid)" }}>
 
-      {/* Sidebar */}
-      <nav className={`fixed left-0 ${isDemo ? "top-10" : "top-0"} w-[260px] h-full bg-brand-surface border-r border-brand-border flex flex-col z-40`}>
-        <div className="px-6 py-5">
-          <Link href="/" className="flex items-center gap-3 cursor-pointer group">
-            <div className="w-8 h-8 rounded-sm bg-brand-DEFAULT flex items-center justify-center">
-              <Code2 className="w-4 h-4 text-brand-bg" />
+      {/* ── Animated background orbs ─────────────────────────────────────── */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="orb orb-indigo animate-float" style={{ width: 600, height: 600, left: -200, top: -200, opacity: 0.08 }} />
+        <div className="orb orb-purple animate-float" style={{ width: 500, height: 500, right: -150, top: 100, opacity: 0.06, animationDelay: "2s" }} />
+        <div className="orb orb-cyan animate-float" style={{ width: 400, height: 400, left: "40%", bottom: -100, opacity: 0.05, animationDelay: "1s" }} />
+      </div>
+
+      {/* ── Sidebar ────────────────────────────────────────────────────────── */}
+      <nav className="fixed left-0 top-0 w-[220px] h-full flex flex-col z-40 sidebar">
+        <div className="h-[1px] w-full" style={{ background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.5), transparent)" }} />
+
+        {/* Logo */}
+        <div className="px-4 pt-5 pb-5">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "linear-gradient(135deg, #6366f1 0%, #7c3aed 100%)", boxShadow: "0 4px 16px rgba(99,102,241,0.4)" }}
+            >
+              <Zap className="w-4 h-4 text-white" fill="white" />
             </div>
-            <span className="text-xl font-heading font-bold text-brand-text">AutoDev</span>
+            <span className="font-heading font-semibold text-sm gradient-text-indigo">
+              AutoDev
+            </span>
           </Link>
         </div>
 
-        <Separator className="bg-brand-border" />
+        <div className="h-[1px] mx-4" style={{ background: "rgba(255,255,255,0.05)" }} />
 
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="space-y-1">
-            <Link
-              href={`/dashboard${demoSuffix}`}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-mono transition-colors duration-200 cursor-pointer bg-brand-card border border-brand-border text-brand-DEFAULT relative"
-            >
-              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-brand-DEFAULT" />
-              <LayoutDashboard className="w-4 h-4" />
-              Repositories
-            </Link>
-          </div>
+        {/* Nav items */}
+        <div className="flex-1 p-3 overflow-y-auto">
+          <p className="px-2 mb-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            Workspace
+          </p>
+          <Link
+            href={`/dashboard${demoSuffix}`}
+            className="nav-item"
+            style={{ background: "rgba(99,102,241,0.12)", color: "#a5b4fc", boxShadow: "inset 2px 0 0 rgba(99,102,241,0.7)" }}
+          >
+            <LayoutDashboard className="w-[15px] h-[15px]" style={{ color: "#818cf8" }} />
+            <span>Repositories</span>
+          </Link>
         </div>
 
-        <div className="px-6 py-4 border-t border-brand-border bg-brand-bg">
-          <div className="flex items-center justify-between">
+        {/* Footer */}
+        <div className="p-3 border-t" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
+          <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-xs font-mono text-brand-muted uppercase tracking-wider">Connected</span>
+              <div className="dot-live" />
+              <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9ba8c5" }}>Connected</span>
             </div>
-            <span className="text-xs font-mono text-brand-muted border border-brand-border px-1.5 py-0.5 rounded-sm">V0.1.0</span>
+            <span
+              className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+              style={{ background: "rgba(255,255,255,0.04)", color: "var(--text-muted)", border: "1px solid rgba(255,255,255,0.06)" }}
+            >
+              v0.1.0
+            </span>
           </div>
         </div>
       </nav>
 
-      {/* Main content */}
-      <main className={`ml-[260px] p-10 ${isDemo ? "pt-20" : ""}`}>
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={stagger}
+      {/* ── Main ────────────────────────────────────────────────────────────── */}
+      <main className="ml-[220px] flex-1 relative z-10">
+
+        {/* Demo Banner */}
+        {isDemo && (
+          <div
+            className="flex items-center justify-center gap-3 py-2.5 text-xs font-semibold"
+            style={{
+              background: "linear-gradient(90deg, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.15) 100%)",
+              borderBottom: "1px solid rgba(99,102,241,0.2)",
+              color: "#a5b4fc",
+            }}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Demo Mode — Exploring pre-analyzed repositories
+            <Link href="/dashboard" className="ml-2 underline opacity-70 hover:opacity-100 transition-opacity">
+              Exit
+            </Link>
+          </div>
+        )}
+
+        {/* Top bar */}
+        <div
+          className="sticky top-0 z-30 flex items-center justify-between px-8 py-4"
+          style={{
+            background: "rgba(8,12,24,0.9)",
+            backdropFilter: "blur(20px)",
+            borderBottom: "1px solid rgba(255,255,255,0.05)",
+          }}
         >
-          <motion.div variants={fadeUp} className="flex items-start justify-between mb-10 pb-6 border-b border-brand-border">
+          <div className="flex items-center gap-4">
+            <div className="page-header-line" />
             <div>
-              <h1 className="text-4xl font-heading font-semibold text-brand-text tracking-tight">
-                {isDemo ? "Sample Repositories" : "Connected Repositories"}
+              <h1 className="font-heading font-semibold text-lg tracking-tight" style={{ color: "var(--text-primary)" }}>
+                {isDemo ? "Demo Repositories" : "Connected Repositories"}
               </h1>
-              <p className="text-brand-muted font-mono text-sm mt-3">
-                {isDemo ? "Explore pre-analyzed repos to see AutoDev in action." : "Manage your connected GitHub repositories."}
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+                {isDemo ? "Pre-analyzed repos for exploring AutoDev." : "Manage your connected GitHub repositories."}
               </p>
             </div>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchRepos}
-                className="bg-brand-surface border-brand-border text-brand-text hover:border-brand-muted transition-colors rounded-sm h-10 px-4"
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={fetchRepos}
+              className="btn-ghost flex items-center gap-2 px-3 py-2 text-xs"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Refresh
+            </button>
+            {!isDemo && (
+              <a
+                href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "https://github.com/apps/autodev/installations/new"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary flex items-center gap-2 px-4 py-2 text-xs"
               >
-                <RefreshCw className="w-4 h-4 mr-2" /> Refresh
-              </Button>
-              {!isDemo && (
+                <Plus className="w-3.5 h-3.5" />
+                Connect Repo
+              </a>
+            )}
+          </div>
+        </div>
+
+        <div className="p-8">
+
+          {/* Error */}
+          {error && (
+            <div
+              className="flex items-center gap-3 p-4 rounded-xl mb-6 text-sm"
+              style={{ background: "rgba(251,113,133,0.08)", border: "1px solid rgba(251,113,133,0.2)", color: "#fb7185" }}
+            >
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>Failed to load repositories: {error}</span>
+            </div>
+          )}
+
+          {/* Loading */}
+          {loading && repos.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-40">
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 animate-glow-pulse"
+                style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)" }}
+              >
+                <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#818cf8" }} />
+              </div>
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>Fetching repositories…</p>
+            </div>
+
+          ) : repos.length === 0 ? (
+            /* ── Empty state ──────────────────────────────────────────────── */
+            <div className="flex flex-col items-center justify-center py-24">
+
+              {/* Glowing icon */}
+              <div className="relative mb-8">
+                <div
+                  className="w-20 h-20 rounded-2xl flex items-center justify-center animate-glow-pulse"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.12) 100%)",
+                    border: "1px solid rgba(99,102,241,0.2)",
+                    boxShadow: "0 0 40px rgba(99,102,241,0.12)",
+                  }}
+                >
+                  <FolderGit2 className="w-9 h-9" style={{ color: "#818cf8" }} />
+                </div>
+                <div
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center"
+                  style={{ background: "linear-gradient(135deg, #6366f1, #7c3aed)", boxShadow: "0 2px 8px rgba(99,102,241,0.4)" }}
+                >
+                  <Plus className="w-3 h-3 text-white" />
+                </div>
+              </div>
+
+              <h3 className="font-heading font-semibold text-xl mb-3" style={{ color: "var(--text-primary)" }}>
+                No repositories connected
+              </h3>
+              <p className="text-sm text-center mb-8 max-w-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                Install the AutoDev GitHub App to start analyzing your codebase structure, conventions, and architecture.
+              </p>
+
+              <div className="flex items-center gap-3">
                 <a
                   href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "https://github.com/apps/autodev/installations/new"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center whitespace-nowrap bg-brand-text text-brand-bg hover:bg-brand-DEFAULT transition-colors border-0 rounded-sm h-10 px-5 font-semibold text-sm"
+                  className="btn-primary flex items-center gap-2 px-5 py-2.5 text-sm cursor-pointer"
                 >
-                  <Plus className="w-4 h-4 mr-2" /> Connect Repo
+                  <Github className="w-4 h-4" />
+                  Install GitHub App
                 </a>
-              )}
-            </div>
-          </motion.div>
+                <Link href="/dashboard?demo=true">
+                  <button className="btn-ghost flex items-center gap-2 px-5 py-2.5 text-sm cursor-pointer">
+                    <Play className="w-4 h-4" />
+                    Try Demo Mode
+                  </button>
+                </Link>
+              </div>
 
-          {error && (
-            <motion.div variants={fadeUp} className="mb-8">
-              <Card className="bg-red-950/20 border-red-500/30 rounded-sm shadow-none">
-                <CardContent className="p-4 flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 shrink-0 text-red-400" />
-                  <span className="text-red-300 font-mono text-sm">Failed to load repositories: {error}</span>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-
-          {loading && repos.length === 0 ? (
-            <motion.div variants={fadeUp} className="text-center py-32">
-              <Loader2 className="w-8 h-8 text-brand-DEFAULT animate-spin mx-auto mb-4" />
-              <p className="text-brand-muted font-mono text-sm tracking-wide uppercase">Fetching data...</p>
-            </motion.div>
-          ) : repos.length === 0 ? (
-            <motion.div variants={fadeUp}>
-              <Card className="bg-brand-surface border border-brand-border border-dashed rounded-sm shadow-none">
-                <CardContent className="text-center py-24 flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-sm bg-brand-card border border-brand-border flex items-center justify-center mb-6">
-                    <FolderGit2 className="w-8 h-8 text-brand-muted" />
-                  </div>
-                  <h3 className="text-brand-text text-xl mb-2 font-heading font-semibold">No repositories found.</h3>
-                  <p className="text-brand-muted font-mono text-sm mb-8 max-w-md text-center">
-                    Install the AutoDev GitHub App to begin analyzing your codebase structure.
-                  </p>
-                  <div className="flex gap-4 justify-center">
-                    <a
-                      href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "https://github.com/apps/autodev/installations/new"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center whitespace-nowrap bg-brand-text text-brand-bg hover:bg-brand-DEFAULT transition-colors rounded-sm px-6 h-10 text-sm font-medium"
-                    >
-                      <Github className="w-4 h-4 mr-2" /> Install GitHub App
-                    </a>
-                    <Link href="/dashboard?demo=true">
-                      <Button variant="outline" className="bg-brand-card border-brand-border hover:border-brand-DEFAULT transition-colors rounded-sm px-6 text-brand-text">
-                        <Play className="w-4 h-4 mr-2" /> Try Demo Mode
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ) : (
-            <motion.div variants={stagger} className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-              {repos.map((repo, i) => {
-                const status = statusConfig[repo.analysisStatus] ?? statusConfig.pending;
-                return (
-                  <motion.div
-                    key={repo.repoId}
-                    variants={fadeUp}
-                    custom={i}
+              {/* Feature hints */}
+              <div className="mt-12 grid grid-cols-3 gap-4 max-w-lg">
+                {[
+                  { icon: Code2, label: "Architecture Map", desc: "Visualize module structure" },
+                  { icon: GitBranch, label: "Q&A", desc: "Ask about your codebase" },
+                  { icon: Zap, label: "Walkthroughs", desc: "Step-by-step code guides" },
+                ].map(({ icon: Icon, label, desc }) => (
+                  <div
+                    key={label}
+                    className="flex flex-col items-center text-center p-4 rounded-xl"
+                    style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
                   >
-                    <Link href={`/dashboard/${encodeURIComponent(repo.repoId)}${demoSuffix}`}>
-                      <Card className="group bg-brand-surface hover:bg-brand-card border-brand-border hover:border-brand-DEFAULT transition-all duration-200 cursor-pointer h-full rounded-sm shadow-none flex flex-col">
-                        <CardContent className="p-6 flex flex-col h-full relative">
-                          <div className="flex items-start justify-between mb-4 gap-4">
-                            <h3 className="font-heading font-semibold text-lg text-brand-text group-hover:text-brand-DEFAULT transition-colors duration-200 truncate flex-1 leading-tight">
-                              {repo.repoId}
-                            </h3>
-                            <ChevronRight className="w-5 h-5 text-brand-muted group-hover:text-brand-DEFAULT group-hover:translate-x-1 transition-all duration-200 shrink-0" />
-                          </div>
+                    <Icon className="w-5 h-5 mb-2" style={{ color: "#818cf8" }} />
+                    <p className="text-xs font-semibold mb-1" style={{ color: "var(--text-secondary)" }}>{label}</p>
+                    <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                          <div className="flex items-center gap-3 mb-6">
-                            <Badge variant="outline" className={`font-mono text-[10px] uppercase tracking-wider rounded-sm px-2 py-0.5 ${status.classes} border`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${status.dot} mr-1.5`} />
-                              {repo.analysisStatus}
-                            </Badge>
-                            {repo.fileCount && (
-                              <span className="font-mono text-xs text-brand-muted">{repo.fileCount} files</span>
-                            )}
-                          </div>
+          ) : (
+            /* ── Repo grid ─────────────────────────────────────────────────── */
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+              {repos.map((repo, i) => {
+                const status = STATUS_CONFIG[repo.analysisStatus] ?? STATUS_CONFIG.pending;
+                return (
+                  <Link
+                    key={repo.repoId}
+                    href={`/dashboard/${encodeURIComponent(repo.repoId)}${demoSuffix}`}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${i * 60}ms` }}
+                  >
+                    <div className="glass-card rounded-xl p-5 cursor-pointer group h-full flex flex-col">
+                      {/* Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                          style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.15)" }}
+                        >
+                          <FolderGit2 className="w-5 h-5" style={{ color: "#818cf8" }} />
+                        </div>
+                        <ChevronRight
+                          className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1"
+                          style={{ color: "var(--text-muted)" }}
+                        />
+                      </div>
 
-                          {repo.techStack && Object.keys(repo.techStack).length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-4 mt-auto">
-                              {Object.entries(repo.techStack)
-                                .filter(([, v]) => v)
-                                .slice(0, 4)
-                                .map(([k, v]) => (
-                                  <span key={k} className="font-mono text-[10px] bg-brand-bg px-2 py-1 text-brand-muted border border-brand-border rounded-sm">
-                                    {v}
-                                  </span>
-                                ))}
-                            </div>
-                          )}
+                      {/* Repo name */}
+                      <h3 className="font-heading font-semibold text-sm leading-tight mb-3 group-hover:text-indigo-300 transition-colors" style={{ color: "var(--text-primary)" }}>
+                        {repo.repoId}
+                      </h3>
 
-                          {repo.lastAnalyzedAt && (
-                            <div className="mt-auto pt-4 border-t border-brand-border/50">
-                              <p className="font-mono text-[10px] text-brand-muted uppercase tracking-wider">
-                                ANALYZED ON • {new Date(repo.lastAnalyzedAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  </motion.div>
+                      {/* Status badge */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <span
+                          className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                          style={{ background: status.bg, border: `1px solid ${status.border}`, color: status.text }}
+                        >
+                          <span
+                            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                            style={{
+                              background: status.dot,
+                              boxShadow: `0 0 6px ${status.glow}`,
+                              ...(repo.analysisStatus === "analyzing" ? { animation: "pulse-dot 2s infinite" } : {}),
+                            }}
+                          />
+                          {status.label}
+                        </span>
+                        {repo.fileCount && (
+                          <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                            {repo.fileCount.toLocaleString()} files
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Tech stack pills */}
+                      {repo.techStack && Object.keys(repo.techStack).length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-4 mt-auto">
+                          {Object.entries(repo.techStack)
+                            .filter(([, v]) => v)
+                            .slice(0, 4)
+                            .map(([k, v]) => (
+                              <span
+                                key={k}
+                                className="text-[10px] font-mono px-2 py-0.5 rounded-md"
+                                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text-secondary)" }}
+                              >
+                                {v}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+
+                      {/* Footer */}
+                      {repo.lastAnalyzedAt && (
+                        <div className="mt-auto pt-3 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                            Last analyzed {new Date(repo.lastAnalyzedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
                 );
               })}
-            </motion.div>
+            </div>
           )}
-        </motion.div>
+        </div>
       </main>
     </div>
   );
@@ -294,8 +417,18 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-brand-bg flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-brand-DEFAULT animate-spin" />
+        <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-mid)" }}>
+          <div
+            className="flex flex-col items-center gap-4"
+          >
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center animate-glow-pulse"
+              style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)" }}
+            >
+              <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#818cf8" }} />
+            </div>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading…</p>
+          </div>
         </div>
       }
     >
