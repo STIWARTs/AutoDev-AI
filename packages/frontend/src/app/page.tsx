@@ -67,7 +67,16 @@ export default function HomePage() {
       {/* ─── NAVIGATION ─── */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-brand-border bg-brand-bg/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
+          <Link 
+            href="/" 
+            onClick={(e) => {
+              if (window.location.pathname === "/") {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+            className="flex items-center gap-3"
+          >
             <div className="w-8 h-8 bg-brand-DEFAULT rounded-sm flex items-center justify-center">
               <Code2 className="w-4 h-4 text-brand-bg" />
             </div>
@@ -546,7 +555,16 @@ export default function HomePage() {
       <footer className="border-t border-brand-border bg-brand-bg pt-20 pb-12 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-10 mb-16">
           <div className="col-span-2 space-y-6">
-            <Link href="/" className="flex items-center gap-2">
+            <Link 
+              href="/" 
+              onClick={(e) => {
+                if (window.location.pathname === "/") {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+              className="flex items-center gap-2"
+            >
               <div className="w-6 h-6 bg-brand-DEFAULT rounded-sm flex items-center justify-center">
                 <Code2 className="w-3 h-3 text-brand-bg" />
               </div>
