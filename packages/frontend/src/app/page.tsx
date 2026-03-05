@@ -360,12 +360,14 @@ export default function HomePage() {
             <Link href="#pricing" className="hover:text-brand-text transition-colors">Pricing</Link>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="font-mono text-sm text-brand-text hover:text-brand-DEFAULT transition-colors">
+            <Link href="/dashboard" className="font-mono text-sm text-brand-text hover:text-brand-DEFAULT transition-colors">
               Log In
             </Link>
-            <Button className="rounded-sm bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg transition-colors font-semibold px-6 h-9">
-              Start Free
-            </Button>
+            <Link href="/dashboard">
+              <Button className="rounded-sm bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg transition-colors font-semibold px-6 h-9">
+                Start Free
+              </Button>
+            </Link>
           </div>
         </div>
       </nav>
@@ -404,9 +406,11 @@ export default function HomePage() {
             </motion.p>
             
             <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button className="rounded-sm bg-brand-DEFAULT hover:bg-white text-brand-bg h-12 px-8 text-base font-medium transition-colors">
-                Connect Repository <ChevronRight className="ml-2 w-4 h-4" />
-              </Button>
+              <Link href="/dashboard">
+                <Button className="rounded-sm bg-brand-DEFAULT hover:bg-white text-brand-bg h-12 px-8 text-base font-medium transition-colors">
+                  Connect Repository <ChevronRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
               <Link href="/demo">
                 <Button variant="outline" className="rounded-sm border-brand-border bg-transparent hover:bg-brand-surface text-brand-text h-12 px-8 text-base transition-colors">
                   <Play className="mr-2 w-4 h-4" /> Watch the Demo
@@ -736,9 +740,11 @@ export default function HomePage() {
           <h2 className="font-heading text-5xl md:text-6xl tracking-tight">Ready to eliminate your onboarding bottleneck?</h2>
           <p className="font-mono text-brand-muted max-w-lg mx-auto">Join hundreds of high-performing engineering teams using AutoDev to scale efficiently.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Button className="rounded-sm flex border border-transparent bg-brand-text hover:bg-brand-DEFAULT text-brand-bg hover:text-brand-bg h-14 px-8 text-base font-semibold transition-colors">
-              Start Building Free <ChevronRight className="ml-2 w-4 h-4" />
-            </Button>
+            <Link href="/dashboard">
+              <Button className="rounded-sm flex border border-transparent bg-brand-text hover:bg-brand-DEFAULT text-brand-bg hover:text-brand-bg h-14 px-8 text-base font-semibold transition-colors">
+                Start Building Free <ChevronRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
             <Button variant="outline" className="rounded-sm border-brand-border bg-brand-bg hover:bg-brand-card text-brand-text h-14 px-8 text-base transition-colors">
               Talk to Sales
             </Button>
