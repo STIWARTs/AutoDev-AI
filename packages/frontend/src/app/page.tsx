@@ -284,13 +284,13 @@ const AnimatedQA = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             className="flex justify-start"
           >
-            <div className="bg-brand-DEFAULT text-brand-bg rounded-sm rounded-tl-none px-4 py-3 max-w-[85%] inline-block text-[13px] leading-relaxed shadow-lg">
-              <p className="font-semibold mb-2">ज़रूर!</p>
-              <p className="mb-2">इस प्रोजेक्ट में, ऑथेंटिकेशन <code>src/middleware/auth.ts</code> में संभाला गया है।</p>
-              <ol className="list-decimal pl-4 space-y-1">
+        <div className="bg-brand-surface border border-brand-border rounded-sm rounded-tl-none px-4 py-3 max-w-[85%] inline-block text-[13px] leading-relaxed">
+              <p className="font-semibold mb-2 text-brand-text">ज़रूर!</p>
+              <p className="mb-2 text-brand-muted">इस प्रोजेक्ट में, ऑथेंटिकेशन <code className="text-brand-DEFAULT bg-brand-card px-1 rounded-sm font-mono text-[11px]">src/middleware/auth.ts</code> में संभाला गया है।</p>
+              <ol className="list-decimal pl-4 space-y-1 text-brand-muted">
                 <li>यह रिक्वेस्ट हेडर से JWT टोकन निकालता है।</li>
-                <li><code>jsonwebtoken</code> लाइब्रेरी का उपयोग करके टोकन को वेरीफाई करता है।</li>
-                <li>अगर टोकन सही है, तो यह यूज़र डेटा को <code>req.user</code> में डाल देता है ताकि आगे इस्तेमाल हो सके।</li>
+                <li><code className="text-brand-DEFAULT bg-brand-card px-1 rounded-sm font-mono text-[11px]">jsonwebtoken</code> लाइब्रेरी का उपयोग करके टोकन को वेरीफाई करता है।</li>
+                <li>अगर टोकन सही है, तो यह यूज़र डेटा को <code className="text-brand-DEFAULT bg-brand-card px-1 rounded-sm font-mono text-[11px]">req.user</code> में डाल देता है ताकि आगे इस्तेमाल हो सके।</li>
               </ol>
             </div>
           </motion.div>
