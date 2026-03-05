@@ -2,6 +2,7 @@
 
 import { motion, Variants, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { ChevronRight, Code2, Cpu, Globe2, GitBranch, Terminal, Shield, Sparkles, Check, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InteractiveGrid } from "@/components/InteractiveGrid";
@@ -57,10 +58,264 @@ const containerVariants: Variants = {
   }
 };
 
+const AnimatedTerminal = () => {
+  const [step, setStep] = useState(0);
+  const [typedText, setTypedText] = useState("");
+  const fullText = "autodev init --repo https://github.com/org/core-backend";
+  
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
+    if (step === 0) {
+      setTypedText("");
+      let i = 0;
+      const typeChar = () => {
+        if (i <= fullText.length) {
+          setTypedText(fullText.substring(0, i));
+          i++;
+          timeout = setTimeout(typeChar, 40); // typing speed
+        } else {
+          timeout = setTimeout(() => {
+             setStep(1);
+          }, 400); // Wait bit after finish typing
+        }
+      };
+      timeout = setTimeout(typeChar, 800);
+      return () => clearTimeout(timeout);
+    }
+    
+    // Normal sequence execution
+    if (step > 0 && step < 6) {
+      const delays = [0, 800, 600, 800, 600, 3000]; // delays for steps 1-5, and reset at 6
+      timeout = setTimeout(() => {
+        setStep(step >= 5 ? 0 : step + 1);
+      }, delays[step]);
+      return () => clearTimeout(timeout);
+    }
+
+  }, [step]);
+
+  return (
+    <div className="p-6 text-left font-mono text-xs md:text-sm h-full min-h-[220px]">
+      <div className="space-y-3">
+        <div className="text-brand-muted">
+          <span className="text-brand-DEFAULT">$</span> {step === 0 ? typedText : fullText}
+          {step === 0 && <span className="inline-block w-2 h-4 bg-brand-muted animate-pulse align-middle ml-1" />}
+        </div>
+        
+        {step >= 1 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-brand-muted">
+            <span className="text-emerald-400">✓</span> Repository cloned successfully (432 files).
+          </motion.div>
+        )}
+        
+        {step >= 2 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-brand-muted pl-4">
+            Scanning for architectural patterns...
+          </motion.div>
+        )}
+        
+        {step >= 3 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-brand-muted">
+            <span className="text-emerald-400">✓</span> Detected Next.js frontend, Express backend, PostgreSQL database.
+          </motion.div>
+        )}
+        
+        {step >= 4 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-brand-muted">
+            <span className="text-emerald-400">✓</span> Building interactive system graph... done.
+          </motion.div>
+        )}
+        
+        {step >= 5 && (
+          <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-brand-DEFAULT mt-4 font-semibold">
+            Generating multilingual walkthroughs (Hindi, Tamil, English)...
+            <span className="inline-block w-2 h-4 bg-brand-DEFAULT animate-pulse align-middle ml-1" />
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const AnimatedCodeReview = () => {
+  const [step, setStep] = useState(0);
+  
+  useEffect(() => {
+    const sequence = [
+      { delay: 1500, step: 1 },
+      { delay: 2000, step: 2 },
+      { delay: 1000, step: 3 },
+      { delay: 4000, step: 0 }
+    ];
+    let timeout: NodeJS.Timeout;
+    const runSequence = (idx: number) => {
+      timeout = setTimeout(() => {
+        setStep(sequence[idx].step);
+        if (idx + 1 < sequence.length) runSequence(idx + 1);
+      }, sequence[idx].delay);
+    };
+    runSequence(0);
+    return () => clearTimeout(timeout);
+  }, [step === 0]);
+  
+  return (
+    <div className="bg-brand-surface border border-brand-border rounded-sm p-6 space-y-4 relative overflow-hidden h-full flex flex-col justify-center">
+      <div className="pb-3 border-b border-brand-border mb-4">
+        <div className="flex justify-between items-center text-sm font-mono text-brand-muted">
+          <span>src/services/payment.ts</span>
+          {step >= 3 && (
+            <motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-red-400">1 Issue</motion.span>
+          )}
+        </div>
+      </div>
+      
+      <div className="font-mono text-xs sm:text-sm bg-brand-bg p-4 rounded-sm border border-brand-border/50 space-y-2 relative">
+        <div className="text-red-400 opacity-70 bg-red-400/10 -mx-4 px-4 py-1">- const result = stripe.charges.create(data);</div>
+        
+        {step >= 2 ? (
+          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-emerald-400 bg-emerald-400/10 -mx-4 px-4 py-1">
+            + const result = await stripe.charges.create(data);
+          </motion.div>
+        ) : step === 1 ? (
+          <div className="h-6 flex items-center -mx-4 px-4">
+            <div className="w-1.5 h-4 bg-brand-DEFAULT animate-pulse" />
+            <span className="text-brand-muted text-[10px] sm:text-xs ml-2 animate-pulse uppercase tracking-widest">AutoDev AI Reviewing...</span>
+          </div>
+        ) : <div className="h-6" />}
+        
+        {step < 2 && (
+          <motion.div 
+            className="absolute top-0 left-0 w-full h-[2px] bg-brand-DEFAULT/50 shadow-[0_0_10px_rgba(226,90,52,0.8)]"
+            animate={{ top: ["0%", "100%", "0%"] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+          />
+        )}
+      </div>
+      
+      <div className="h-[120px]">
+        {step >= 3 && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 bg-brand-bg border border-brand-border p-4 rounded-sm">
+            <div className="w-6 h-6 rounded-full bg-brand-DEFAULT flex items-center justify-center shrink-0 mt-0.5">
+              <Sparkles className="w-3 h-3 text-brand-bg" />
+            </div>
+            <div className="text-sm">
+              <p className="font-semibold text-brand-text mb-1 flex items-center gap-2">
+                Missing Async Context <span className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-[10px] rounded-sm font-mono uppercase tracking-wider">Error</span>
+              </p>
+              <p className="text-brand-muted leading-relaxed text-xs">This Stripe API call returns a Promise. Standard project convention dictates that all external API calls must be awaited to prevent unhandled promise rejections downstream.</p>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const AnimatedQA = () => {
+  const [step, setStep] = useState(0);
+  
+  useEffect(() => {
+    const sequence = [
+      { delay: 1500, step: 1 },
+      { delay: 1500, step: 2 },
+      { delay: 3000, step: 3 },
+      { delay: 5000, step: 0 }
+    ];
+    let timeout: NodeJS.Timeout;
+    const runSequence = (idx: number) => {
+      timeout = setTimeout(() => {
+        setStep(sequence[idx].step);
+        if (idx + 1 < sequence.length) runSequence(idx + 1);
+      }, sequence[idx].delay);
+    };
+    runSequence(0);
+    return () => clearTimeout(timeout);
+  }, [step === 0]);
+  
+  return (
+    <div className="bg-brand-surface border border-brand-border rounded-sm overflow-hidden flex flex-col h-[400px]">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[radial-gradient(#2A2726_1px,transparent_1px)] [background-size:16px_16px] relative flex flex-col justify-start">
+        {step >= 1 && (
+          <motion.div 
+            initial={{ opacity: 0, x: 20, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            className="flex justify-end"
+          >
+            <div className="bg-brand-card border border-brand-border rounded-sm rounded-tr-none px-4 py-3 max-w-[80%] inline-block text-sm">
+              How does the authentication middleware work here? (कृपया हिंदी में समझाएं)
+            </div>
+          </motion.div>
+        )}
+        
+        {step === 2 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-start"
+          >
+             <div className="bg-brand-DEFAULT/20 text-brand-DEFAULT border border-brand-DEFAULT/30 rounded-sm rounded-tl-none px-4 py-3 flex gap-1 items-center">
+               <span className="w-1.5 h-1.5 bg-brand-DEFAULT rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+               <span className="w-1.5 h-1.5 bg-brand-DEFAULT rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+               <span className="w-1.5 h-1.5 bg-brand-DEFAULT rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+             </div>
+          </motion.div>
+        )}
+
+        {step >= 3 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="flex justify-start"
+          >
+            <div className="bg-brand-DEFAULT text-brand-bg rounded-sm rounded-tl-none px-4 py-3 max-w-[85%] inline-block text-[13px] leading-relaxed shadow-lg">
+              <p className="font-semibold mb-2">ज़रूर!</p>
+              <p className="mb-2">इस प्रोजेक्ट में, ऑथेंटिकेशन <code>src/middleware/auth.ts</code> में संभाला गया है।</p>
+              <ol className="list-decimal pl-4 space-y-1">
+                <li>यह रिक्वेस्ट हेडर से JWT टोकन निकालता है।</li>
+                <li><code>jsonwebtoken</code> लाइब्रेरी का उपयोग करके टोकन को वेरीफाई करता है।</li>
+                <li>अगर टोकन सही है, तो यह यूज़र डेटा को <code>req.user</code> में डाल देता है ताकि आगे इस्तेमाल हो सके।</li>
+              </ol>
+            </div>
+          </motion.div>
+        )}
+      </div>
+      
+      <div className="p-4 bg-brand-bg border-t border-brand-border flex gap-2">
+        <div className="flex-1 border border-brand-border bg-brand-card rounded-sm px-4 py-2 text-sm text-brand-muted font-mono flex items-center">
+          {step === 0 ? (
+            <>
+              Ask a question<span className="ml-[1px] w-1.5 h-3.5 bg-brand-muted animate-pulse" />
+            </>
+          ) : "Ask a question..."}
+        </div>
+        <Button className="rounded-sm bg-brand-text text-brand-bg"><ChevronRight className="w-4 h-4" /></Button>
+      </div>
+    </div>
+  );
+};
+
 export default function HomePage() {
   const { scrollYProgress } = useScroll();
   const heroY = useTransform(scrollYProgress, [0, 0.2], ["0%", "30%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+
+  useEffect(() => {
+    // Disable browser's default scroll restoration to avoid jumpiness on reload
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+    
+    // Force to top immediately on mount
+    window.scrollTo(0, 0);
+
+    // Some browsers need a short delay to override their built-in restoration
+    const id = requestAnimationFrame(() => {
+        window.scrollTo(0, 0);
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   return (
     <main className="min-h-screen bg-brand-bg text-brand-text font-body selection:bg-brand-DEFAULT/30 overflow-x-hidden">
@@ -154,39 +409,7 @@ export default function HomePage() {
                 <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
                 <div className="font-mono text-[10px] text-brand-muted ml-4">Terminal &middot; bash</div>
               </div>
-              <div className="p-6 text-left font-mono text-xs md:text-sm space-y-3">
-                <div className="text-brand-muted"><span className="text-brand-DEFAULT">$</span> autodev init --repo https://github.com/org/core-backend</div>
-                <motion.div 
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.5 }}
-                  className="text-brand-muted"
-                >
-                  <span className="text-emerald-400">✓</span> Repository cloned successfully (432 files).
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 0.5 }}
-                  className="text-brand-muted pl-4"
-                >
-                  Scanning for architectural patterns...
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.2, duration: 0.5 }}
-                  className="text-brand-muted"
-                >
-                  <span className="text-emerald-400">✓</span> Detected Next.js frontend, Express backend, PostgreSQL database.
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.8, duration: 0.5 }}
-                  className="text-brand-muted"
-                >
-                  <span className="text-emerald-400">✓</span> Building interactive system graph... done.
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.5, duration: 0.5 }}
-                  className="text-brand-DEFAULT mt-4"
-                >
-                  Generating multilingual walkthroughs (Hindi, Tamil, English)...
-                </motion.div>
-              </div>
+              <AnimatedTerminal />
             </motion.div>
 
           </motion.div>
@@ -286,17 +509,24 @@ export default function HomePage() {
                   <div className="font-mono text-[10px] text-brand-muted mb-1">FRONTEND</div>
                   <div className="font-heading text-lg">Next.js App</div>
                 </motion.div>
-                {/* Connecting Line */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-brand-border stroke-[2px] opacity-50">
+                {/* Connecting Line 1 */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none">
                   <motion.path 
                     d="M 230 80 Q 300 100 350 200" 
                     fill="none" 
+                    className="stroke-brand-border stroke-[2px] opacity-50"
                     strokeDasharray="4 4" 
                     initial={{ pathLength: 0 }}
                     whileInView={{ pathLength: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 1.5, ease: "easeInOut" }}
                   />
+                  <circle r="4" fill="#E25A34" className="filter drop-shadow-md">
+                    <animateMotion dur="3s" repeatCount="indefinite" path="M 230 80 Q 300 100 350 200" />
+                  </circle>
+                  <circle r="2" fill="#FFFFFF">
+                    <animateMotion dur="3s" repeatCount="indefinite" path="M 230 80 Q 300 100 350 200" />
+                  </circle>
                 </svg>
                 <motion.div 
                   animate={{ y: [0, 10, 0] }}
@@ -307,15 +537,22 @@ export default function HomePage() {
                   <div className="font-heading text-lg">Express API</div>
                   <div className="mt-2 pt-2 border-t border-brand-border font-mono text-[10px] text-brand-muted">REST + WebSockets</div>
                 </motion.div>
-                {/* Connecting Line */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-brand-border stroke-[2px] opacity-50">
+                {/* Connecting Line 2 */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none">
                   <motion.path 
                     d="M 400 280 Q 300 350 150 300" fill="none"
+                    className="stroke-brand-border stroke-[2px] opacity-50"
                     initial={{ pathLength: 0 }}
                     whileInView={{ pathLength: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 1.5, ease: "easeInOut", delay: 0.5 }}
                   />
+                  <circle r="4" fill="#E25A34" className="filter drop-shadow-md">
+                    <animateMotion dur="4s" repeatCount="indefinite" path="M 400 280 Q 300 350 150 300" />
+                  </circle>
+                  <circle r="2" fill="#FFFFFF">
+                    <animateMotion dur="4s" repeatCount="indefinite" path="M 400 280 Q 300 350 150 300" />
+                  </circle>
                 </svg>
                 <motion.div 
                   animate={{ y: [0, -12, 0] }}
@@ -352,27 +589,7 @@ export default function HomePage() {
               initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
               className="flex-1 w-full"
             >
-              <div className="bg-brand-surface border border-brand-border rounded-sm p-6 space-y-4">
-                <div className="pb-3 border-b border-brand-border mb-4">
-                  <div className="flex justify-between items-center text-sm font-mono text-brand-muted">
-                    <span>src/services/payment.ts</span>
-                    <span className="text-red-400">1 Issue</span>
-                  </div>
-                </div>
-                <div className="font-mono text-xs sm:text-sm bg-brand-bg p-4 rounded-sm border border-brand-border/50 space-y-2">
-                  <div className="text-red-400 opacity-70 bg-red-400/10 -mx-4 px-4 py-1">- const result = stripe.charges.create(data);</div>
-                  <div className="text-emerald-400 bg-emerald-400/10 -mx-4 px-4 py-1">+ const result = await stripe.charges.create(data);</div>
-                </div>
-                <div className="flex gap-3 bg-brand-bg border border-brand-border p-4 rounded-sm">
-                  <div className="w-6 h-6 rounded-full bg-brand-DEFAULT flex items-center justify-center shrink-0 mt-0.5">
-                    <Sparkles className="w-3 h-3 text-brand-bg" />
-                  </div>
-                  <div className="text-sm">
-                    <p className="font-semibold text-brand-text mb-1">Missing Async Context</p>
-                    <p className="text-brand-muted leading-relaxed">This Stripe API call returns a Promise. Standard project convention dictates that all external API calls must be awaited to prevent unhandled promise rejections downstream.</p>
-                  </div>
-                </div>
-              </div>
+              <AnimatedCodeReview />
             </motion.div>
           </div>
 
@@ -394,45 +611,7 @@ export default function HomePage() {
               initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
               className="flex-1 w-full"
             >
-              <div className="bg-brand-surface border border-brand-border rounded-sm overflow-hidden flex flex-col h-[400px]">
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[radial-gradient(#2A2726_1px,transparent_1px)] [background-size:16px_16px]">
-                  {/* Message 1 */}
-                  <motion.div 
-                    initial={{ opacity: 0, x: 20, scale: 0.95 }}
-                    whileInView={{ opacity: 1, x: 0, scale: 1 }}
-                    viewport={{ once: true }}
-                    className="flex justify-end"
-                  >
-                    <div className="bg-brand-card border border-brand-border rounded-sm rounded-tr-none px-4 py-3 max-w-[80%] inline-block text-sm">
-                      How does the authentication middleware work here? (कृपया हिंदी में समझाएं)
-                    </div>
-                  </motion.div>
-                  {/* Message 2 */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.8 }}
-                    className="flex justify-start"
-                  >
-                    <div className="bg-brand-DEFAULT text-brand-bg rounded-sm rounded-tl-none px-4 py-3 max-w-[85%] inline-block text-[13px] leading-relaxed shadow-lg">
-                      <p className="font-semibold mb-2">ज़रूर!</p>
-                      <p className="mb-2">इस प्रोजेक्ट में, ऑथेंटिकेशन <code>src/middleware/auth.ts</code> में संभाला गया है।</p>
-                      <ol className="list-decimal pl-4 space-y-1">
-                        <li>यह रिक्वेस्ट हेडर से JWT टोकन निकालता है।</li>
-                        <li><code>jsonwebtoken</code> लाइब्रेरी का उपयोग करके टोकन को वेरीफाई करता है।</li>
-                        <li>अगर टोकन सही है, तो यह यूज़र डेटा को <code>req.user</code> में डाल देता है ताकि आगे इस्तेमाल हो सके।</li>
-                      </ol>
-                    </div>
-                  </motion.div>
-                </div>
-                <div className="p-4 bg-brand-bg border-t border-brand-border flex gap-2">
-                  <div className="flex-1 border border-brand-border bg-brand-card rounded-sm px-4 py-2 text-sm text-brand-muted font-mono flex items-center">
-                    Ask a question...
-                  </div>
-                  <Button className="rounded-sm bg-brand-text text-brand-bg"><ChevronRight className="w-4 h-4" /></Button>
-                </div>
-              </div>
+              <AnimatedQA />
             </motion.div>
           </div>
 
