@@ -9,22 +9,38 @@ import { InteractiveGrid } from "@/components/InteractiveGrid";
 
 // Particle component for background
 const FloatingParticles = () => {
+  const [mounted, setMounted] = useState(false);
+  const [particles, setParticles] = useState<{ x: number; y: number; duration: number }[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+    setParticles(
+      [...Array(20)].map(() => ({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        duration: Math.random() * 10 + 10,
+      }))
+    );
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {[...Array(20)].map((_, i) => (
+      {particles.map((p, i) => (
         <motion.div
           key={i}
           className="absolute w-1 h-1 bg-brand rounded-full opacity-20"
           initial={{
-            x: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 1000),
-            y: Math.random() * (typeof window !== "undefined" ? window.innerHeight : 1000),
+            x: p.x,
+            y: p.y,
           }}
           animate={{
             y: [null, Math.random() * -500],
             opacity: [0.2, 0.5, 0],
           }}
           transition={{
-            duration: Math.random() * 10 + 10,
+            duration: p.duration,
             repeat: Infinity,
             ease: "linear",
           }}
