@@ -7,6 +7,8 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { getApiBase, fetchApi } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 import type { ArchitectureMap as ArchMapType } from "@autodev/shared";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +27,7 @@ export default function RepoDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { getToken } = useAuth();
+  const { track } = useProgressTracker(decodedRepoId);
 
   const fetchArchitecture = useCallback(async () => {
     if (!owner || !repo) return;
@@ -44,9 +47,12 @@ export default function RepoDetailPage() {
       if (data.content) {
         setArchMap(data.content as ArchMapType);
         setStatus("completed");
+        // Track that the user explored modules in this repo
+        track({ eventType: "module_explored", targetLabel: `${decodedRepoId} architecture` });
       } else if (data.nodes) {
         setArchMap(data as ArchMapType);
         setStatus("completed");
+        track({ eventType: "module_explored", targetLabel: `${decodedRepoId} architecture` });
       } else {
         setStatus("analyzing");
       }
@@ -149,7 +155,9 @@ export default function RepoDetailPage() {
           </Card>
         ) : archMap ? (
           <Card className="glass border-white/[0.08] overflow-hidden bg-transparent">
-            <ArchitectureMap data={archMap} />
+            <ErrorBoundary>
+              <ArchitectureMap data={archMap} />
+            </ErrorBoundary>
           </Card>
         ) : status === "analyzing" ? (
           <Card className="glass border-white/[0.08] bg-transparent">

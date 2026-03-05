@@ -8,6 +8,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import Link from "next/link";
 import { getApiBase, fetchApi } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
+import { useProgressTracker } from "@/hooks/useProgressTracker";
 import type {
   ArchitectureMap as ArchMapType,
   AnimationSequence,
@@ -37,6 +38,7 @@ export default function AnimatedPage() {
   const [explaining, setExplaining] = useState(false);
   const [explanation, setExplanation] = useState<{ nodeId: string; text: string } | null>(null);
   const { getToken } = useAuth();
+  const { track } = useProgressTracker(decodedRepoId);
 
   // Fetch architecture
   const fetchArch = useCallback(async () => {
@@ -60,7 +62,11 @@ export default function AnimatedPage() {
       const res = await fetchApi(`${getApiBase(decodedRepoId)}/animated/${owner}/${repo}`, {}, token);
       if (!res.ok) return;
       const data = await res.json();
-      setSequences(data.sequences || []);
+      const seqList = data.sequences || [];
+      setSequences(seqList);
+      if (seqList.length > 0) {
+        track({ eventType: "animated_viewed", targetLabel: `${decodedRepoId} animated` });
+      }
     } catch {
       // ignore
     }
