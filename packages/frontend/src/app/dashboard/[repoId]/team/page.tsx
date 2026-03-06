@@ -107,7 +107,7 @@ export default function TeamPage() {
           </button>
           <button
             onClick={() => setShowInvite(!showInvite)}
-            className="px-4 py-2 bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg text-sm font-semibold transition-all"
+            className="px-4 py-2 bg-brand-text text-brand-bg hover:bg-brand hover:text-brand-bg text-sm font-semibold transition-all"
           >
             + Invite Member
           </button>
@@ -116,18 +116,18 @@ export default function TeamPage() {
     >
       {/* Invite panel */}
       {showInvite && (
-        <div className="mb-6 p-5 border border-brand-DEFAULT/20 bg-brand-DEFAULT/5">
+        <div className="mb-6 p-5 border border-brand/20 bg-brand/5">
           <h2 className="text-sm font-heading font-semibold text-brand-text mb-1">Invite a Team Member</h2>
           <p className="text-xs text-brand-muted font-mono mb-3">Share this link so colleagues can join this repository&apos;s workspace on AutoDev.</p>
           <div className="flex gap-2">
             <input
               readOnly
               value={`${typeof window !== "undefined" ? window.location.origin : ""}/dashboard/${repoId}`}
-              className="flex-1 px-3 py-2 bg-brand-bg border border-brand-border text-xs font-mono text-brand-muted focus:outline-none focus:border-brand-DEFAULT select-all"
+              className="flex-1 px-3 py-2 bg-brand-bg border border-brand-border text-xs font-mono text-brand-muted focus:outline-none focus:border-brand select-all"
             />
             <button
               onClick={copyInviteLink}
-              className="flex items-center gap-2 px-4 py-2 border border-brand-border text-xs font-mono hover:border-brand-DEFAULT hover:text-brand-DEFAULT transition-colors"
+              className="flex items-center gap-2 px-4 py-2 border border-brand-border text-xs font-mono hover:border-brand hover:text-brand transition-colors"
             >
               {copied ? <><Check className="w-3.5 h-3.5 text-emerald-400" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
             </button>
@@ -138,7 +138,7 @@ export default function TeamPage() {
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center gap-3">
-            <Users className="w-8 h-8 text-brand-DEFAULT animate-pulse" />
+            <Users className="w-8 h-8 text-brand animate-pulse" />
             <p className="text-brand-muted text-sm font-mono">Loading team data...</p>
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function TeamPage() {
           {/* Team stats */}
           <div className="grid grid-cols-4 gap-3">
             {[
-              { label: "Team Members", value: teamData?.members.length || 0, icon: Users,     color: "text-brand-DEFAULT" },
+              { label: "Team Members", value: teamData?.members.length || 0, icon: Users,     color: "text-brand" },
               { label: "Avg. Score",   value: teamData?.averageScore || 0,   icon: Trophy,     color: "text-amber-400" },
               { label: "Top Area",     value: teamData?.topAreas?.[0]?.area || "—",   icon: TrendingUp, color: "text-emerald-400" },
               { label: "Needs Work",   value: teamData?.weakAreas?.[0]?.area || "—",  icon: TrendingUp, color: "text-red-400" },
@@ -166,7 +166,7 @@ export default function TeamPage() {
           {leaderboard.length > 0 && (
             <div className="border border-brand-border bg-brand-surface overflow-hidden">
               <div className="flex items-center gap-2 p-5 border-b border-brand-border">
-                <Trophy className="w-4 h-4 text-brand-DEFAULT" />
+                <Trophy className="w-4 h-4 text-brand" />
                 <h2 className="text-sm font-heading font-semibold text-brand-text">Leaderboard</h2>
               </div>
               <div className="divide-y divide-brand-border">
@@ -182,8 +182,8 @@ export default function TeamPage() {
                     </div>
 
                     {/* Avatar + name */}
-                    <div className="w-8 h-8 bg-brand-DEFAULT/20 border border-brand-DEFAULT/30 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-bold text-brand-DEFAULT">{entry.userId.charAt(0).toUpperCase()}</span>
+                    <div className="w-8 h-8 bg-brand/20 border border-brand/30 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-bold text-brand">{entry.userId.charAt(0).toUpperCase()}</span>
                     </div>
 
                     <div className="flex-1 min-w-0">

@@ -36,7 +36,7 @@ export default function CanvasPage() {
           { icon: Network, label: "React Flow" },
         ].map(({ icon: Icon, label }) => (
           <div key={label} className="flex items-center gap-1.5 text-[10px] font-mono text-brand-muted border border-brand-border px-2.5 py-1.5">
-            <Icon className="w-3 h-3 text-brand-DEFAULT" />
+            <Icon className="w-3 h-3 text-brand" />
             {label}
           </div>
         ))}

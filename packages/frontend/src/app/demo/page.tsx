@@ -124,13 +124,13 @@ export default function DemoScriptPage() {
   const [activeStep, setActiveStep] = useState(0);
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text font-body selection:bg-brand-DEFAULT/30">
+    <div className="min-h-screen bg-brand-bg text-brand-text font-body selection:bg-brand/30">
       {/* ─── HEADER ─── */}
       <header className="border-b border-brand-border bg-brand-bg/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-8 h-8 bg-brand-DEFAULT rounded-sm flex items-center justify-center">
+              <div className="w-8 h-8 bg-brand rounded-sm flex items-center justify-center">
                 <Code2 className="w-4 h-4 text-brand-bg" />
               </div>
               <span className="font-heading font-semibold text-xl tracking-tight">AutoDev</span>
@@ -141,7 +141,7 @@ export default function DemoScriptPage() {
           </div>
           <Link
             href="/dashboard?demo=true"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg rounded-sm font-semibold transition-colors duration-200 text-sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-text text-brand-bg hover:bg-brand hover:text-brand-bg rounded-sm font-semibold transition-colors duration-200 text-sm"
           >
             Open Dashboard <ArrowRight className="w-4 h-4" />
           </Link>
@@ -186,7 +186,7 @@ export default function DemoScriptPage() {
                 custom={index}
                 className={`transition-all duration-300 border rounded-sm overflow-hidden ${
                   isActive
-                    ? "bg-brand-surface border-brand-DEFAULT/30"
+                    ? "bg-brand-surface border-brand/30"
                     : "bg-brand-card border-brand-border hover:border-brand-muted/50"
                 }`}
               >
@@ -198,7 +198,7 @@ export default function DemoScriptPage() {
                   <div
                     className={`flex-shrink-0 w-12 h-12 rounded-sm flex items-center justify-center transition-colors duration-200 ${
                       isActive
-                        ? "bg-brand-DEFAULT text-brand-bg"
+                        ? "bg-brand text-brand-bg"
                         : "bg-brand-surface border border-brand-border text-brand-muted"
                     }`}
                   >
@@ -207,7 +207,7 @@ export default function DemoScriptPage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs text-brand-DEFAULT font-mono font-medium tracking-wide">
+                      <span className="text-xs text-brand font-mono font-medium tracking-wide">
                         STEP {step.id}/5
                       </span>
                     </div>
@@ -242,14 +242,14 @@ export default function DemoScriptPage() {
                                 key={i}
                                 className="flex items-start gap-3 font-mono text-sm text-brand-muted"
                               >
-                                <span className="text-brand-DEFAULT mt-0.5">{"//"}</span>
+                                <span className="text-brand mt-0.5">{"//"}</span>
                                 {detail}
                               </li>
                             ))}
                           </ul>
                           <Link
                             href={step.path}
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-DEFAULT hover:bg-white text-brand-bg rounded-sm text-sm font-semibold transition-colors duration-200"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-brand hover:bg-white text-brand-bg rounded-sm text-sm font-semibold transition-colors duration-200"
                           >
                             Launch Step {step.id} <ArrowRight className="w-4 h-4" />
                           </Link>
@@ -279,10 +279,10 @@ export default function DemoScriptPage() {
                 <Link
                   key={href}
                   href={href}
-                  className="group p-5 bg-brand-card border border-brand-border hover:border-brand-DEFAULT rounded-sm transition-colors duration-200"
+                  className="group p-5 bg-brand-card border border-brand-border hover:border-brand rounded-sm transition-colors duration-200"
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <Icon className="w-5 h-5 text-brand-DEFAULT" />
+                    <Icon className="w-5 h-5 text-brand" />
                     <p className="font-heading font-semibold text-brand-text">{title}</p>
                   </div>
                   <p className="font-mono text-brand-muted text-xs leading-relaxed">{desc}</p>
@@ -296,20 +296,20 @@ export default function DemoScriptPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Link
                 href="/dashboard/demo%2Freact-dashboard"
-                className="group p-6 bg-brand-card border border-brand-border hover:border-brand-DEFAULT rounded-sm transition-colors duration-200"
+                className="group p-6 bg-brand-card border border-brand-border hover:border-brand rounded-sm transition-colors duration-200"
               >
-                <p className="font-heading font-semibold text-lg mb-2 group-hover:text-brand-DEFAULT transition-colors">React Dashboard</p>
+                <p className="font-heading font-semibold text-lg mb-2 group-hover:text-brand transition-colors">React Dashboard</p>
                 <div className="flex gap-2 font-mono text-xs text-brand-muted">
-                  <span className="text-brand-DEFAULT">{"├─"}</span> Next.js 14 + Supabase + Tailwind CSS (134 files)
+                  <span className="text-brand">{"├─"}</span> Next.js 14 + Supabase + Tailwind CSS (134 files)
                 </div>
               </Link>
               <Link
                 href="/dashboard/demo%2Fpython-ml-api"
-                className="group p-6 bg-brand-card border border-brand-border hover:border-brand-DEFAULT rounded-sm transition-colors duration-200"
+                className="group p-6 bg-brand-card border border-brand-border hover:border-brand rounded-sm transition-colors duration-200"
               >
-                <p className="font-heading font-semibold text-lg mb-2 group-hover:text-brand-DEFAULT transition-colors">Python ML API</p>
+                <p className="font-heading font-semibold text-lg mb-2 group-hover:text-brand transition-colors">Python ML API</p>
                 <div className="flex gap-2 font-mono text-xs text-brand-muted">
-                  <span className="text-brand-DEFAULT">{"├─"}</span> FastAPI + MongoDB + scikit-learn (52 files)
+                  <span className="text-brand">{"├─"}</span> FastAPI + MongoDB + scikit-learn (52 files)
                 </div>
               </Link>
             </div>

@@ -52,14 +52,14 @@ const AREA_LABELS: Record<string, string> = {
 
 const SCORE_COLOR = (score: number) => {
   if (score >= 75) return "bg-emerald-500";
-  if (score >= 50) return "bg-brand-DEFAULT";
+  if (score >= 50) return "bg-brand";
   if (score >= 25) return "bg-amber-500";
   return "bg-red-400";
 };
 
 const SCORE_TEXT = (score: number) => {
   if (score >= 75) return "text-emerald-400";
-  if (score >= 50) return "text-brand-DEFAULT";
+  if (score >= 50) return "text-brand";
   if (score >= 25) return "text-amber-400";
   return "text-red-400";
 };
@@ -161,7 +161,7 @@ export default function ProgressPage() {
   const scoreColor = progress?.overallScore
     ? progress.overallScore >= 75 ? "text-emerald-400"
     : progress.overallScore >= 50 ? "text-amber-400"
-    : "text-brand-DEFAULT"
+    : "text-brand"
     : "text-brand-muted";
 
   const skillsSorted = [...(progress?.skills || [])].sort((a, b) => b.score - a.score);
@@ -173,8 +173,8 @@ export default function ProgressPage() {
     >
       {!progress || progress.overallScore === 0 ? (
         <div className="border border-brand-border border-dashed bg-brand-surface flex flex-col items-center justify-center py-20">
-          <div className="w-14 h-14 bg-brand-DEFAULT/10 border border-brand-DEFAULT/20 flex items-center justify-center mb-4">
-            <Target className="w-6 h-6 text-brand-DEFAULT" />
+          <div className="w-14 h-14 bg-brand/10 border border-brand/20 flex items-center justify-center mb-4">
+            <Target className="w-6 h-6 text-brand" />
           </div>
           <p className="font-heading font-semibold text-lg text-brand-text mb-1">No progress yet</p>
           <p className="text-brand-muted text-sm text-center max-w-sm font-mono">
@@ -185,13 +185,13 @@ export default function ProgressPage() {
         <div className="space-y-6">
           {/* Overall score hero */}
           <div className="border border-brand-border bg-brand-surface p-8 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-DEFAULT/3 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-br from-brand/3 via-transparent to-transparent" />
             <div className="relative flex items-center gap-8">
               {/* Score ring with pulse glow */}
               <div className="relative w-28 h-28 flex-shrink-0">
                 {/* Outer ping ring */}
                 <div
-                  className="absolute inset-0 rounded-full border-2 border-brand-DEFAULT/20 animate-ping"
+                  className="absolute inset-0 rounded-full border-2 border-brand/20 animate-ping"
                   style={{ animationDuration: "3s" }}
                 />
                 <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
@@ -238,10 +238,10 @@ export default function ProgressPage() {
                 ].map((s) => (
                   <div
                     key={s.label}
-                    className="text-center border border-brand-border bg-brand-card p-3 hover:border-brand-DEFAULT/30 transition-colors"
+                    className="text-center border border-brand-border bg-brand-card p-3 hover:border-brand/30 transition-colors"
                   >
-                    <s.icon className="w-4 h-4 text-brand-DEFAULT mx-auto mb-1" />
-                    <p className="text-xl font-heading font-semibold text-brand-DEFAULT">{s.value}</p>
+                    <s.icon className="w-4 h-4 text-brand mx-auto mb-1" />
+                    <p className="text-xl font-heading font-semibold text-brand">{s.value}</p>
                     <p className="text-[10px] text-brand-muted uppercase tracking-wider font-mono">{s.label}</p>
                   </div>
                 ))}
@@ -252,7 +252,7 @@ export default function ProgressPage() {
           {/* Skills breakdown */}
           <div className="border border-brand-border bg-brand-surface p-6">
             <div className="flex items-center gap-2 mb-5">
-              <TrendingUp className="w-4 h-4 text-brand-DEFAULT" />
+              <TrendingUp className="w-4 h-4 text-brand" />
               <h2 className="text-sm font-heading font-semibold text-brand-text">Skill Breakdown</h2>
             </div>
             <div className="space-y-3">
@@ -282,7 +282,7 @@ export default function ProgressPage() {
           {progress.timeline && progress.timeline.length > 0 && (
             <div className="border border-brand-border bg-brand-surface p-6">
               <div className="flex items-center gap-2 mb-5">
-                <Flame className="w-4 h-4 text-brand-DEFAULT" />
+                <Flame className="w-4 h-4 text-brand" />
                 <h2 className="text-sm font-heading font-semibold text-brand-text">Learning Timeline</h2>
               </div>
               <div className="space-y-3">
@@ -292,7 +292,7 @@ export default function ProgressPage() {
                   return (
                     <div key={i} className="flex items-start gap-4">
                       <div className="flex flex-col items-center gap-1">
-                        <div className="w-2 h-2 bg-brand-DEFAULT mt-1 flex-shrink-0" />
+                        <div className="w-2 h-2 bg-brand mt-1 flex-shrink-0" />
                         {i !== progress.timeline.length - 1 && (
                           <div className="w-px h-full bg-brand-border flex-1 min-h-[16px]" />
                         )}
@@ -312,7 +312,7 @@ export default function ProgressPage() {
                         </div>
                         <span className="text-[10px] text-brand-muted font-mono mt-1 block">
                           {new Date(event.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          <span className="ml-2 text-brand-DEFAULT">Score: {event.overallScore}</span>
+                          <span className="ml-2 text-brand">Score: {event.overallScore}</span>
                         </span>
                       </div>
                     </div>

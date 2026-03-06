@@ -97,7 +97,7 @@ export default function QAPage() {
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center py-10 bg-brand-surface border border-brand-border">
               <div className="w-12 h-12 bg-brand-surface border border-brand-border flex items-center justify-center mb-5">
-                <MessageSquare className="w-7 h-7 text-brand-DEFAULT" />
+                <MessageSquare className="w-7 h-7 text-brand" />
               </div>
               <p className="text-brand-text font-semibold text-lg mb-1">Ask about this codebase</p>
               <p className="text-brand-muted text-sm mb-8 max-w-sm">
@@ -108,9 +108,9 @@ export default function QAPage() {
                   <button
                     key={q}
                     onClick={() => handleStarter(q)}
-                    className="text-left px-4 py-3 bg-brand-bg border border-brand-border hover:border-brand-DEFAULT/40 hover:bg-brand-card text-xs text-brand-muted hover:text-brand-text transition-all font-mono cursor-pointer"
+                    className="text-left px-4 py-3 bg-brand-bg border border-brand-border hover:border-brand/40 hover:bg-brand-card text-xs text-brand-muted hover:text-brand-text transition-all font-mono cursor-pointer"
                   >
-                    <span className="text-brand-DEFAULT mr-2">→</span>{q}
+                    <span className="text-brand mr-2">→</span>{q}
                   </button>
                 ))}
               </div>
@@ -121,13 +121,13 @@ export default function QAPage() {
             <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               {msg.role === "assistant" && (
                 <div className="w-8 h-8 bg-brand-surface border border-brand-border flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Bot className="w-4 h-4 text-brand-DEFAULT" />
+                  <Bot className="w-4 h-4 text-brand" />
                 </div>
               )}
               <div className={`flex flex-col gap-2 max-w-2xl ${msg.role === "user" ? "items-end" : "items-start"}`}>
                 <div className={`px-4 py-3 text-sm leading-relaxed ${
                   msg.role === "user"
-                    ? "bg-brand-DEFAULT/10 border border-brand-DEFAULT/20 text-brand-text"
+                    ? "bg-brand/10 border border-brand/20 text-brand-text"
                     : "bg-brand-surface border border-brand-border text-brand-text"
                 }`}>
                   <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -151,7 +151,7 @@ export default function QAPage() {
                       <button
                         key={j}
                         onClick={() => handleStarter(q)}
-                        className="flex items-center gap-1 text-xs px-3 py-1.5 border border-brand-border hover:border-brand-DEFAULT/40 text-brand-muted hover:text-brand-text transition-all cursor-pointer font-mono"
+                        className="flex items-center gap-1 text-xs px-3 py-1.5 border border-brand-border hover:border-brand/40 text-brand-muted hover:text-brand-text transition-all cursor-pointer font-mono"
                       >
                         {q} <ChevronRight className="w-3 h-3" />
                       </button>
@@ -170,13 +170,13 @@ export default function QAPage() {
           {loading && (
             <div className="flex gap-3">
               <div className="w-8 h-8 bg-brand-surface border border-brand-border flex items-center justify-center flex-shrink-0">
-                <Bot className="w-4 h-4 text-brand-DEFAULT" />
+                <Bot className="w-4 h-4 text-brand" />
               </div>
               <div className="bg-brand-surface border border-brand-border px-4 py-3">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-DEFAULT animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-DEFAULT animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-DEFAULT animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function QAPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask a question about this codebase..."
-              className="w-full px-4 py-3 bg-brand-surface border border-brand-border focus:border-brand-DEFAULT/60 text-sm text-brand-text placeholder-brand-muted focus:outline-none transition-all font-mono"
+              className="w-full px-4 py-3 bg-brand-surface border border-brand-border focus:border-brand/60 text-sm text-brand-text placeholder-brand-muted focus:outline-none transition-all font-mono"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-0.5 pointer-events-none opacity-40">
               <kbd className="text-[9px] px-1 border border-brand-border text-brand-muted font-mono bg-brand-card">↵</kbd>
@@ -209,7 +209,7 @@ export default function QAPage() {
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="px-5 py-3 bg-brand-DEFAULT text-brand-bg hover:bg-brand-DEFAULT/90 disabled:opacity-30 disabled:cursor-not-allowed font-medium transition-all flex items-center gap-2"
+            className="px-5 py-3 bg-brand text-brand-bg hover:bg-brand/90 disabled:opacity-30 disabled:cursor-not-allowed font-medium transition-all flex items-center gap-2"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>

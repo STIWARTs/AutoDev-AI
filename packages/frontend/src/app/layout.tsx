@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className={`${playfairDisplay.variable} ${inter.variable} ${jetbrainsMono.variable} dark`}>
-        <body className="bg-brand-bg text-brand-text min-h-screen font-body antialiased selection:bg-brand-DEFAULT/30 selection:text-white">
+        <body className="bg-brand-bg text-brand-text min-h-screen font-body antialiased selection:bg-brand/30 selection:text-white">
           {children}
         </body>
       </html>

@@ -115,7 +115,7 @@ const AnimatedTerminal = () => {
     <div className="p-6 text-left font-mono text-xs md:text-sm h-full min-h-[220px]">
       <div className="space-y-3">
         <div className="text-brand-muted">
-          <span className="text-brand-DEFAULT">$</span> {step === 0 ? typedText : fullText}
+          <span className="text-brand">$</span> {step === 0 ? typedText : fullText}
           {step === 0 && <span className="inline-block w-2 h-4 bg-brand-muted animate-pulse align-middle ml-1" />}
         </div>
         
@@ -144,9 +144,9 @@ const AnimatedTerminal = () => {
         )}
         
         {step >= 5 && (
-          <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-brand-DEFAULT mt-4 font-semibold">
+          <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-brand mt-4 font-semibold">
             Generating multilingual walkthroughs (Hindi, Tamil, English)...
-            <span className="inline-block w-2 h-4 bg-brand-DEFAULT animate-pulse align-middle ml-1" />
+            <span className="inline-block w-2 h-4 bg-brand animate-pulse align-middle ml-1" />
           </motion.div>
         )}
       </div>
@@ -195,14 +195,14 @@ const AnimatedCodeReview = () => {
           </motion.div>
         ) : step === 1 ? (
           <div className="h-6 flex items-center -mx-4 px-4">
-            <div className="w-1.5 h-4 bg-brand-DEFAULT animate-pulse" />
+            <div className="w-1.5 h-4 bg-brand animate-pulse" />
             <span className="text-brand-muted text-[10px] sm:text-xs ml-2 animate-pulse uppercase tracking-widest">AutoDev AI Reviewing...</span>
           </div>
         ) : <div className="h-6" />}
         
         {step < 2 && (
           <motion.div 
-            className="absolute top-0 left-0 w-full h-[2px] bg-brand-DEFAULT/50 shadow-[0_0_10px_rgba(226,90,52,0.8)]"
+            className="absolute top-0 left-0 w-full h-[2px] bg-brand/50 shadow-[0_0_10px_rgba(226,90,52,0.8)]"
             animate={{ top: ["0%", "100%", "0%"] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
           />
@@ -212,7 +212,7 @@ const AnimatedCodeReview = () => {
       <div className="h-[120px]">
         {step >= 3 && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 bg-brand-bg border border-brand-border p-4 rounded-sm">
-            <div className="w-6 h-6 rounded-full bg-brand-DEFAULT flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-6 h-6 rounded-full bg-brand flex items-center justify-center shrink-0 mt-0.5">
               <Sparkles className="w-3 h-3 text-brand-bg" />
             </div>
             <div className="text-sm">
@@ -270,10 +270,10 @@ const AnimatedQA = () => {
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-start"
           >
-             <div className="bg-brand-DEFAULT/20 text-brand-DEFAULT border border-brand-DEFAULT/30 rounded-sm rounded-tl-none px-4 py-3 flex gap-1 items-center">
-               <span className="w-1.5 h-1.5 bg-brand-DEFAULT rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-               <span className="w-1.5 h-1.5 bg-brand-DEFAULT rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-               <span className="w-1.5 h-1.5 bg-brand-DEFAULT rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+             <div className="bg-brand/20 text-brand border border-brand/30 rounded-sm rounded-tl-none px-4 py-3 flex gap-1 items-center">
+               <span className="w-1.5 h-1.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+               <span className="w-1.5 h-1.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+               <span className="w-1.5 h-1.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
              </div>
           </motion.div>
         )}
@@ -286,11 +286,11 @@ const AnimatedQA = () => {
           >
         <div className="bg-brand-surface border border-brand-border rounded-sm rounded-tl-none px-4 py-3 max-w-[85%] inline-block text-[13px] leading-relaxed">
               <p className="font-semibold mb-2 text-brand-text">ज़रूर!</p>
-              <p className="mb-2 text-brand-muted">इस प्रोजेक्ट में, ऑथेंटिकेशन <code className="text-brand-DEFAULT bg-brand-card px-1 rounded-sm font-mono text-[11px]">src/middleware/auth.ts</code> में संभाला गया है।</p>
+              <p className="mb-2 text-brand-muted">इस प्रोजेक्ट में, ऑथेंटिकेशन <code className="text-brand bg-brand-card px-1 rounded-sm font-mono text-[11px]">src/middleware/auth.ts</code> में संभाला गया है।</p>
               <ol className="list-decimal pl-4 space-y-1 text-brand-muted">
                 <li>यह रिक्वेस्ट हेडर से JWT टोकन निकालता है।</li>
-                <li><code className="text-brand-DEFAULT bg-brand-card px-1 rounded-sm font-mono text-[11px]">jsonwebtoken</code> लाइब्रेरी का उपयोग करके टोकन को वेरीफाई करता है।</li>
-                <li>अगर टोकन सही है, तो यह यूज़र डेटा को <code className="text-brand-DEFAULT bg-brand-card px-1 rounded-sm font-mono text-[11px]">req.user</code> में डाल देता है ताकि आगे इस्तेमाल हो सके।</li>
+                <li><code className="text-brand bg-brand-card px-1 rounded-sm font-mono text-[11px]">jsonwebtoken</code> लाइब्रेरी का उपयोग करके टोकन को वेरीफाई करता है।</li>
+                <li>अगर टोकन सही है, तो यह यूज़र डेटा को <code className="text-brand bg-brand-card px-1 rounded-sm font-mono text-[11px]">req.user</code> में डाल देता है ताकि आगे इस्तेमाल हो सके।</li>
               </ol>
             </div>
           </motion.div>
@@ -334,7 +334,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-brand-bg text-brand-text font-body selection:bg-brand-DEFAULT/30 overflow-x-hidden">
+    <main className="min-h-screen bg-brand-bg text-brand-text font-body selection:bg-brand/30 overflow-x-hidden">
       {/* ─── NAVIGATION ─── */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-brand-border bg-brand-bg/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -348,7 +348,7 @@ export default function HomePage() {
             }}
             className="flex items-center gap-3"
           >
-            <div className="w-8 h-8 bg-brand-DEFAULT rounded-sm flex items-center justify-center">
+            <div className="w-8 h-8 bg-brand rounded-sm flex items-center justify-center">
               <Code2 className="w-4 h-4 text-brand-bg" />
             </div>
             <span className="font-heading font-semibold text-xl tracking-tight">AutoDev</span>
@@ -360,11 +360,11 @@ export default function HomePage() {
             <Link href="#pricing" className="hover:text-brand-text transition-colors">Pricing</Link>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="font-mono text-sm text-brand-text hover:text-brand-DEFAULT transition-colors">
+            <Link href="/dashboard" className="font-mono text-sm text-brand-text hover:text-brand transition-colors">
               Log In
             </Link>
             <Link href="/dashboard">
-              <Button className="rounded-sm bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg transition-colors font-semibold px-6 h-9">
+              <Button className="rounded-sm bg-brand-text text-brand-bg hover:bg-brand hover:text-brand-bg transition-colors font-semibold px-6 h-9">
                 Start Free
               </Button>
             </Link>
@@ -393,7 +393,7 @@ export default function HomePage() {
             className="max-w-4xl space-y-8"
           >
             <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-brand-border bg-brand-surface font-mono text-xs text-brand-muted">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-DEFAULT animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
               AI for Bharat Hackathon 2026
             </motion.div>
             
@@ -407,7 +407,7 @@ export default function HomePage() {
             
             <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Link href="/dashboard">
-                <Button className="rounded-sm bg-brand-DEFAULT hover:bg-white text-brand-bg h-12 px-8 text-base font-medium transition-colors">
+                <Button className="rounded-sm bg-brand hover:bg-white text-brand-bg h-12 px-8 text-base font-medium transition-colors">
                   Connect Repository <ChevronRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
@@ -481,9 +481,9 @@ export default function HomePage() {
                 className="relative z-10 flex flex-col items-center text-center cursor-default bg-brand-surface p-6 rounded-sm border border-transparent hover:border-brand-border/50 hover:bg-brand-bg/50 transition-colors"
               >
                 <div className="w-14 h-14 bg-brand-bg border border-brand-border rounded-sm flex items-center justify-center mb-6 shadow-sm">
-                  <s.Icon className="w-6 h-6 text-brand-DEFAULT" />
+                  <s.Icon className="w-6 h-6 text-brand" />
                 </div>
-                <div className="font-mono text-xs text-brand-muted mb-2 uppercase tracking-widest text-brand-DEFAULT">Step {s.step}</div>
+                <div className="font-mono text-xs text-brand-muted mb-2 uppercase tracking-widest text-brand">Step {s.step}</div>
                 <h3 className="font-heading text-2xl mb-3">{s.title}</h3>
                 <p className="font-body text-sm text-brand-muted leading-relaxed max-w-xs">{s.desc}</p>
               </motion.div>
@@ -502,7 +502,7 @@ export default function HomePage() {
               initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
               className="flex-1 space-y-6"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-brand-border bg-brand-surface font-mono text-xs text-brand-DEFAULT">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-brand-border bg-brand-surface font-mono text-xs text-brand">
                 <GitBranch className="w-3 h-3" /> Visual Graph
               </div>
               <h2 className="font-heading text-4xl md:text-5xl leading-[1.1]">The Architecture Map</h2>
@@ -551,9 +551,9 @@ export default function HomePage() {
                 <motion.div 
                   animate={{ y: [0, 10, 0] }}
                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="p-4 bg-brand-bg border border-brand-DEFAULT/50 rounded-sm absolute top-32 right-12 z-10 w-48 shadow-[0_0_30px_rgba(226,90,52,0.1)]"
+                  className="p-4 bg-brand-bg border border-brand/50 rounded-sm absolute top-32 right-12 z-10 w-48 shadow-[0_0_30px_rgba(226,90,52,0.1)]"
                 >
-                  <div className="font-mono text-[10px] text-brand-DEFAULT mb-1">BACKEND</div>
+                  <div className="font-mono text-[10px] text-brand mb-1">BACKEND</div>
                   <div className="font-heading text-lg">Express API</div>
                   <div className="mt-2 pt-2 border-t border-brand-border font-mono text-[10px] text-brand-muted">REST + WebSockets</div>
                 </motion.div>
@@ -592,7 +592,7 @@ export default function HomePage() {
               initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
               className="flex-1 space-y-6"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-brand-border bg-brand-surface font-mono text-xs text-brand-DEFAULT">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-brand-border bg-brand-surface font-mono text-xs text-brand">
                 <Shield className="w-3 h-3" /> Automated Code Reviews
               </div>
               <h2 className="font-heading text-4xl md:text-5xl leading-[1.1]">Catch drift before it merges</h2>
@@ -600,7 +600,7 @@ export default function HomePage() {
                 Our AI doesn&apos;t just look for syntax errors. It understands your unique architectural patterns. If a new developer violates a convention, AutoDev catches it in the PR.
               </p>
               <div className="pt-2">
-                <Link href="/demo" className="font-mono text-sm text-brand-text hover:text-brand-DEFAULT flex items-center gap-2 transition-colors">
+                <Link href="/demo" className="font-mono text-sm text-brand-text hover:text-brand flex items-center gap-2 transition-colors">
                   Explore conventions checker <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -619,7 +619,7 @@ export default function HomePage() {
               initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
               className="flex-1 space-y-6"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-brand-border bg-brand-surface font-mono text-xs text-brand-DEFAULT">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-brand-border bg-brand-surface font-mono text-xs text-brand">
                 <Globe2 className="w-3 h-3" /> Global Diversity
               </div>
               <h2 className="font-heading text-4xl md:text-5xl leading-[1.1]">Multilingual Q&A</h2>
@@ -640,7 +640,7 @@ export default function HomePage() {
 
       {/* ─── SOCIAL PROOF ─── */}
       <section id="customers" className="py-24 px-6 border-t border-brand-border bg-brand-bg relative overflow-hidden scroll-mt-16">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-brand-DEFAULT opacity-5 blur-[100px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand opacity-5 blur-[100px] pointer-events-none" />
         <div className="max-w-4xl mx-auto text-center space-y-16">
           <h2 className="font-heading text-4xl">Trusted by teams scaling fast</h2>
           
@@ -659,7 +659,7 @@ export default function HomePage() {
           </div>
 
           <div className="border border-brand-border bg-brand-surface rounded-sm p-8 md:p-12 text-left relative">
-            <span className="font-heading text-8xl text-brand-DEFAULT absolute top-4 left-6 opacity-20">&ldquo;</span>
+            <span className="font-heading text-8xl text-brand absolute top-4 left-6 opacity-20">&ldquo;</span>
             <blockquote className="relative z-10 font-heading text-2xl md:text-3xl leading-snug mb-8">
               AutoDev fundamentally changed how we scale our engineering team. What used to take 3 weeks of shadowing and paired programming is now done asynchronously over a weekend. The animated data flow graph is magic.
             </blockquote>
@@ -698,20 +698,20 @@ export default function HomePage() {
             </div>
 
             {/* Pro Tier */}
-            <div className="border border-brand-DEFAULT relative bg-brand-surface rounded-sm p-8 flex flex-col shadow-[0_0_30px_rgba(226,90,52,0.05)]">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-3 py-1 bg-brand-DEFAULT text-brand-bg font-mono text-[10px] uppercase tracking-widest rounded-sm border border-brand-border">
+            <div className="border border-brand relative bg-brand-surface rounded-sm p-8 flex flex-col shadow-[0_0_30px_rgba(226,90,52,0.05)]">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-3 py-1 bg-brand text-brand-bg font-mono text-[10px] uppercase tracking-widest rounded-sm border border-brand-border">
                 Most Popular
               </div>
-              <div className="font-mono text-xs text-brand-DEFAULT mb-2 uppercase tracking-widest">Developer</div>
+              <div className="font-mono text-xs text-brand mb-2 uppercase tracking-widest">Developer</div>
               <div className="font-heading text-4xl mb-1">$29<span className="text-lg text-brand-muted font-mono font-normal tracking-normal">/user/mo</span></div>
               <div className="font-mono text-[10px] text-brand-muted mb-6">Billed annually</div>
               <ul className="space-y-4 mb-8 flex-1 font-mono text-sm text-brand-text">
-                <li className="flex gap-3"><Check className="w-4 h-4 text-brand-DEFAULT shrink-0 mt-0.5" /> Unlimited private repos</li>
-                <li className="flex gap-3"><Check className="w-4 h-4 text-brand-DEFAULT shrink-0 mt-0.5" /> Multi-service architecture tracing</li>
-                <li className="flex gap-3"><Check className="w-4 h-4 text-brand-DEFAULT shrink-0 mt-0.5" /> Unlimited multilingual Q&A</li>
-                <li className="flex gap-3"><Check className="w-4 h-4 text-brand-DEFAULT shrink-0 mt-0.5" /> AI PR convention reviews</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> Unlimited private repos</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> Multi-service architecture tracing</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> Unlimited multilingual Q&A</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> AI PR convention reviews</li>
               </ul>
-              <Button className="w-full rounded-sm bg-brand-text hover:bg-brand-DEFAULT text-brand-bg hover:text-brand-bg transition-colors">
+              <Button className="w-full rounded-sm bg-brand-text hover:bg-brand text-brand-bg hover:text-brand-bg transition-colors">
                 Upgrade to Pro
               </Button>
             </div>
@@ -735,13 +735,13 @@ export default function HomePage() {
 
       {/* ─── BOTTOM CTA ─── */}
       <section className="py-32 px-6 bg-brand-surface text-center border-t border-brand-border relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-brand-DEFAULT/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-brand/5 pointer-events-none" />
         <div className="max-w-2xl mx-auto relative z-10 space-y-8">
           <h2 className="font-heading text-5xl md:text-6xl tracking-tight">Ready to eliminate your onboarding bottleneck?</h2>
           <p className="font-mono text-brand-muted max-w-lg mx-auto">Join hundreds of high-performing engineering teams using AutoDev to scale efficiently.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Link href="/dashboard">
-              <Button className="rounded-sm flex border border-transparent bg-brand-text hover:bg-brand-DEFAULT text-brand-bg hover:text-brand-bg h-14 px-8 text-base font-semibold transition-colors">
+              <Button className="rounded-sm flex border border-transparent bg-brand-text hover:bg-brand text-brand-bg hover:text-brand-bg h-14 px-8 text-base font-semibold transition-colors">
                 Start Building Free <ChevronRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
@@ -766,7 +766,7 @@ export default function HomePage() {
               }}
               className="flex items-center gap-2"
             >
-              <div className="w-6 h-6 bg-brand-DEFAULT rounded-sm flex items-center justify-center">
+              <div className="w-6 h-6 bg-brand rounded-sm flex items-center justify-center">
                 <Code2 className="w-3 h-3 text-brand-bg" />
               </div>
               <span className="font-heading font-semibold text-lg tracking-tight">AutoDev</span>
@@ -778,26 +778,26 @@ export default function HomePage() {
           <div className="space-y-4">
             <div className="font-heading font-semibold text-brand-text">Product</div>
             <ul className="space-y-3 font-mono text-xs text-brand-muted flex flex-col items-start">
-              <li><Link href="#" className="hover:text-brand-DEFAULT transition-colors">Features</Link></li>
-              <li><Link href="#" className="hover:text-brand-DEFAULT transition-colors">Integrations</Link></li>
-              <li><Link href="#" className="hover:text-brand-DEFAULT transition-colors">Pricing</Link></li>
-              <li><Link href="#" className="hover:text-brand-DEFAULT transition-colors">Changelog</Link></li>
+              <li><Link href="#" className="hover:text-brand transition-colors">Features</Link></li>
+              <li><Link href="#" className="hover:text-brand transition-colors">Integrations</Link></li>
+              <li><Link href="#" className="hover:text-brand transition-colors">Pricing</Link></li>
+              <li><Link href="#" className="hover:text-brand transition-colors">Changelog</Link></li>
             </ul>
           </div>
           <div className="space-y-4">
             <div className="font-heading font-semibold text-brand-text">Developers</div>
             <ul className="space-y-3 font-mono text-xs text-brand-muted flex flex-col items-start">
-              <li><Link href="#" className="hover:text-brand-DEFAULT transition-colors">Documentation</Link></li>
-              <li><Link href="#" className="hover:text-brand-DEFAULT transition-colors">API Reference</Link></li>
-              <li><Link href="#" className="hover:text-brand-DEFAULT transition-colors">GitHub Check Status</Link></li>
+              <li><Link href="#" className="hover:text-brand transition-colors">Documentation</Link></li>
+              <li><Link href="#" className="hover:text-brand transition-colors">API Reference</Link></li>
+              <li><Link href="#" className="hover:text-brand transition-colors">GitHub Check Status</Link></li>
             </ul>
           </div>
           <div className="space-y-4">
             <div className="font-heading font-semibold text-brand-text">Company</div>
             <ul className="space-y-3 font-mono text-xs text-brand-muted flex flex-col items-start">
-              <li><Link href="#" className="hover:text-brand-DEFAULT transition-colors">About</Link></li>
-              <li><Link href="#" className="hover:text-brand-DEFAULT transition-colors">Blog</Link></li>
-              <li><Link href="#" className="hover:text-brand-DEFAULT transition-colors">Careers</Link></li>
+              <li><Link href="#" className="hover:text-brand transition-colors">About</Link></li>
+              <li><Link href="#" className="hover:text-brand transition-colors">Blog</Link></li>
+              <li><Link href="#" className="hover:text-brand transition-colors">Careers</Link></li>
             </ul>
           </div>
         </div>

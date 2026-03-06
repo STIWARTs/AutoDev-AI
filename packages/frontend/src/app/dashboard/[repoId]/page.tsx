@@ -120,7 +120,7 @@ export default function RepoDetailPage() {
           ) : (status === "pending" || status === "failed") && !isDemo ? (
             <button
               onClick={triggerAnalysis}
-              className="flex items-center gap-2 px-4 py-2 bg-brand-DEFAULT hover:bg-brand-DEFAULT/90 text-brand-bg text-sm font-mono font-semibold transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand/90 text-brand-bg text-sm font-mono font-semibold transition-colors"
             >
               <Play className="w-3.5 h-3.5" fill="currentColor" />
               Run Analysis
@@ -142,11 +142,11 @@ export default function RepoDetailPage() {
         {statsCards.map((s) => (
           <div
             key={s.label}
-            className="bg-brand-surface border border-brand-border p-4 relative overflow-hidden group hover:border-brand-DEFAULT/30 transition-colors"
+            className="bg-brand-surface border border-brand-border p-4 relative overflow-hidden group hover:border-brand/30 transition-colors"
           >
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-brand-DEFAULT opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-brand opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="flex items-center gap-2 mb-2">
-              <s.icon className="w-4 h-4 text-brand-DEFAULT" />
+              <s.icon className="w-4 h-4 text-brand" />
               <p className="text-[9px] text-brand-muted uppercase tracking-widest font-semibold">{s.label}</p>
             </div>
             <p className={`text-2xl font-heading font-bold capitalize ${
@@ -168,7 +168,7 @@ export default function RepoDetailPage() {
                 {[0.45, 0.75, 1.0, 0.75, 0.45].map((h, i) => (
                   <div
                     key={i}
-                    className="flex-1 bg-brand-DEFAULT eq-bar"
+                    className="flex-1 bg-brand eq-bar"
                     style={{
                       height: `${h * 100}%`,
                       animationDelay: `${i * 0.12}s`,
@@ -205,8 +205,8 @@ export default function RepoDetailPage() {
         ) : (
           <div className="flex items-center justify-center h-[520px]">
             <div className="text-center">
-              <div className="w-16 h-16 bg-brand-DEFAULT/10 border border-brand-DEFAULT/20 flex items-center justify-center mx-auto mb-5">
-                <Play className="w-7 h-7 text-brand-DEFAULT" />
+              <div className="w-16 h-16 bg-brand/10 border border-brand/20 flex items-center justify-center mx-auto mb-5">
+                <Play className="w-7 h-7 text-brand" />
               </div>
               <p className="text-brand-text font-heading font-semibold text-lg mb-2">No architecture analysis yet</p>
               <p className="text-brand-muted text-sm font-mono mb-6 max-w-sm mx-auto">
@@ -215,7 +215,7 @@ export default function RepoDetailPage() {
               {!isDemo && (
                 <button
                   onClick={triggerAnalysis}
-                  className="px-5 py-2.5 bg-brand-DEFAULT hover:bg-brand-DEFAULT/90 text-brand-bg text-sm font-mono font-semibold transition-colors"
+                  className="px-5 py-2.5 bg-brand hover:bg-brand/90 text-brand-bg text-sm font-mono font-semibold transition-colors"
                 >
                   Run Analysis
                 </button>
@@ -235,7 +235,7 @@ export default function RepoDetailPage() {
                 key={key}
                 className="text-xs px-3 py-1.5 bg-brand-bg border border-brand-border text-brand-muted font-mono"
               >
-                <span className="text-brand-DEFAULT">{key}:</span> {value}
+                <span className="text-brand">{key}:</span> {value}
               </span>
             ))}
           </div>

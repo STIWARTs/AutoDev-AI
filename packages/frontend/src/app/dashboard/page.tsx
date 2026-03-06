@@ -138,7 +138,7 @@ function DashboardContent() {
         {/* Logo */}
         <div className="px-5 pt-6 pb-5">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 bg-brand-DEFAULT flex items-center justify-center flex-shrink-0">
+            <div className="w-7 h-7 bg-brand flex items-center justify-center flex-shrink-0">
               <Code2 className="w-3.5 h-3.5 text-brand-bg" />
             </div>
             <span className="font-heading font-semibold text-brand-text text-base tracking-tight">AutoDev</span>
@@ -152,10 +152,10 @@ function DashboardContent() {
           <p className="px-3 mb-2 text-[9px] uppercase tracking-widest text-brand-muted font-semibold">Workspace</p>
           <Link
             href={`/dashboard${demoSuffix}`}
-            className="flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium text-brand-DEFAULT bg-brand-DEFAULT/5 border border-brand-DEFAULT/20 relative"
+            className="flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium text-brand bg-brand/5 border border-brand/20 relative"
           >
-            <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand-DEFAULT" />
-            <LayoutDashboard className="w-[14px] h-[14px] text-brand-DEFAULT" />
+            <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand" />
+            <LayoutDashboard className="w-[14px] h-[14px] text-brand" />
             Repositories
           </Link>
         </div>
@@ -177,7 +177,7 @@ function DashboardContent() {
 
         {/* Demo banner */}
         {isDemo && (
-          <div className="flex items-center justify-center gap-3 py-2 text-xs font-mono bg-brand-DEFAULT/5 border-b border-brand-DEFAULT/20 text-brand-DEFAULT">
+          <div className="flex items-center justify-center gap-3 py-2 text-xs font-mono bg-brand/5 border-b border-brand/20 text-brand">
             <Zap className="w-3 h-3" />
             Demo Mode — Exploring pre-analyzed repositories
             <Link href="/dashboard" className="ml-2 underline opacity-60 hover:opacity-100 transition-opacity">Exit</Link>
@@ -207,7 +207,7 @@ function DashboardContent() {
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
                   <Button
-                    className="inline-flex items-center gap-1.5 bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg transition-colors px-4 h-8 text-xs font-semibold rounded-none"
+                    className="inline-flex items-center gap-1.5 bg-brand-text text-brand-bg hover:bg-brand hover:text-brand-bg transition-colors px-4 h-8 text-xs font-semibold rounded-none"
                   >
                     <Plus className="w-3.5 h-3.5" /> Connect Repo
                   </Button>
@@ -226,14 +226,14 @@ function DashboardContent() {
                         placeholder="owner/repo"
                         value={repoInput}
                         onChange={(e) => setRepoInput(e.target.value)}
-                        className="font-mono bg-brand-bg border-brand-border text-brand-text rounded-none focus-visible:ring-brand-DEFAULT"
+                        className="font-mono bg-brand-bg border-brand-border text-brand-text rounded-none focus-visible:ring-brand"
                       />
                     </div>
                     <DialogFooter>
                       <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)} disabled={isSubmitting} className="rounded-none text-brand-muted hover:text-brand-text font-mono text-xs">
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={isSubmitting || !repoInput} className="bg-brand-DEFAULT hover:bg-brand-DEFAULT/90 text-brand-bg rounded-none font-mono text-xs">
+                      <Button type="submit" disabled={isSubmitting || !repoInput} className="bg-brand hover:bg-brand/90 text-brand-bg rounded-none font-mono text-xs">
                         {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                         {isSubmitting ? "Ingesting..." : "Connect & Analyze"}
                       </Button>
@@ -293,12 +293,12 @@ function DashboardContent() {
                     href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "https://github.com/apps/autodev/installations/new"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg transition-colors px-5 py-2.5 text-sm font-medium rounded-none"
+                    className="inline-flex items-center gap-2 bg-brand-text text-brand-bg hover:bg-brand hover:text-brand-bg transition-colors px-5 py-2.5 text-sm font-medium rounded-none"
                   >
                     <Github className="w-4 h-4" /> Install GitHub App
                   </a>
                   <Link href="/dashboard?demo=true">
-                    <button className="inline-flex items-center gap-2 bg-transparent border border-brand-border text-brand-text hover:border-brand-DEFAULT hover:text-brand-DEFAULT transition-colors px-5 py-2.5 text-sm font-medium rounded-none cursor-pointer">
+                    <button className="inline-flex items-center gap-2 bg-transparent border border-brand-border text-brand-text hover:border-brand hover:text-brand transition-colors px-5 py-2.5 text-sm font-medium rounded-none cursor-pointer">
                       <Play className="w-4 h-4" /> Try Demo Mode
                     </button>
                   </Link>
@@ -312,7 +312,7 @@ function DashboardContent() {
                     { icon: Zap, label: "Walkthroughs", desc: "Step-by-step code guides" },
                   ].map(({ icon: Icon, label, desc }) => (
                     <div key={label} className="flex flex-col items-center text-center p-5 bg-brand-surface">
-                      <Icon className="w-4 h-4 text-brand-DEFAULT mb-2" />
+                      <Icon className="w-4 h-4 text-brand mb-2" />
                       <p className="text-xs font-semibold text-brand-text mb-1">{label}</p>
                       <p className="text-[11px] text-brand-muted font-mono">{desc}</p>
                     </div>
@@ -350,18 +350,18 @@ function DashboardContent() {
                     key={repo.repoId}
                     href={`/dashboard/${encodeURIComponent(repo.repoId)}${demoSuffix}`}
                   >
-                    <div className="group border border-brand-border bg-brand-surface hover:border-brand-DEFAULT/40 hover:bg-brand-card transition-all duration-200 cursor-pointer h-full flex flex-col p-5 relative">
+                    <div className="group border border-brand-border bg-brand-surface hover:border-brand/40 hover:bg-brand-card transition-all duration-200 cursor-pointer h-full flex flex-col p-5 relative">
                       {/* Hover accent line top */}
-                      <div className="absolute top-0 left-0 right-0 h-[1px] bg-brand-DEFAULT scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                      <div className="absolute top-0 left-0 right-0 h-[1px] bg-brand scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
 
                       <div className="flex items-start justify-between mb-4">
                         <div className="w-9 h-9 bg-brand-card border border-brand-border flex items-center justify-center flex-shrink-0">
                           <FolderGit2 className="w-4 h-4 text-brand-muted" />
                         </div>
-                        <ChevronRight className="w-4 h-4 text-brand-muted group-hover:text-brand-DEFAULT group-hover:translate-x-0.5 transition-all duration-200" />
+                        <ChevronRight className="w-4 h-4 text-brand-muted group-hover:text-brand group-hover:translate-x-0.5 transition-all duration-200" />
                       </div>
 
-                      <h3 className="font-heading font-semibold text-sm text-brand-text group-hover:text-brand-DEFAULT transition-colors leading-tight mb-3">
+                      <h3 className="font-heading font-semibold text-sm text-brand-text group-hover:text-brand transition-colors leading-tight mb-3">
                         {repo.repoId}
                       </h3>
 
@@ -400,7 +400,7 @@ function DashboardContent() {
                           {repo.fileCount && (
                             <div className="h-0.5 bg-brand-border w-full">
                               <div
-                                className="h-0.5 bg-brand-DEFAULT transition-all"
+                                className="h-0.5 bg-brand transition-all"
                                 style={{ width: `${Math.min(100, Math.round((repo.fileCount / 300) * 100))}%` }}
                               />
                             </div>
@@ -425,7 +425,7 @@ export default function DashboardPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-brand-bg flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-brand-DEFAULT animate-spin" />
+          <Loader2 className="w-6 h-6 text-brand animate-spin" />
         </div>
       }
     >
