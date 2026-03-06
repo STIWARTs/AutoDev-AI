@@ -9,7 +9,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useProgressTracker } from "@/hooks/useProgressTracker";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import type { ArchitectureMap as ArchMapType } from "@autodev/shared";
-import { Play, RefreshCw, Loader2, AlertCircle, Cpu, GitBranch, Layers, Code2 } from "lucide-react";
+import { Play, RefreshCw, AlertCircle, Cpu, GitBranch, Layers, Code2 } from "lucide-react";
 
 type AnalysisStatus = "pending" | "analyzing" | "completed" | "failed";
 
@@ -88,16 +88,16 @@ export default function RepoDetailPage() {
 
   const statusColors: Record<AnalysisStatus, string> = {
     completed: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-    analyzing: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-    failed: "text-red-400 bg-red-500/10 border-red-500/20",
-    pending: "text-slate-400 bg-slate-500/10 border-slate-500/20",
+    analyzing:  "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    failed:     "text-red-400 bg-red-500/10 border-red-500/20",
+    pending:    "text-brand-muted bg-brand-surface border-brand-border",
   };
 
   const statsCards = [
-    { icon: Layers, label: "Modules", value: archMap ? archMap.nodes.length : "—", color: "text-indigo-400" },
-    { icon: GitBranch, label: "Dependencies", value: archMap ? archMap.edges.length : "—", color: "text-purple-400" },
-    { icon: Cpu, label: "Status", value: status, color: statusColors[status].split(" ")[0] },
-    { icon: Code2, label: "Entry Points", value: archMap ? ((archMap as any).entryPoints?.length ?? "—") : "—", color: "text-cyan-400" },
+    { icon: Layers,    label: "Modules",      value: archMap ? archMap.nodes.length : "—" },
+    { icon: GitBranch, label: "Dependencies",  value: archMap ? archMap.edges.length : "—" },
+    { icon: Cpu,       label: "Status",        value: status,  statusKey: status },
+    { icon: Code2,     label: "Entry Points",  value: archMap ? ((archMap as any).entryPoints?.length ?? "—") : "—" },
   ];
 
   return (
@@ -106,17 +106,23 @@ export default function RepoDetailPage() {
       subtitle="Visual representation of your codebase structure and module dependencies"
       action={
         <div className="flex items-center gap-3">
-          <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${statusColors[status]}`}>
+          <span className={`text-[10px] px-2.5 py-1 border font-mono uppercase tracking-wide ${statusColors[status]}`}>
             {status}
           </span>
           {status === "completed" ? (
-            <button onClick={triggerAnalysis} className="flex items-center gap-2 px-4 py-2 glass-hover rounded-lg text-sm font-medium text-brand-text-secondary hover:text-white transition-all border border-white/[0.08]">
+            <button
+              onClick={triggerAnalysis}
+              className="flex items-center gap-2 px-4 py-2 border border-brand-border text-brand-muted hover:border-brand-muted hover:text-brand-text text-sm font-mono transition-colors"
+            >
               <RefreshCw className="w-3.5 h-3.5" />
               Re-analyze
             </button>
           ) : (status === "pending" || status === "failed") && !isDemo ? (
-            <button onClick={triggerAnalysis} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-indigo-500/20">
-              <Play className="w-3.5 h-3.5" fill="white" />
+            <button
+              onClick={triggerAnalysis}
+              className="flex items-center gap-2 px-4 py-2 bg-brand-DEFAULT hover:bg-brand-DEFAULT/90 text-brand-bg text-sm font-mono font-semibold transition-colors"
+            >
+              <Play className="w-3.5 h-3.5" fill="currentColor" />
               Run Analysis
             </button>
           ) : null}
@@ -125,7 +131,7 @@ export default function RepoDetailPage() {
     >
       {/* Error */}
       {error && (
-        <div className="mb-6 flex items-center gap-3 p-4 rounded-xl border border-red-500/20 bg-red-400/5 text-red-300 text-sm">
+        <div className="mb-6 flex items-center gap-3 p-4 border border-red-500/20 bg-red-500/5 text-red-300 text-sm font-mono">
           <AlertCircle className="w-4 h-4 shrink-0" />
           {error}
         </div>
@@ -134,23 +140,43 @@ export default function RepoDetailPage() {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         {statsCards.map((s) => (
-          <div key={s.label} className="glass rounded-xl p-4 border border-white/[0.06]">
+          <div
+            key={s.label}
+            className="bg-brand-surface border border-brand-border p-4 relative overflow-hidden group hover:border-brand-DEFAULT/30 transition-colors"
+          >
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-brand-DEFAULT opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="flex items-center gap-2 mb-2">
-              <s.icon className={`w-4 h-4 ${s.color}`} />
-              <p className="text-xs text-brand-muted font-medium uppercase tracking-wide">{s.label}</p>
+              <s.icon className="w-4 h-4 text-brand-DEFAULT" />
+              <p className="text-[9px] text-brand-muted uppercase tracking-widest font-semibold">{s.label}</p>
             </div>
-            <p className={`text-2xl font-bold capitalize ${s.color}`}>{s.value}</p>
+            <p className={`text-2xl font-heading font-bold capitalize ${
+              s.statusKey ? statusColors[s.statusKey as AnalysisStatus].split(" ")[0] : "text-brand-text"
+            }`}>
+              {s.value}
+            </p>
           </div>
         ))}
       </div>
 
       {/* Architecture map panel */}
-      <div className="glass rounded-xl border border-white/[0.06] overflow-hidden" style={{ minHeight: 520 }}>
+      <div className="bg-brand-surface border border-brand-border overflow-hidden" style={{ minHeight: 520 }}>
         {loading && !archMap ? (
           <div className="flex items-center justify-center h-[520px]">
             <div className="text-center">
-              <Loader2 className="w-10 h-10 text-indigo-400 animate-spin mx-auto mb-4" />
-              <p className="text-brand-text-secondary font-medium">Loading architecture...</p>
+              {/* 5-bar equalizer */}
+              <div className="flex items-end gap-1 mx-auto mb-5" style={{ width: 52, height: 40 }}>
+                {[0.45, 0.75, 1.0, 0.75, 0.45].map((h, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 bg-brand-DEFAULT eq-bar"
+                    style={{
+                      height: `${h * 100}%`,
+                      animationDelay: `${i * 0.12}s`,
+                    }}
+                  />
+                ))}
+              </div>
+              <p className="text-brand-muted text-sm font-mono">Loading architecture...</p>
             </div>
           </div>
         ) : archMap ? (
@@ -160,24 +186,37 @@ export default function RepoDetailPage() {
         ) : status === "analyzing" ? (
           <div className="flex items-center justify-center h-[520px]">
             <div className="text-center">
-              <div className="relative w-16 h-16 mx-auto mb-5">
-                <Loader2 className="w-16 h-16 text-amber-400/20 absolute" />
-                <Loader2 className="w-16 h-16 text-amber-400 animate-spin absolute" style={{ clipPath: "inset(0 75% 0 0)" }} />
+              {/* Equalizer with amber tint while analyzing */}
+              <div className="flex items-end gap-1 mx-auto mb-5" style={{ width: 52, height: 40 }}>
+                {[0.45, 0.75, 1.0, 0.75, 0.45].map((h, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 bg-amber-400 eq-bar"
+                    style={{ height: `${h * 100}%`, animationDelay: `${i * 0.12}s` }}
+                  />
+                ))}
               </div>
-              <p className="text-white font-semibold text-lg mb-2">Analyzing codebase...</p>
-              <p className="text-brand-muted text-sm max-w-xs mx-auto">This takes 1-3 minutes for large repositories. The page will update automatically.</p>
+              <p className="text-brand-text font-heading font-semibold text-lg mb-2">Analyzing codebase...</p>
+              <p className="text-brand-muted text-sm font-mono max-w-xs mx-auto">
+                This takes 1–3 minutes for large repositories. The page will update automatically.
+              </p>
             </div>
           </div>
         ) : (
           <div className="flex items-center justify-center h-[520px]">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto mb-5">
-                <Play className="w-7 h-7 text-indigo-400" />
+              <div className="w-16 h-16 bg-brand-DEFAULT/10 border border-brand-DEFAULT/20 flex items-center justify-center mx-auto mb-5">
+                <Play className="w-7 h-7 text-brand-DEFAULT" />
               </div>
-              <p className="text-white font-semibold text-lg mb-2">No architecture analysis yet</p>
-              <p className="text-brand-muted text-sm mb-6 max-w-sm mx-auto">Connect your repository and run analysis to generate an interactive architecture map.</p>
+              <p className="text-brand-text font-heading font-semibold text-lg mb-2">No architecture analysis yet</p>
+              <p className="text-brand-muted text-sm font-mono mb-6 max-w-sm mx-auto">
+                Connect your repository and run analysis to generate an interactive architecture map.
+              </p>
               {!isDemo && (
-                <button onClick={triggerAnalysis} className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-xl text-sm font-semibold text-white transition-all shadow-lg shadow-indigo-500/20">
+                <button
+                  onClick={triggerAnalysis}
+                  className="px-5 py-2.5 bg-brand-DEFAULT hover:bg-brand-DEFAULT/90 text-brand-bg text-sm font-mono font-semibold transition-colors"
+                >
                   Run Analysis
                 </button>
               )}
@@ -188,12 +227,15 @@ export default function RepoDetailPage() {
 
       {/* Tech stack */}
       {archMap?.techStack && Object.keys(archMap.techStack).length > 0 && (
-        <div className="mt-4 glass rounded-xl border border-white/[0.06] p-5">
-          <p className="text-xs text-brand-muted uppercase tracking-widest font-semibold mb-3">Tech Stack</p>
+        <div className="mt-4 bg-brand-surface border border-brand-border p-5">
+          <p className="text-[9px] text-brand-muted uppercase tracking-widest font-semibold mb-3">Tech Stack</p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(archMap.techStack).map(([key, value]) => (
-              <span key={key} className="text-xs px-3 py-1.5 rounded-lg bg-brand-surface border border-white/[0.06] text-brand-text-secondary">
-                <span className="text-brand-muted">{key}:</span> {value}
+              <span
+                key={key}
+                className="text-xs px-3 py-1.5 bg-brand-bg border border-brand-border text-brand-muted font-mono"
+              >
+                <span className="text-brand-DEFAULT">{key}:</span> {value}
               </span>
             ))}
           </div>

@@ -1,31 +1,69 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import CodeCanvas from "@/components/CodeCanvas";
+import DemoDashboardLayout from "@/components/DemoDashboardLayout";
+import { Network, Layers, GitBranch, Info } from "lucide-react";
 
-interface CanvasPageProps {
-  params: Promise<{
-    repoId: string;
-  }>;
-}
-
-export default async function CanvasPage({ params }: CanvasPageProps) {
-  const { repoId } = await params;
-  
-  // Decoding the repoId for display purposes
+export default function CanvasPage() {
+  const params = useParams();
+  const repoId = params.repoId as string;
   const decodedRepoId = decodeURIComponent(repoId);
 
+  const LEGEND = [
+    { color: "#3b82f6", label: "Component" },
+    { color: "#8b5cf6", label: "Service" },
+    { color: "#10b981", label: "Database" },
+    { color: "#6b7280", label: "Module" },
+  ];
+
   return (
-    <div className="flex-1 h-[calc(100vh-theme(spacing.16))] p-6 w-full flex flex-col">
-      <div className="mb-6 flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-gradient mb-2">Code Canvas</h1>
-          <p className="text-brand-text-secondary max-w-2xl">
-            Explore {decodedRepoId}&apos;s architecture via an infinite graph map.
-          </p>
+    <DemoDashboardLayout
+      title="Code Canvas"
+      subtitle="Interactive infinite graph — drag nodes, scroll to zoom"
+      action={
+        <div className="flex items-center gap-2 text-[10px] font-mono text-brand-muted border border-brand-border px-2 py-1">
+          <Info className="w-3 h-3" />
+          <span>Drag nodes to rearrange</span>
+        </div>
+      }
+    >
+      {/* Stats strip */}
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
+        {[
+          { icon: Layers, label: "7 Nodes" },
+          { icon: GitBranch, label: "7 Connections" },
+          { icon: Network, label: "React Flow" },
+        ].map(({ icon: Icon, label }) => (
+          <div key={label} className="flex items-center gap-1.5 text-[10px] font-mono text-brand-muted border border-brand-border px-2.5 py-1.5">
+            <Icon className="w-3 h-3 text-brand-DEFAULT" />
+            {label}
+          </div>
+        ))}
+        {/* Legend */}
+        <div className="ml-auto flex items-center gap-4">
+          {LEGEND.map(({ color, label }) => (
+            <div key={label} className="flex items-center gap-1.5 text-[10px] font-mono text-brand-muted">
+              <span className="w-2 h-2 flex-shrink-0" style={{ backgroundColor: color }} />
+              {label}
+            </div>
+          ))}
         </div>
       </div>
-      
-      <div className="flex-1 w-full min-h-[600px] rounded-xl overflow-hidden border border-white/10 bg-black/20">
+
+      {/* Canvas */}
+      <div className="border border-brand-border overflow-hidden" style={{ height: "calc(100vh - 340px)", minHeight: 500 }}>
         <CodeCanvas repoId={decodedRepoId} />
       </div>
-    </div>
+
+      {/* Footer hints */}
+      <div className="mt-3 flex items-center gap-4 text-[10px] font-mono text-brand-muted">
+        <span>Scroll to zoom</span>
+        <span className="text-brand-border">·</span>
+        <span>Click + drag to pan</span>
+        <span className="text-brand-border">·</span>
+        <span>Drag nodes to rearrange</span>
+      </div>
+    </DemoDashboardLayout>
   );
 }

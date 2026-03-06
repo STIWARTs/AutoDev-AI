@@ -21,7 +21,6 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
   const steps = walkthrough.steps || [];
   const step = steps[currentStep];
 
-  // Stop audio when changing steps or unmounting
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -35,80 +34,65 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
       setIsPlaying(false);
       return;
     }
-
     if (!step?.explanation) return;
-
     try {
       setIsLoadingAudio(true);
       const token = await getToken();
-      
       const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
       const res = await fetchApi(
         `${API_BASE}/voice/synthesize`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: step.explanation, voiceId: "Matthew" }),
-        },
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: step.explanation, voiceId: "Matthew" }) },
         token
       );
-
       if (!res.ok) throw new Error("Failed to synthesize audio");
-
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      
       const audio = new Audio(url);
-      audio.onended = () => {
-        setIsPlaying(false);
-        URL.revokeObjectURL(url);
-      };
-      
+      audio.onended = () => { setIsPlaying(false); URL.revokeObjectURL(url); };
       audioRef.current = audio;
       await audio.play();
       setIsPlaying(true);
     } catch (err) {
       console.error(err);
-      alert("Failed to play audio.");
     } finally {
       setIsLoadingAudio(false);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
           {onBack && (
             <button
               onClick={onBack}
-              className="text-sm text-gray-400 hover:text-white transition-colors mb-2 flex items-center gap-1"
+              className="text-[11px] text-brand-muted hover:text-brand-DEFAULT transition-colors mb-2 flex items-center gap-1 font-mono"
             >
               ← Back to walkthroughs
             </button>
           )}
-          <h2 className="text-xl font-bold">{walkthrough.title || "Code Walkthrough"}</h2>
+          <h2 className="text-xl font-heading font-semibold text-brand-text">
+            {walkthrough.title || "Code Walkthrough"}
+          </h2>
           {walkthrough.description && (
-            <p className="text-gray-400 text-sm mt-1">{walkthrough.description}</p>
+            <p className="text-brand-muted text-xs mt-1 font-mono">{walkthrough.description}</p>
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ml-4 flex-shrink-0">
           {walkthrough.difficulty && (
-            <span
-              className={`text-xs px-2.5 py-1 rounded-full ${
-                walkthrough.difficulty === "beginner"
-                  ? "bg-green-900 text-green-300"
-                  : walkthrough.difficulty === "intermediate"
-                  ? "bg-yellow-900 text-yellow-300"
-                  : "bg-red-900 text-red-300"
-              }`}
-            >
+            <span className={`text-[10px] px-2.5 py-1 border font-mono uppercase tracking-wide ${
+              walkthrough.difficulty === "beginner"
+                ? "border-emerald-500/20 text-emerald-400 bg-emerald-500/10"
+                : walkthrough.difficulty === "intermediate"
+                ? "border-amber-500/20 text-amber-400 bg-amber-500/10"
+                : "border-red-500/20 text-red-400 bg-red-500/10"
+            }`}>
               {walkthrough.difficulty}
             </span>
           )}
           {walkthrough.estimatedMinutes && (
-            <span className="text-xs text-gray-400">
+            <span className="text-[10px] text-brand-muted font-mono border border-brand-border px-2 py-0.5">
               ~{walkthrough.estimatedMinutes} min
             </span>
           )}
@@ -117,85 +101,101 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
 
       {/* Prerequisites */}
       {walkthrough.prerequisites && walkthrough.prerequisites.length > 0 && (
-        <div className="p-3 border border-gray-800 rounded-lg bg-gray-900/50">
-          <p className="text-xs text-gray-500 uppercase font-medium mb-2">Prerequisites</p>
-          <ul className="text-sm text-gray-300 space-y-1">
+        <div className="p-4 border border-brand-border bg-brand-surface">
+          <p className="text-[9px] text-brand-muted uppercase tracking-widest font-semibold mb-2">Prerequisites</p>
+          <ul className="text-sm text-brand-text space-y-1 font-mono">
             {walkthrough.prerequisites.map((p, i) => (
               <li key={i} className="flex items-start gap-2">
-                <span className="text-blue-400 mt-0.5">•</span> {p}
+                <span className="text-brand-DEFAULT mt-0.5 flex-shrink-0">→</span> {p}
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      {/* Progress bar */}
-      <div className="flex items-center gap-2">
+      {/* Step progress bars */}
+      <div className="flex items-center gap-1">
         {steps.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrentStep(i)}
-            className={`h-2 flex-1 rounded-full transition-colors ${
+            className={`h-1 flex-1 transition-all duration-200 ${
               i === currentStep
-                ? "bg-blue-500"
+                ? "bg-brand-DEFAULT"
                 : i < currentStep
-                ? "bg-blue-800"
-                : "bg-gray-700"
+                ? "bg-brand-DEFAULT/40"
+                : "bg-brand-border"
             }`}
           />
         ))}
-        <span className="text-xs text-gray-500 ml-2">
-          {currentStep + 1}/{steps.length}
+        <span className="text-[10px] text-brand-muted ml-2 font-mono whitespace-nowrap">
+          {currentStep + 1} / {steps.length}
         </span>
       </div>
 
       {/* Current step */}
       {step && (
-        <div className="border border-gray-800 rounded-xl bg-gray-900/50 overflow-hidden">
-          <div className="p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <span className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold">
-                  {currentStep + 1}
-                </span>
-                <h3 className="text-lg font-semibold">{step.title || `Step ${currentStep + 1}`}</h3>
-              </div>
-              <button
-                onClick={toggleAudio}
-                disabled={isLoadingAudio}
-                className="flex items-center gap-2 px-3 py-1.5 bg-brand-surface border border-brand-border hover:border-brand-DEFAULT rounded text-brand-muted hover:text-brand-text transition-colors text-xs font-mono"
-                title="Read aloud with Amazon Polly"
-              >
-                {isLoadingAudio ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-brand-DEFAULT" />
-                ) : isPlaying ? (
-                  <Square className="w-4 h-4 text-red-400" />
-                ) : (
-                  <Volume2 className="w-4 h-4 text-brand-DEFAULT" />
-                )}
-                {isPlaying ? "Stop" : "Listen"}
-              </button>
+        <div className="border border-brand-border bg-brand-surface overflow-hidden">
+          {/* Step header */}
+          <div className="flex items-center justify-between px-5 py-3 border-b border-brand-border bg-brand-card">
+            <div className="flex items-center gap-3">
+              <span className="w-6 h-6 flex items-center justify-center bg-brand-DEFAULT text-brand-bg text-xs font-bold font-mono flex-shrink-0">
+                {currentStep + 1}
+              </span>
+              <h3 className="text-sm font-heading font-semibold text-brand-text">
+                {step.title || `Step ${currentStep + 1}`}
+              </h3>
             </div>
-            <p className="text-gray-300 leading-relaxed">{step.explanation}</p>
+            <button
+              onClick={toggleAudio}
+              disabled={isLoadingAudio}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-bg border border-brand-border hover:border-brand-DEFAULT/40 text-brand-muted hover:text-brand-text transition-colors text-[11px] font-mono disabled:opacity-40"
+            >
+              {isLoadingAudio ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-DEFAULT" />
+              ) : isPlaying ? (
+                <Square className="w-3.5 h-3.5 text-red-400" />
+              ) : (
+                <Volume2 className="w-3.5 h-3.5 text-brand-DEFAULT" />
+              )}
+              {isPlaying ? "Stop" : "Listen"}
+            </button>
+          </div>
+
+          <div className="p-5 space-y-4">
+            <p className="text-sm text-brand-text leading-relaxed font-body">{step.explanation}</p>
 
             {/* File reference */}
             {step.file && (
-              <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
-                <p className="text-xs text-gray-500 mb-1">File</p>
-                <code className="text-sm text-blue-300">{step.file}</code>
-                {step.lineStart && step.lineEnd && (
-                  <span className="text-xs text-gray-500 ml-2">
-                    Lines {step.lineStart}–{step.lineEnd}
-                  </span>
-                )}
+              <div className="p-3 bg-brand-bg border border-brand-border">
+                <p className="text-[9px] text-brand-muted uppercase tracking-widest mb-1.5">File Reference</p>
+                <div className="flex items-center gap-3">
+                  <code className="text-sm text-brand-DEFAULT font-mono">{step.file}</code>
+                  {step.lineStart && step.lineEnd && (
+                    <span className="text-[10px] text-brand-muted font-mono border border-brand-border px-2 py-0.5">
+                      L{step.lineStart}–{step.lineEnd}
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 
             {/* Code snippet */}
             {step.codeSnippet && (
-              <div className="mt-4">
-                <pre className="p-4 bg-gray-950 rounded-lg border border-gray-800 overflow-x-auto text-sm">
-                  <code className="text-gray-200">{step.codeSnippet}</code>
+              <div className="bg-[#0d0d0c] border border-brand-border overflow-hidden">
+                {/* macOS chrome */}
+                <div className="flex items-center justify-between px-4 py-2 border-b border-brand-border bg-[#111110]">
+                  <div className="flex gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#28C840]" />
+                  </div>
+                  <span className="text-[9px] font-mono text-brand-muted uppercase tracking-wider">
+                    {step.file ? step.file.split("/").pop() : "snippet"}
+                  </span>
+                </div>
+                <pre className="p-4 overflow-x-auto text-sm">
+                  <code className="text-emerald-300 font-mono">{step.codeSnippet}</code>
                 </pre>
               </div>
             )}
@@ -204,18 +204,32 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
       )}
 
       {/* Navigation */}
-      <div className="flex justify-between">
+      <div className="flex items-center justify-between">
         <button
           onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
           disabled={currentStep === 0}
-          className="px-4 py-2 border border-gray-700 hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-5 py-2.5 border border-brand-border text-brand-muted hover:border-brand-muted hover:text-brand-text text-sm font-mono transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           ← Previous
         </button>
+
+        {/* Step dot nav */}
+        <div className="flex gap-1">
+          {steps.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentStep(i)}
+              className={`h-1.5 transition-all duration-200 ${
+                i === currentStep ? "bg-brand-DEFAULT w-4" : "bg-brand-border w-1.5"
+              }`}
+            />
+          ))}
+        </div>
+
         <button
           onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
           disabled={currentStep === steps.length - 1}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-5 py-2.5 bg-brand-DEFAULT text-brand-bg hover:bg-brand-DEFAULT/90 text-sm font-mono font-semibold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           Next →
         </button>
@@ -223,11 +237,11 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
 
       {/* Related modules */}
       {walkthrough.relatedModules && walkthrough.relatedModules.length > 0 && (
-        <div className="p-3 border border-gray-800 rounded-lg bg-gray-900/50">
-          <p className="text-xs text-gray-500 uppercase font-medium mb-2">Related Modules</p>
+        <div className="p-4 border border-brand-border bg-brand-surface">
+          <p className="text-[9px] text-brand-muted uppercase tracking-widest font-semibold mb-2.5">Related Modules</p>
           <div className="flex flex-wrap gap-2">
             {walkthrough.relatedModules.map((mod, i) => (
-              <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-gray-800 text-gray-300">
+              <span key={i} className="text-[11px] px-2.5 py-1 border border-brand-border bg-brand-bg text-brand-muted font-mono hover:border-brand-DEFAULT/40 transition-colors">
                 {mod}
               </span>
             ))}
