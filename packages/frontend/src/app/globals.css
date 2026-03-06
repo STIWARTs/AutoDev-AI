@@ -106,4 +106,23 @@
   .glass-minimal {
     @apply bg-brand-surface/80 backdrop-blur-md border border-brand-border;
   }
+
+  /* glass utility — maps to brand token surface for consistent styling */
+  .glass {
+    @apply bg-brand-surface border border-brand-border;
+  }
+
+  .glass-hover {
+    @apply bg-brand-surface border border-brand-border hover:border-brand-muted hover:bg-brand-card transition-colors;
+  }
+
+  /* 5-bar equalizer loading animation */
+  @keyframes eq-bar {
+    0%, 100% { transform: scaleY(0.25); }
+    50% { transform: scaleY(1); }
+  }
+  .eq-bar {
+    transform-origin: bottom;
+    animation: eq-bar 0.9s ease-in-out infinite;
+  }
 }

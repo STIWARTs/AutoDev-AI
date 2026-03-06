@@ -256,9 +256,22 @@ function DashboardContent() {
 
           {/* Loading */}
           {loading && repos.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-40">
-              <Loader2 className="w-6 h-6 text-brand-DEFAULT animate-spin mb-4" />
-              <p className="text-brand-muted font-mono text-xs uppercase tracking-widest">Fetching data…</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="border border-brand-border bg-brand-surface p-5 animate-pulse">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-9 h-9 bg-brand-card" />
+                    <div className="w-4 h-4 bg-brand-card" />
+                  </div>
+                  <div className="h-3 bg-brand-card w-3/4 mb-3" />
+                  <div className="h-2.5 bg-brand-card w-1/3 mb-4" />
+                  <div className="flex gap-1.5">
+                    <div className="h-4 bg-brand-card w-12" />
+                    <div className="h-4 bg-brand-card w-14" />
+                    <div className="h-4 bg-brand-card w-10" />
+                  </div>
+                </div>
+              ))}
             </div>
 
           ) : repos.length === 0 ? (
@@ -310,6 +323,25 @@ function DashboardContent() {
 
           ) : (
             /* ── Repository grid ───────────────────────────────────────────── */
+            <>
+            <div className="flex items-center gap-6 mb-5 px-1">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-heading font-semibold text-brand-text">{repos.length}</span>
+                <span className="text-xs text-brand-muted font-mono uppercase tracking-wider">repositories</span>
+              </div>
+              <div className="h-3 w-px bg-brand-border" />
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-xs text-brand-muted font-mono">{repos.filter(r => r.analysisStatus === 'completed').length} analyzed</span>
+              </div>
+              {repos.filter(r => r.analysisStatus === 'analyzing').length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="text-xs text-brand-muted font-mono">{repos.filter(r => r.analysisStatus === 'analyzing').length} analyzing</span>
+                </div>
+              )}
+              <span className="ml-auto text-[10px] font-mono text-brand-muted">Auto-refreshes · 15s</span>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
               {repos.map((repo) => {
                 const s = STATUS[repo.analysisStatus] ?? STATUS.pending;
@@ -339,9 +371,6 @@ function DashboardContent() {
                           <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
                           {s.label}
                         </span>
-                        {repo.fileCount && (
-                          <span className="text-[11px] font-mono text-brand-muted">{repo.fileCount.toLocaleString()} files</span>
-                        )}
                       </div>
 
                       {/* Tech pills */}
@@ -360,9 +389,22 @@ function DashboardContent() {
 
                       {repo.lastAnalyzedAt && (
                         <div className="mt-auto pt-3 border-t border-brand-border">
-                          <p className="font-mono text-[10px] text-brand-muted uppercase tracking-wider">
-                            Analyzed • {new Date(repo.lastAnalyzedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                          </p>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <p className="font-mono text-[10px] text-brand-muted uppercase tracking-wider">
+                              Analyzed · {new Date(repo.lastAnalyzedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </p>
+                            {repo.fileCount && (
+                              <span className="font-mono text-[10px] text-brand-muted">{repo.fileCount.toLocaleString()} files</span>
+                            )}
+                          </div>
+                          {repo.fileCount && (
+                            <div className="h-0.5 bg-brand-border w-full">
+                              <div
+                                className="h-0.5 bg-brand-DEFAULT transition-all"
+                                style={{ width: `${Math.min(100, Math.round((repo.fileCount / 300) * 100))}%` }}
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -370,6 +412,7 @@ function DashboardContent() {
                 );
               })}
             </div>
+            </>
           )}
         </div>
       </main>

@@ -8,7 +8,7 @@ import { getApiBase, fetchApi } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 import { useProgressTracker } from "@/hooks/useProgressTracker";
 import type { Walkthrough } from "@autodev/shared";
-import { BookOpen, Sparkles, Clock, ChevronRight, Loader2, AlertCircle, Search } from "lucide-react";
+import { BookOpen, Sparkles, Clock, Loader2, AlertCircle, Search } from "lucide-react";
 
 const DIFFICULTY_COLORS = {
   beginner: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
@@ -100,10 +100,10 @@ export default function WalkthroughsPage() {
       subtitle="Step-by-step guided tours of complex code flows"
     >
       {/* Question input */}
-      <div className="glass rounded-xl border border-white/[0.06] p-6 mb-6">
+      <div className="bg-brand-surface border border-brand-border p-6 mb-6">
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-4 h-4 text-indigo-400" />
-          <p className="text-sm font-semibold text-white">Generate a walkthrough</p>
+          <Sparkles className="w-4 h-4 text-brand-DEFAULT" />
+          <p className="text-sm font-semibold text-brand-text">Generate a walkthrough</p>
         </div>
         <div className="flex gap-3 mb-4">
           <div className="flex-1 relative">
@@ -114,13 +114,13 @@ export default function WalkthroughsPage() {
               onChange={(e) => setQuestion(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && generateWalkthrough()}
               placeholder="e.g. How does the authentication flow work?"
-              className="w-full pl-10 pr-4 py-2.5 bg-brand-surface border border-white/[0.06] rounded-lg text-sm text-white placeholder-brand-muted focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500/40 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-brand-bg border border-brand-border focus:border-brand-DEFAULT/60 text-sm text-brand-text placeholder-brand-muted focus:outline-none transition-all font-mono"
             />
           </div>
           <button
             onClick={generateWalkthrough}
             disabled={!question.trim() || generating}
-            className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+            className="px-5 py-2.5 bg-brand-DEFAULT text-brand-bg hover:bg-brand-DEFAULT/90 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-semibold transition-all flex items-center gap-2"
           >
             {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {generating ? "Generating..." : "Generate"}
@@ -132,7 +132,7 @@ export default function WalkthroughsPage() {
             <button
               key={s}
               onClick={() => setQuestion(s)}
-              className="text-xs px-3 py-1.5 rounded-full border border-white/[0.06] bg-brand-surface text-brand-text-secondary hover:border-indigo-500/30 hover:text-indigo-300 transition-all"
+              className="text-xs px-3 py-1.5 border border-brand-border bg-brand-surface text-brand-muted hover:border-brand-DEFAULT/40 hover:text-brand-DEFAULT transition-all font-mono"
             >
               {s}
             </button>
@@ -141,7 +141,7 @@ export default function WalkthroughsPage() {
       </div>
 
       {error && (
-        <div className="mb-5 flex items-center gap-3 p-4 rounded-xl border border-red-500/20 bg-red-400/5 text-red-300 text-sm">
+        <div className="mb-5 flex items-center gap-3 p-4 border border-red-500/20 bg-red-400/5 text-red-300 text-sm font-mono">
           <AlertCircle className="w-4 h-4 shrink-0" />
           {error}
         </div>
@@ -149,11 +149,25 @@ export default function WalkthroughsPage() {
 
       {/* List */}
       {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mx-auto mb-4" />
-            <p className="text-brand-text-secondary">Loading walkthroughs...</p>
-          </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="p-5 bg-brand-surface border border-brand-border animate-pulse">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex gap-2">
+                  <div className="w-8 h-4 bg-brand-card" />
+                  <div className="w-8 h-8 bg-brand-card" />
+                </div>
+                <div className="w-16 h-4 bg-brand-card" />
+              </div>
+              <div className="h-3 bg-brand-card w-3/4 mb-2" />
+              <div className="h-2.5 bg-brand-card w-full mb-1" />
+              <div className="h-2.5 bg-brand-card w-2/3 mb-4" />
+              <div className="flex gap-4">
+                <div className="h-2.5 bg-brand-card w-14" />
+                <div className="h-2.5 bg-brand-card w-10" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : walkthroughs.length > 0 ? (
         <div className="grid gap-3 md:grid-cols-2">
@@ -164,41 +178,47 @@ export default function WalkthroughsPage() {
                 setSelected(w);
                 track({ eventType: "walkthrough_viewed", targetId: w.id, targetLabel: w.title || w.question });
               }}
-              className="text-left p-5 glass rounded-xl border border-white/[0.06] hover:border-indigo-500/20 hover:bg-indigo-500/5 transition-all group cursor-pointer"
+              className="text-left p-5 bg-brand-surface border border-brand-border hover:border-brand-DEFAULT/40 hover:bg-brand-card transition-all group cursor-pointer relative overflow-hidden"
             >
+              <div className="absolute top-0 left-0 bottom-0 w-[2px] bg-brand-DEFAULT scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top" />
               <div className="flex items-start justify-between mb-3">
-                <div className="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                  <BookOpen className="w-4 h-4 text-indigo-400" />
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-brand-muted border border-brand-border px-1.5 py-0.5 bg-brand-bg">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <div className="w-8 h-8 bg-brand-bg border border-brand-border flex items-center justify-center flex-shrink-0">
+                    <BookOpen className="w-3.5 h-3.5 text-brand-DEFAULT" />
+                  </div>
                 </div>
                 {w.difficulty && (
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold uppercase tracking-wide ${DIFFICULTY_COLORS[w.difficulty] || ""}`}>
+                  <span className={`text-[10px] px-2 py-0.5 border font-semibold uppercase tracking-wide ${DIFFICULTY_COLORS[w.difficulty] || ""}`}>
                     {w.difficulty}
                   </span>
                 )}
               </div>
-              <h3 className="font-semibold text-white mb-1.5 group-hover:text-indigo-300 transition-colors">
+              <h3 className="font-heading font-semibold text-sm text-brand-text mb-1.5 group-hover:text-brand-DEFAULT transition-colors">
                 {w.title || `Walkthrough ${i + 1}`}
               </h3>
               {w.description && (
-                <p className="text-sm text-brand-text-secondary mb-3 line-clamp-2">{w.description}</p>
+                <p className="text-xs text-brand-muted mb-3 line-clamp-2 font-mono">{w.description}</p>
               )}
-              <div className="flex items-center gap-4 text-xs text-brand-muted">
+              <div className="flex items-center gap-4 text-[10px] text-brand-muted font-mono">
                 <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" />{w.steps?.length || 0} steps</span>
                 {w.estimatedMinutes && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{w.estimatedMinutes} min</span>}
-                <span className="ml-auto flex items-center gap-1 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  Start <ChevronRight className="w-3 h-3" />
-                </span>
+                <span className="ml-auto text-brand-DEFAULT opacity-0 group-hover:opacity-100 transition-opacity">Start →</span>
               </div>
             </button>
           ))}
         </div>
       ) : (
-        <div className="glass rounded-xl border border-white/[0.06] flex flex-col items-center justify-center py-20">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-4">
-            <BookOpen className="w-6 h-6 text-indigo-400" />
+        <div className="bg-brand-surface border border-brand-border border-dashed flex flex-col items-center justify-center py-20">
+          <div className="w-12 h-12 bg-brand-bg border border-brand-border flex items-center justify-center mb-4">
+            <BookOpen className="w-5 h-5 text-brand-DEFAULT" />
           </div>
-          <p className="text-white font-semibold mb-1">No walkthroughs yet</p>
-          <p className="text-brand-muted text-sm text-center max-w-xs">Ask a question above to generate your first walkthrough.</p>
+          <p className="font-heading font-semibold text-brand-text mb-1">No walkthroughs yet</p>
+          <p className="text-brand-muted text-xs text-center max-w-xs font-mono">
+            Ask a question above to generate your first guided walkthrough.
+          </p>
         </div>
       )}
     </DemoDashboardLayout>
