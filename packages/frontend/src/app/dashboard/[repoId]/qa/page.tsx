@@ -81,7 +81,7 @@ export default function QAPage() {
     }
   }
 
-  function useStarter(q: string) {
+  function handleStarter(q: string) {
     setInput(q);
     inputRef.current?.focus();
   }
@@ -107,7 +107,7 @@ export default function QAPage() {
                 {STARTER_QUESTIONS.map((q) => (
                   <button
                     key={q}
-                    onClick={() => useStarter(q)}
+                    onClick={() => handleStarter(q)}
                     className="text-left px-4 py-3 glass rounded-xl border border-white/[0.06] hover:border-indigo-500/20 hover:bg-indigo-500/5 text-sm text-brand-text-secondary hover:text-indigo-300 transition-all cursor-pointer"
                   >
                     {q}
@@ -150,7 +150,7 @@ export default function QAPage() {
                     {msg.relatedQuestions.map((q, j) => (
                       <button
                         key={j}
-                        onClick={() => useStarter(q)}
+                        onClick={() => handleStarter(q)}
                         className="flex items-center gap-1 text-xs px-3 py-1.5 border border-white/[0.06] rounded-full hover:border-indigo-500/30 text-brand-text-secondary hover:text-indigo-300 transition-all cursor-pointer"
                       >
                         {q} <ChevronRight className="w-3 h-3" />

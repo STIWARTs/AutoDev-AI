@@ -597,7 +597,7 @@ export default function HomePage() {
               </div>
               <h2 className="font-heading text-4xl md:text-5xl leading-[1.1]">Catch drift before it merges</h2>
               <p className="font-body text-lg text-brand-muted leading-relaxed">
-                Our AI doesn't just look for syntax errors. It understands your unique architectural patterns. If a new developer violates a convention, AutoDev catches it in the PR.
+                Our AI doesn&apos;t just look for syntax errors. It understands your unique architectural patterns. If a new developer violates a convention, AutoDev catches it in the PR.
               </p>
               <div className="pt-2">
                 <Link href="/demo" className="font-mono text-sm text-brand-text hover:text-brand-DEFAULT flex items-center gap-2 transition-colors">
@@ -659,7 +659,7 @@ export default function HomePage() {
           </div>
 
           <div className="border border-brand-border bg-brand-surface rounded-sm p-8 md:p-12 text-left relative">
-            <span className="font-heading text-8xl text-brand-DEFAULT absolute top-4 left-6 opacity-20">"</span>
+            <span className="font-heading text-8xl text-brand-DEFAULT absolute top-4 left-6 opacity-20">&ldquo;</span>
             <blockquote className="relative z-10 font-heading text-2xl md:text-3xl leading-snug mb-8">
               AutoDev fundamentally changed how we scale our engineering team. What used to take 3 weeks of shadowing and paired programming is now done asynchronously over a weekend. The animated data flow graph is magic.
             </blockquote>

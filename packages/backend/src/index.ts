@@ -12,6 +12,9 @@ import { animatedRoutes } from "./routes/animated.js";
 import { i18nRoutes } from "./routes/i18n.js";
 import { skillTrackerRoutes } from "./routes/skillTracker.js";
 import { demoRoutes } from "./routes/demo.js";
+import { webhookRoutes } from "./routes/webhook.js";
+import { copilotRoutes } from "./routes/copilot.js";
+import { voiceRoutes } from "./routes/voice.js";
 
 const app: Express = express();
 const PORT = process.env.PORT || 3001;
@@ -50,6 +53,7 @@ app.get("/api/warmup", async (_req, res) => {
 // Unauthenticated internal boundaries
 app.use("/api/internal", internalRoutes);
 app.use("/api/demo", demoRoutes);
+app.use("/api/webhook", webhookRoutes);
 
 import { authMiddleware } from "./middleware/auth.js";
 app.use(authMiddleware);
@@ -64,6 +68,8 @@ app.use("/api/env-setup", envSetupRoutes);
 app.use("/api/animated", animatedRoutes);
 app.use("/api/i18n", i18nRoutes);
 app.use("/api/progress", skillTrackerRoutes);
+app.use("/api/copilot", copilotRoutes);
+app.use("/api/voice", voiceRoutes);
 
 app.listen(PORT, () => {
   console.log(`AutoDev backend running on http://localhost:${PORT}`);

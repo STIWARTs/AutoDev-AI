@@ -18,6 +18,16 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { fetchApi } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 
@@ -44,6 +54,9 @@ function DashboardContent() {
   const [repos, setRepos] = useState<RepoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [repoInput, setRepoInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { getToken } = useAuth();
 
   const fetchRepos = useCallback(async () => {
@@ -70,6 +83,39 @@ function DashboardContent() {
   }, [fetchRepos]);
 
   const demoSuffix = isDemo ? "?demo=true" : "";
+
+  const handleConnectRepo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!repoInput.includes("/")) {
+      alert("Invalid format. Please use 'owner/repo' like 'hwchase17/langchain'");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const token = await getToken();
+      const res = await fetchApi(
+        `${API_BASE}/webhook/github`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ repoId: repoInput }),
+        },
+        token
+      );
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to ingest repository");
+      }
+      setRepoInput("");
+      setDialogOpen(false);
+      fetchRepos(); // Refresh the list
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-brand-bg font-body">
@@ -158,14 +204,43 @@ function DashboardContent() {
               <RefreshCw className="w-3 h-3 mr-1.5" /> Refresh
             </Button>
             {!isDemo && (
-              <a
-                href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "https://github.com/apps/autodev/installations/new"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg transition-colors px-4 h-8 text-xs font-semibold rounded-none"
-              >
-                <Plus className="w-3.5 h-3.5" /> Connect Repo
-              </a>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    className="inline-flex items-center gap-1.5 bg-brand-text text-brand-bg hover:bg-brand-DEFAULT hover:text-brand-bg transition-colors px-4 h-8 text-xs font-semibold rounded-none"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Connect Repo
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] bg-brand-surface border-brand-border">
+                  <form onSubmit={handleConnectRepo}>
+                    <DialogHeader>
+                      <DialogTitle className="text-brand-text font-heading text-xl font-semibold">Connect Repository</DialogTitle>
+                      <DialogDescription className="text-brand-muted font-mono text-xs">
+                        Enter any public GitHub repository (e.g., <code>facebook/react</code>) to analyze.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-6">
+                      <Input
+                        id="repo"
+                        placeholder="owner/repo"
+                        value={repoInput}
+                        onChange={(e) => setRepoInput(e.target.value)}
+                        className="font-mono bg-brand-bg border-brand-border text-brand-text rounded-none focus-visible:ring-brand-DEFAULT"
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)} disabled={isSubmitting} className="rounded-none text-brand-muted hover:text-brand-text font-mono text-xs">
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={isSubmitting || !repoInput} className="bg-brand-DEFAULT hover:bg-brand-DEFAULT/90 text-brand-bg rounded-none font-mono text-xs">
+                        {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                        {isSubmitting ? "Ingesting..." : "Connect & Analyze"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             )}
           </div>
         </div>

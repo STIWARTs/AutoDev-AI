@@ -252,6 +252,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 // ─── Node detail HTML ──────────────────────────────────────────────────────────
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function buildNodeDetailHtml(
   node: {
     id: string;
@@ -262,8 +271,11 @@ function buildNodeDetailHtml(
   },
   explanation: string
 ): string {
+  const safeLabel = escapeHtml(node.label || "");
+  const safeType = escapeHtml(node.type || "");
+  const safeExplanation = escapeHtml(explanation || "");
   const filesList = (node.files || [])
-    .map((f) => `<li><code>${f}</code></li>`)
+    .map((f) => `<li><code>${escapeHtml(f)}</code></li>`)
     .join("");
 
   return `<!DOCTYPE html>
@@ -321,12 +333,12 @@ function buildNodeDetailHtml(
 </head>
 <body>
   <div class="header">
-    <h1>${node.label}</h1>
-    <div class="type-badge">${node.type}</div>
+    <h1>${safeLabel}</h1>
+    <div class="type-badge">${safeType}</div>
   </div>
   <div class="section">
     <div class="section-title">AI Explanation</div>
-    <div class="explanation ${explanation === "Loading AI explanation..." ? "loading" : ""}">${explanation}</div>
+    <div class="explanation ${explanation === "Loading AI explanation..." ? "loading" : ""}">${safeExplanation}</div>
   </div>
   ${filesList ? `<div class="section"><div class="section-title">Files</div><ul>${filesList}</ul></div>` : ""}
 </body>

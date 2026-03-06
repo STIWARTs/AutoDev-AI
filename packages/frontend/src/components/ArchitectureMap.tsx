@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -16,6 +16,9 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { ArchitectureMap as ArchMap } from "@autodev/shared";
+import { Loader2, Sparkles, X, FileCode2 } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
+import { fetchApi } from "@/lib/api";
 
 // Color map for different node types
 const NODE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
@@ -150,20 +153,62 @@ function layoutEdges(archEdges: ArchMap["edges"]): Edge[] {
 }
 
 interface ArchitectureMapProps {
+  repoId: string;
   data: ArchMap;
   className?: string;
 }
 
-export default function ArchitectureMap({ data, className }: ArchitectureMapProps) {
+export default function ArchitectureMap({ repoId, data, className }: ArchitectureMapProps) {
   const initialNodes = useMemo(() => layoutNodes(data.nodes), [data.nodes]);
   const initialEdges = useMemo(() => layoutEdges(data.edges), [data.edges]);
 
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, , onEdgesChange] = useEdgesState(initialEdges);
 
+  const [selectedNodeData, setSelectedNodeData] = useState<ArchNodeData | null>(null);
+  const [copilotLoading, setCopilotLoading] = useState(false);
+  const [copilotExplain, setCopilotExplain] = useState<string | null>(null);
+  
+  const { getToken } = useAuth();
+
   const onInit = useCallback(() => {
     // Could fitView here but ReactFlow handles it via fitView prop
   }, []);
+
+  const handleNodeClick = useCallback(async (_: any, node: Node) => {
+    const nData = node.data as ArchNodeData;
+    setSelectedNodeData(nData);
+    setCopilotExplain(null);
+
+    // If it has files, we can ask copilot to explain the first one
+    if (nData.files && nData.files.length > 0) {
+      const filePath = nData.files[0];
+      setCopilotLoading(true);
+      try {
+        const token = await getToken();
+        // Fallback to absolute URL if needed, depending on how `fetchApi` does it
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+        const res = await fetchApi(`${API_BASE}/copilot/explain`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ repoId, filePath })
+        }, token);
+        
+        if (res.ok) {
+          const json = await res.json();
+          setCopilotExplain(json.explanation);
+        } else {
+          setCopilotExplain("Failed to load Copilot explanation.");
+        }
+      } catch (err) {
+        setCopilotExplain("Error connecting to Copilot endpoint.");
+      } finally {
+        setCopilotLoading(false);
+      }
+    } else {
+      setCopilotExplain("No files associated with this module.");
+    }
+  }, [repoId, getToken]);
 
   return (
     <div className={`w-full h-full ${className || ""}`}>
@@ -191,6 +236,7 @@ export default function ArchitectureMap({ data, className }: ArchitectureMapProp
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodeClick={handleNodeClick}
           onInit={onInit}
           nodeTypes={nodeTypes}
           fitView
@@ -224,6 +270,61 @@ export default function ArchitectureMap({ data, className }: ArchitectureMapProp
           </div>
         ))}
       </div>
+
+      {/* Copilot Slide Panel */}
+      {selectedNodeData && (
+        <div className="absolute top-0 right-0 w-[400px] h-full bg-white shadow-2xl border-l border-brand-border flex flex-col z-50 animate-in slide-in-from-right duration-300">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-brand-border bg-slate-50">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-indigo-600" />
+              <h3 className="font-semibold text-slate-800 tracking-tight">AI Copilot</h3>
+            </div>
+            <button onClick={() => setSelectedNodeData(null)} className="p-1 hover:bg-slate-200 rounded-md transition-colors">
+              <X className="w-5 h-5 text-slate-500" />
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-5">
+            <div className="mb-6">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Selected Module</div>
+              <h4 className="text-xl font-bold text-slate-900 mb-2">{selectedNodeData.label}</h4>
+              <p className="text-sm text-slate-600">{selectedNodeData.description}</p>
+              
+              {selectedNodeData.files && selectedNodeData.files.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-2">
+                     <FileCode2 className="w-4 h-4" /> Component Files
+                   </div>
+                   <ul className="text-xs text-slate-600 space-y-1">
+                     {selectedNodeData.files.slice(0, 5).map((f: string) => (
+                       <li key={f} className="truncate bg-slate-50 px-2 py-1 rounded border border-slate-100">{f}</li>
+                     ))}
+                     {selectedNodeData.files.length > 5 && <li className="pl-1 opacity-50">+{selectedNodeData.files.length - 5} more files</li>}
+                   </ul>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                 <Sparkles className="w-4 h-4 text-indigo-500" />
+                 <span className="text-xs font-semibold text-indigo-900 uppercase tracking-widest">AI Explanation</span>
+              </div>
+              
+              {copilotLoading ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-indigo-400 animate-spin mb-3" />
+                  <p className="text-xs text-indigo-600/70 font-mono">Analyzing codebase graph...</p>
+                </div>
+              ) : copilotExplain ? (
+                <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                  {copilotExplain}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { askQuestion } from "../api/client";
+import { askQuestion, getLanguage, getFresherMode } from "../api/client";
 
 export class QAPanel {
   public static currentPanel: QAPanel | undefined;
@@ -29,8 +29,11 @@ export class QAPanel {
               return;
             }
             const [owner, repo] = repoId.split("/");
+            this._panel.webview.postMessage({ type: "loading" });
             try {
-              const response = await askQuestion(owner, repo, message.question) as {
+              const language = getLanguage();
+              const fresherMode = getFresherMode();
+              const response = await askQuestion(owner, repo, message.question, language, fresherMode) as {
                 answer: string;
                 relevantFiles?: { path: string; lineRange?: { start: number; end: number } }[];
                 relatedQuestions?: string[];
@@ -56,8 +59,25 @@ export class QAPanel {
             break;
           }
           case "openFile": {
-            const uri = vscode.Uri.file(message.path);
-            await vscode.window.showTextDocument(uri);
+            if (!message.path) break;
+            const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+            if (!workspaceFolder) break;
+            try {
+              const fileUri = vscode.Uri.joinPath(workspaceFolder.uri, message.path);
+              const doc = await vscode.workspace.openTextDocument(fileUri);
+              const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
+              if (message.line && message.line > 0) {
+                const position = new vscode.Position(message.line - 1, 0);
+                editor.selection = new vscode.Selection(position, position);
+                editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+              }
+            } catch {
+              vscode.window.showErrorMessage(`Could not open file: ${message.path}`);
+            }
+            break;
+          }
+          case "askRelated": {
+            this._panel.webview.postMessage({ type: "fillQuestion", question: message.question });
             break;
           }
         }
@@ -145,6 +165,66 @@ export class QAPanel {
       margin-right: 40px;
       white-space: pre-wrap;
     }
+    .loading-msg {
+      text-align: center;
+      padding: 12px;
+      opacity: 0.6;
+      font-size: 12px;
+      font-style: italic;
+    }
+    .loading-msg::after {
+      content: '';
+      animation: dots 1.5s steps(3, end) infinite;
+    }
+    @keyframes dots {
+      0% { content: ''; }
+      33% { content: '.'; }
+      66% { content: '..'; }
+      100% { content: '...'; }
+    }
+    .relevant-files {
+      margin-top: 8px;
+      padding: 6px 0;
+    }
+    .relevant-files-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      opacity: 0.6;
+      margin-bottom: 4px;
+    }
+    .file-link {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--vscode-badge-background);
+      color: var(--vscode-textLink-foreground);
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      margin: 2px 4px 2px 0;
+      text-decoration: none;
+      font-family: var(--vscode-editor-font-family);
+    }
+    .file-link:hover { text-decoration: underline; }
+    .related-questions {
+      margin-top: 6px;
+      padding: 4px 0;
+    }
+    .related-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 5px 10px;
+      background: transparent;
+      color: var(--vscode-textLink-foreground);
+      border: 1px solid var(--vscode-panel-border);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .related-btn:hover {
+      background: var(--vscode-list-hoverBackground);
+    }
     .input-row {
       display: flex;
       gap: 8px;
@@ -158,7 +238,8 @@ export class QAPanel {
       border-radius: 4px;
       font-size: 13px;
     }
-    button {
+    input:focus { outline: 1px solid var(--vscode-focusBorder); }
+    button.send-btn {
       padding: 8px 16px;
       background: var(--vscode-button-background);
       color: var(--vscode-button-foreground);
@@ -166,6 +247,7 @@ export class QAPanel {
       border-radius: 4px;
       cursor: pointer;
     }
+    button.send-btn:hover { background: var(--vscode-button-hoverBackground); }
     .empty-state {
       text-align: center;
       opacity: 0.5;
@@ -181,7 +263,7 @@ export class QAPanel {
   </div>
   <div class="input-row">
     <input type="text" id="question" placeholder="e.g., How does authentication work?" />
-    <button onclick="sendQuestion()">Ask</button>
+    <button class="send-btn" onclick="sendQuestion()">Ask</button>
   </div>
 
   <script>
@@ -205,22 +287,76 @@ export class QAPanel {
       vscode.postMessage({ type: 'ask', question });
     }
 
-    questionInput.addEventListener('keydown', (e) => {
+    function openFile(path, line) {
+      vscode.postMessage({ type: 'openFile', path: path, line: line || 0 });
+    }
+
+    function askRelated(question) {
+      questionInput.value = question;
+      sendQuestion();
+    }
+
+    questionInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') sendQuestion();
     });
 
-    window.addEventListener('message', (event) => {
+    window.addEventListener('message', function(event) {
       const msg = event.data;
+
+      if (msg.type === 'loading') {
+        var existingLoader = document.getElementById('loading-indicator');
+        if (!existingLoader) {
+          if (firstMessage) {
+            messagesDiv.innerHTML = '';
+            firstMessage = false;
+          }
+          messagesDiv.innerHTML += '<div class="loading-msg" id="loading-indicator">Thinking</div>';
+          messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+      }
+
       if (msg.type === 'answer') {
-        messagesDiv.innerHTML += '<div class="message ai-msg">' + escapeHtml(msg.data.answer) + '</div>';
+        var loader = document.getElementById('loading-indicator');
+        if (loader) loader.remove();
+
+        var html = '<div class="message ai-msg">' + escapeHtml(msg.data.answer) + '</div>';
+
+        if (msg.data.relevantFiles && msg.data.relevantFiles.length > 0) {
+          html += '<div class="relevant-files"><div class="relevant-files-title">Referenced Files</div>';
+          msg.data.relevantFiles.forEach(function(f) {
+            var lineInfo = f.lineRange ? ':' + f.lineRange.start : '';
+            var lineNum = f.lineRange ? f.lineRange.start : 0;
+            html += '<span class="file-link" onclick="openFile(\\'' + escapeAttr(f.path) + '\\',' + lineNum + ')">' + escapeHtml(f.path + lineInfo) + '</span>';
+          });
+          html += '</div>';
+        }
+
+        if (msg.data.relatedQuestions && msg.data.relatedQuestions.length > 0) {
+          html += '<div class="related-questions">';
+          msg.data.relatedQuestions.forEach(function(q) {
+            html += '<button class="related-btn" onclick="askRelated(\\'' + escapeAttr(q) + '\\')">' + escapeHtml(q) + '</button>';
+          });
+          html += '</div>';
+        }
+
+        messagesDiv.innerHTML += html;
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+
+      if (msg.type === 'fillQuestion') {
+        questionInput.value = msg.question || '';
+        questionInput.focus();
       }
     });
 
     function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
+      var div = document.createElement('div');
+      div.textContent = text || '';
       return div.innerHTML;
+    }
+
+    function escapeAttr(str) {
+      return (str || '').replace(/\\\\/g, '\\\\\\\\').replace(/'/g, "\\\\'").replace(/"/g, '&quot;');
     }
   </script>
 </body>

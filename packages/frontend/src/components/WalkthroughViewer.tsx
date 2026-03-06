@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Walkthrough } from "@autodev/shared";
+import { Volume2, Square, Loader2 } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
+import { fetchApi } from "@/lib/api";
 
 interface WalkthroughViewerProps {
   walkthrough: Walkthrough;
@@ -10,8 +13,67 @@ interface WalkthroughViewerProps {
 
 export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughViewerProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const { getToken } = useAuth();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const steps = walkthrough.steps || [];
   const step = steps[currentStep];
+
+  // Stop audio when changing steps or unmounting
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, [currentStep]);
+
+  const toggleAudio = async () => {
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    if (!step?.explanation) return;
+
+    try {
+      setIsLoadingAudio(true);
+      const token = await getToken();
+      
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+      const res = await fetchApi(
+        `${API_BASE}/voice/synthesize`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: step.explanation, voiceId: "Matthew" }),
+        },
+        token
+      );
+
+      if (!res.ok) throw new Error("Failed to synthesize audio");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      
+      const audio = new Audio(url);
+      audio.onended = () => {
+        setIsPlaying(false);
+        URL.revokeObjectURL(url);
+      };
+      
+      audioRef.current = audio;
+      await audio.play();
+      setIsPlaying(true);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to play audio.");
+    } finally {
+      setIsLoadingAudio(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -91,11 +153,28 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
       {step && (
         <div className="border border-gray-800 rounded-xl bg-gray-900/50 overflow-hidden">
           <div className="p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold">
-                {currentStep + 1}
-              </span>
-              <h3 className="text-lg font-semibold">{step.title || `Step ${currentStep + 1}`}</h3>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold">
+                  {currentStep + 1}
+                </span>
+                <h3 className="text-lg font-semibold">{step.title || `Step ${currentStep + 1}`}</h3>
+              </div>
+              <button
+                onClick={toggleAudio}
+                disabled={isLoadingAudio}
+                className="flex items-center gap-2 px-3 py-1.5 bg-brand-surface border border-brand-border hover:border-brand-DEFAULT rounded text-brand-muted hover:text-brand-text transition-colors text-xs font-mono"
+                title="Read aloud with Amazon Polly"
+              >
+                {isLoadingAudio ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-brand-DEFAULT" />
+                ) : isPlaying ? (
+                  <Square className="w-4 h-4 text-red-400" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-brand-DEFAULT" />
+                )}
+                {isPlaying ? "Stop" : "Listen"}
+              </button>
             </div>
             <p className="text-gray-300 leading-relaxed">{step.explanation}</p>
 

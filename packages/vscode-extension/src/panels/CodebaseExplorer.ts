@@ -27,12 +27,22 @@ export class CodebaseExplorerProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(async (message) => {
       switch (message.type) {
         case "openFile": {
-          const uri = vscode.Uri.file(message.path);
-          await vscode.window.showTextDocument(uri);
+          if (!message.path) break;
+          const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+          if (!workspaceFolder) break;
+          try {
+            const fileUri = vscode.Uri.joinPath(workspaceFolder.uri, message.path);
+            await vscode.window.showTextDocument(fileUri);
+          } catch {
+            vscode.window.showErrorMessage(`Could not open file: ${message.path}`);
+          }
           break;
         }
         case "askQuestion":
           vscode.commands.executeCommand("autodev.askQuestion");
+          break;
+        case "startWalkthrough":
+          vscode.commands.executeCommand("autodev.startWalkthrough");
           break;
         case "refresh":
           this._loadArchitecture();
@@ -265,7 +275,11 @@ export class CodebaseExplorerProvider implements vscode.WebviewViewProvider {
           const html = data.nodes.map(function(n) {
             const color = nodeColors[n.type] || '#6b7280';
             const filesStr = n.files ? ' (' + n.files.length + ' files)' : '';
-            return '<li class="node-item" onclick="openFile(\\'' + (n.files && n.files[0] ? n.files[0].replace(/'/g, "\\\\'") : '') + '\\')" title="' +
+            const hasFile = n.files && n.files[0];
+            const clickAttr = hasFile
+              ? ' onclick="openFile(\\'' + n.files[0].replace(/'/g, "\\\\'") + '\\')" style="cursor:pointer"'
+              : ' style="cursor:default;opacity:0.8"';
+            return '<li class="node-item"' + clickAttr + ' title="' +
               (n.description || '').replace(/"/g, '&quot;') + '">' +
               '<span class="node-badge" style="background:' + color + ';color:white">' + n.type + '</span>' +
               '<span>' + n.label + filesStr + '</span>' +

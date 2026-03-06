@@ -155,7 +155,7 @@ export default function RepoDetailPage() {
           </div>
         ) : archMap ? (
           <ErrorBoundary>
-            <ArchitectureMap data={archMap} />
+            <ArchitectureMap repoId={decodedRepoId} data={archMap} />
           </ErrorBoundary>
         ) : status === "analyzing" ? (
           <div className="flex items-center justify-center h-[520px]">

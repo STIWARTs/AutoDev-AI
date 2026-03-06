@@ -12,6 +12,7 @@ import {
   BarChart3,
   Users,
   Sparkles,
+  Network,
   ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ import {
 
 const navItems = [
   { href: "", label: "Architecture Map", Icon: Map },
+  { href: "/canvas", label: "Code Canvas", Icon: Network },
   { href: "/animated", label: "Animated Map", Icon: Play },
   { href: "/walkthroughs", label: "Walkthroughs", Icon: Footprints },
   { href: "/conventions", label: "Conventions", Icon: Ruler },
