@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { fetchApi } from "@/lib/api";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, UserButton, useUser } from "@clerk/nextjs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -58,6 +58,7 @@ function DashboardContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { getToken } = useAuth();
+  const { user } = useUser();
 
   const fetchRepos = useCallback(async () => {
     try {
@@ -161,13 +162,63 @@ function DashboardContent() {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-brand-border">
-          <div className="flex items-center justify-between px-3">
+        <div className="border-t border-brand-border">
+          {/* User profile row */}
+          <div
+            className="flex items-center gap-2.5 px-4 py-3 hover:bg-brand-surface transition-colors cursor-pointer group"
+            onClick={(e) => {
+              if (!(e.target as HTMLElement).closest("button")) {
+                const btn = (e.currentTarget as HTMLElement).querySelector("button");
+                if (btn) btn.click();
+              }
+            }}
+          >
+            <UserButton
+              appearance={{
+                variables: {
+                  colorBackground: "#1E1D1C",
+                  colorText: "#F0EEE6",
+                  colorTextSecondary: "#8A8480",
+                  colorPrimary: "#E25A34",
+                  colorInputBackground: "#1A1918",
+                  colorInputText: "#F0EEE6",
+                  colorNeutral: "#8A8480",
+                  borderRadius: "0px",
+                  fontFamily: "var(--font-mono), JetBrains Mono, monospace",
+                  fontSize: "12px",
+                },
+                elements: {
+                  userButtonAvatarBox: { width: "28px", height: "28px", borderRadius: "0px", outline: "1px solid #2A2726" },
+                  userButtonPopoverCard: { background: "#1E1D1C", border: "1px solid #2A2726", borderRadius: "0px", boxShadow: "0 20px 60px rgba(0,0,0,0.8)" },
+                  userButtonPopoverHeader: { borderBottom: "1px solid #2A2726", background: "#111110", borderRadius: "0px" },
+                  userButtonPopoverFooter: { borderTop: "1px solid #2A2726", background: "#111110", borderRadius: "0px" },
+                  userButtonPopoverFooterPages: { display: "none" },
+                  userButtonPopoverActionButton: { borderRadius: "0px" },
+                  userButtonPopoverActionButton__signOut: { color: "#f87171" },
+                  userButtonPopoverActionButtonIcon__signOut: { color: "#f87171" },
+                  userPreviewMainIdentifier: { color: "#F0EEE6", fontFamily: "var(--font-mono), monospace" },
+                  userPreviewSecondaryIdentifier: { color: "#8A8480", fontFamily: "var(--font-mono), monospace", fontSize: "11px" },
+                },
+              }}
+            />
+            <div className="min-w-0 flex-1 pointer-events-none select-none">
+              <div className="text-[11px] font-mono text-brand-text truncate leading-none mb-0.5">
+                {user?.firstName
+                  ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ""}`
+                  : user?.emailAddresses[0]?.emailAddress ?? "Account"}
+              </div>
+              <div className="text-[9px] font-mono text-brand-muted truncate">
+                {user?.firstName ? user?.emailAddresses[0]?.emailAddress : ""}
+              </div>
+            </div>
+          </div>
+          {/* Status bar */}
+          <div className="flex items-center justify-between px-5 py-2 border-t border-brand-border">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span className="text-[10px] font-mono text-brand-muted uppercase tracking-wider">Connected</span>
+              <span className="text-[9px] font-mono text-brand-muted uppercase tracking-wider">Connected</span>
             </div>
-            <span className="text-[10px] font-mono text-brand-muted border border-brand-border px-1.5 py-0.5">v0.1.0</span>
+            <span className="text-[9px] font-mono text-brand-muted border border-brand-border px-1.5 py-0.5">v0.1.0</span>
           </div>
         </div>
       </nav>

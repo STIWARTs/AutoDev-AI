@@ -3,9 +3,11 @@
 import { motion, Variants, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ChevronRight, Code2, Cpu, Globe2, GitBranch, Terminal, Shield, Sparkles, Check, Play, Map, BookOpen, BarChart2, Mic, Monitor, Zap, Users, Settings2, Languages, FileCode2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronRight, Code2, Cpu, Globe2, GitBranch, Terminal, Shield, Sparkles, Check, Play, Map, BookOpen, BarChart2, Mic, Monitor, Zap, Users, Settings2, Languages, FileCode2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InteractiveGrid } from "@/components/InteractiveGrid";
+import { useAuth, UserButton } from "@clerk/nextjs";
 
 // Particle component for background
 const FloatingParticles = () => {
@@ -552,13 +554,23 @@ export default function HomePage() {
   const { scrollYProgress } = useScroll();
   const heroY = useTransform(scrollYProgress, [0, 0.2], ["0%", "30%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  const { isSignedIn, isLoaded } = useAuth();
+  const router = useRouter();
+
+  // Client-side fallback: if middleware didn't catch it (e.g., client navigation),
+  // redirect signed-in users away from the landing page to the dashboard.
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.replace("/dashboard");
+    }
+  }, [isLoaded, isSignedIn, router]);
 
   useEffect(() => {
     // Disable browser's default scroll restoration to avoid jumpiness on reload
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
-    
+
     // Force to top immediately on mount
     window.scrollTo(0, 0);
 
@@ -569,6 +581,24 @@ export default function HomePage() {
 
     return () => cancelAnimationFrame(id);
   }, []);
+
+  // While Clerk is resolving auth state, show a minimal loading screen
+  // so there's no flash of the landing page before a redirect fires.
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 bg-brand flex items-center justify-center">
+            <Code2 className="w-4 h-4 text-brand-bg" />
+          </div>
+          <Loader2 className="w-4 h-4 text-brand-muted animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  // If signed in, render nothing while the redirect fires
+  if (isSignedIn) return null;
 
   return (
     <main className="min-h-screen bg-brand-bg text-brand-text font-body selection:bg-brand/30 overflow-x-hidden">
@@ -598,14 +628,27 @@ export default function HomePage() {
             <Link href="#pricing" className="hover:text-brand-text transition-colors">Pricing</Link>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="font-mono text-sm text-brand-text hover:text-brand transition-colors">
-              Log In
-            </Link>
-            <Link href="/dashboard">
-              <Button className="rounded-sm bg-brand-text text-brand-bg hover:bg-brand hover:text-brand-bg transition-colors font-semibold px-6 h-9">
-                Start Free
-              </Button>
-            </Link>
+            {isSignedIn ? (
+              <>
+                <Link href="/dashboard">
+                  <Button className="rounded-sm bg-brand-text text-brand-bg hover:bg-brand hover:text-brand-bg transition-colors font-semibold px-6 h-9">
+                    Go to Dashboard <ChevronRight className="ml-1 w-3 h-3" />
+                  </Button>
+                </Link>
+                <UserButton />
+              </>
+            ) : (
+              <>
+                <Link href="/sign-in" className="font-mono text-sm text-brand-text hover:text-brand transition-colors">
+                  Log In
+                </Link>
+                <Link href="/sign-up">
+                  <Button className="rounded-sm bg-brand-text text-brand-bg hover:bg-brand hover:text-brand-bg transition-colors font-semibold px-6 h-9">
+                    Start Free
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -644,14 +687,14 @@ export default function HomePage() {
             </motion.p>
             
             <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Link href="/dashboard">
+              <Link href="/sign-up">
                 <Button className="rounded-sm bg-brand hover:bg-white text-brand-bg h-12 px-8 text-base font-medium transition-colors">
-                  Connect Repository <ChevronRight className="ml-2 w-4 h-4" />
+                  Get Started Free <ChevronRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
-              <Link href="/demo">
+              <Link href="/dashboard?demo=true">
                 <Button variant="outline" className="rounded-sm border-brand-border bg-transparent hover:bg-brand-surface text-brand-text h-12 px-8 text-base transition-colors">
-                  <Play className="mr-2 w-4 h-4" /> Watch the Demo
+                  <Play className="mr-2 w-4 h-4" /> Try Demo
                 </Button>
               </Link>
             </motion.div>
@@ -1001,39 +1044,195 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── SOCIAL PROOF ─── */}
-      <section id="customers" className="py-24 px-6 border-t border-brand-border bg-brand-bg relative overflow-hidden scroll-mt-16">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-brand opacity-5 blur-[100px] pointer-events-none" />
-        <div className="max-w-4xl mx-auto text-center space-y-16">
-          <h2 className="font-heading text-4xl">Trusted by teams scaling fast</h2>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { stat: "4.3M+", label: "INDIAN DEVELOPERS" },
-              { stat: "10k+", label: "REPOS ANALYZED" },
-              { stat: "2 hrs", label: "AVG. ONBOARDING" },
-              { stat: "7", label: "LANGUAGES SUPPORTED" },
-            ].map((s, i) => (
-              <div key={i} className="border border-brand-border bg-brand-surface p-6 rounded-sm flex flex-col items-center justify-center">
-                <div className="font-heading text-3xl mb-1 text-brand-text">{s.stat}</div>
-                <div className="font-mono text-[10px] text-brand-muted uppercase tracking-wider">{s.label}</div>
+      {/* ─── PROFILES / WHO USES AUTODEV ─── */}
+      <section id="customers" className="py-24 px-6 border-t border-brand-border bg-brand-bg scroll-mt-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="space-y-4"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-brand-border bg-brand-surface font-mono text-xs text-brand">
+                <Users className="w-3 h-3" /> Real Developers, Real Results
               </div>
+              <h2 className="font-heading text-4xl md:text-5xl">Built for every developer in India</h2>
+              <p className="font-mono text-sm text-brand-muted max-w-2xl mx-auto">
+                From freshers joining their first startup to senior engineers rotating across enterprise projects — AutoDev works for every stage of your career.
+              </p>
+            </motion.div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-16">
+            {[
+              {
+                initials: "RS",
+                name: "Rahul Sharma",
+                role: "Junior Developer",
+                company: "Fintech Startup, Bengaluru",
+                color: "#E25A34",
+                lang: "Hindi",
+                story: "Joined a 3-year-old fintech codebase with zero documentation. AutoDev gave me a live animated map of the entire payment flow — explained in Hindi. I felt like I had a senior sitting next to me.",
+                features: ["Fresher Mode", "Hindi Q&A", "Animated Maps"],
+                before: "3 weeks",
+                after: "2 days",
+                metric: "to first PR",
+              },
+              {
+                initials: "PK",
+                name: "Priya Krishnamurthy",
+                role: "Senior Software Engineer",
+                company: "IT Services firm, Chennai",
+                color: "#60a5fa",
+                lang: "English",
+                story: "Our team rotates across 5 projects every year. With AutoDev's Code Canvas in VS Code, I understand any new codebase in an afternoon — not a week of shadowing seniors.",
+                features: ["VS Code Canvas", "Walkthroughs", "Convention Checker"],
+                before: "1 week",
+                after: "2 hours",
+                metric: "per project rotation",
+              },
+              {
+                initials: "AM",
+                name: "Arjun Mehta",
+                role: "Engineering Manager",
+                company: "B2B SaaS company, Pune",
+                color: "#34d399",
+                lang: "English",
+                story: "I manage 12 developers across 3 time zones. The team leaderboard shows exactly who's onboarding well and who needs support — before they fall behind and start asking the same questions.",
+                features: ["Team Leaderboard", "Progress Dashboard", "GitHub App"],
+                before: "No visibility",
+                after: "Full tracking",
+                metric: "across team onboarding",
+              },
+              {
+                initials: "DS",
+                name: "Divya Subramanian",
+                role: "Full Stack Developer",
+                company: "Remote freelancer, Coimbatore",
+                color: "#a78bfa",
+                lang: "Tamil",
+                story: "English documentation always slowed me down on client projects. AutoDev explains complex architecture patterns in Tamil — I can focus on actually understanding the code, not translating it.",
+                features: ["Tamil Q&A", "Voice Q&A", "Env Setup Autopilot"],
+                before: "Language barrier",
+                after: "Explained in Tamil",
+                metric: "zero translation overhead",
+              },
+            ].map((p, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: (i % 2) * 0.1 }}
+                className="border border-brand-border bg-brand-surface hover:border-brand/30 transition-colors group"
+                style={{ borderLeftWidth: 3, borderLeftColor: p.color }}
+              >
+                {/* Header */}
+                <div className="p-6 pb-4 flex items-start gap-4">
+                  <div
+                    className="w-11 h-11 rounded-sm flex items-center justify-center font-heading font-bold text-sm shrink-0"
+                    style={{ backgroundColor: `${p.color}20`, color: p.color, border: `1px solid ${p.color}40` }}
+                  >
+                    {p.initials}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-heading text-base text-brand-text">{p.name}</div>
+                    <div className="font-mono text-[11px] text-brand-muted">{p.role}</div>
+                    <div className="font-mono text-[10px] text-brand-muted/60 mt-0.5">{p.company}</div>
+                  </div>
+                  <div
+                    className="ml-auto font-mono text-[9px] px-2 py-1 shrink-0"
+                    style={{ color: p.color, backgroundColor: `${p.color}15`, border: `1px solid ${p.color}30` }}
+                  >
+                    {p.lang}
+                  </div>
+                </div>
+
+                {/* Quote */}
+                <div className="px-6 pb-4">
+                  <p className="font-body text-sm text-brand-muted leading-relaxed">
+                    &ldquo;{p.story}&rdquo;
+                  </p>
+                </div>
+
+                {/* Feature tags */}
+                <div className="px-6 pb-4 flex flex-wrap gap-2">
+                  {p.features.map((f) => (
+                    <span key={f} className="font-mono text-[10px] px-2 py-1 border border-brand-border text-brand-muted bg-brand-bg">
+                      {f}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Before → After */}
+                <div className="mx-6 mb-6 border-t border-brand-border pt-4 flex items-center gap-4 font-mono text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="text-brand-muted/50 line-through">{p.before}</span>
+                    <ChevronRight className="w-3 h-3" style={{ color: p.color }} />
+                    <span className="font-semibold" style={{ color: p.color }}>{p.after}</span>
+                  </div>
+                  <span className="text-brand-muted/60 text-[10px]">{p.metric}</span>
+                </div>
+              </motion.div>
             ))}
           </div>
 
-          <div className="border border-brand-border bg-brand-surface rounded-sm p-8 md:p-12 text-left relative">
-            <span className="font-heading text-8xl text-brand absolute top-4 left-6 opacity-20">&ldquo;</span>
+          {/* Stats row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-brand-border pt-12">
+            {[
+              { stat: "4.3M+", label: "INDIAN DEVELOPERS", sub: "target market" },
+              { stat: "2 hrs", label: "AVG. ONBOARDING", sub: "down from 2–4 weeks" },
+              { stat: "7", label: "LANGUAGES", sub: "Hindi, Tamil, Telugu + more" },
+              { stat: "90%", label: "COST REDUCTION", sub: "vs manual onboarding" },
+            ].map((s, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="border border-brand-border bg-brand-surface p-6 flex flex-col items-center text-center"
+              >
+                <div className="font-heading text-3xl mb-1 text-brand-text">{s.stat}</div>
+                <div className="font-mono text-[10px] text-brand-muted uppercase tracking-wider">{s.label}</div>
+                <div className="font-mono text-[9px] text-brand-muted/50 mt-1">{s.sub}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── TESTIMONIAL ─── */}
+      <section className="py-24 px-6 border-t border-brand-border bg-brand-surface relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand opacity-5 blur-[100px] pointer-events-none" />
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="border border-brand-border bg-brand-bg p-8 md:p-12 text-left relative"
+            style={{ borderLeftWidth: 3, borderLeftColor: "#E25A34" }}
+          >
+            <span className="font-heading text-8xl text-brand absolute top-4 left-6 opacity-15">&ldquo;</span>
             <blockquote className="relative z-10 font-heading text-2xl md:text-3xl leading-snug mb-8">
-              AutoDev fundamentally changed how we scale our engineering team. What used to take 3 weeks of shadowing and paired programming is now done asynchronously over a weekend. The animated data flow graph is magic.
+              AutoDev fundamentally changed how we scale our engineering team. What used to take 3 weeks of shadowing and paired programming now happens asynchronously over a weekend. The animated architecture map is genuinely magic.
             </blockquote>
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-brand-card border border-brand-border rounded-sm" />
+              <div className="w-11 h-11 bg-brand/20 border border-brand/30 flex items-center justify-center font-heading font-bold text-sm text-brand">
+                PS
+              </div>
               <div>
                 <div className="font-bold text-brand-text">Priya Sharma</div>
-                <div className="font-mono text-xs text-brand-muted uppercase tracking-wider">VP of Engineering, Acme Corp</div>
+                <div className="font-mono text-xs text-brand-muted uppercase tracking-wider">VP of Engineering, Series B Startup</div>
+              </div>
+              <div className="ml-auto hidden md:flex gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="w-4 h-4 text-brand">★</div>
+                ))}
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -1108,14 +1307,16 @@ export default function HomePage() {
           <h2 className="font-heading text-5xl md:text-6xl tracking-tight">Ready to eliminate your onboarding bottleneck?</h2>
           <p className="font-mono text-brand-muted max-w-lg mx-auto">Join hundreds of high-performing engineering teams using AutoDev to scale efficiently.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Link href="/dashboard">
+            <Link href="/sign-up">
               <Button className="rounded-sm flex border border-transparent bg-brand-text hover:bg-brand text-brand-bg hover:text-brand-bg h-14 px-8 text-base font-semibold transition-colors">
                 Start Building Free <ChevronRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
-            <Button variant="outline" className="rounded-sm border-brand-border bg-brand-bg hover:bg-brand-card text-brand-text h-14 px-8 text-base transition-colors">
-              Talk to Sales
-            </Button>
+            <Link href="/dashboard?demo=true">
+              <Button variant="outline" className="rounded-sm border-brand-border bg-brand-bg hover:bg-brand-card text-brand-text h-14 px-8 text-base transition-colors">
+                <Play className="mr-2 w-4 h-4" /> Try Demo First
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

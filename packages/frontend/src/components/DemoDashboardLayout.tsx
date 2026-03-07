@@ -24,7 +24,7 @@ const NAV_ITEMS = [
   { href: "/canvas",      label: "Code Canvas",      icon: Network },
   { href: "/walkthroughs",label: "Walkthroughs",     icon: BookOpen },
   { href: "/conventions", label: "Conventions",      icon: FileText },
-  { href: "/env-setup",   label: "Env Setup",        icon: Terminal },
+  { href: "/env-setup",   label: "Overview",          icon: FileText },
   { href: "/qa",          label: "Q&A",              icon: MessageCircle },
   { href: "/progress",    label: "My Progress",      icon: BarChart3 },
   { href: "/team",        label: "Team",             icon: Users },
