@@ -31,6 +31,7 @@
 - [Data Flow](#data-flow)
 - [Package Structure](#package-structure)
 - [Key Features](#key-features)
+- [VS Code Extension](#7-vs-code-extension--ide-native-onboarding)
 - [Tech Stack](#tech-stack)
 - [API Reference](#api-reference)
 - [Database Schema](#database-schema)
@@ -276,10 +277,11 @@ graph TD
     GHA --> GHA1["handlers/ - installation, PR, push"]
     GHA --> GHA2["services/ - repoFetcher"]
 
-    VSC --> VSC1["panels/ - CodebaseExplorer, QAPanel"]
-    VSC --> VSC2["panels/ - WalkthroughPanel, ProgressPanel"]
-    VSC --> VSC3["providers/ - CodeLens"]
-    VSC --> VSC4["api/ - Backend client"]
+    VSC --> VSC1["panels/ - CodeCanvasPanel (new)"]
+    VSC --> VSC2["panels/ - CodebaseExplorer, QAPanel"]
+    VSC --> VSC3["panels/ - WalkthroughPanel, ProgressPanel"]
+    VSC --> VSC4["providers/ - CodeLens"]
+    VSC --> VSC5["api/ - Backend client"]
 
     style ROOT fill:#FF6B35,color:#fff
     style FE fill:#4361EE,color:#fff
@@ -365,7 +367,8 @@ autodev/
 │   │   └── src/
 │   │       ├── extension.ts           # Main activation + command registration
 │   │       ├── panels/
-│   │       │   ├── CodebaseExplorerPanel.ts  # Architecture tree
+│   │       │   ├── CodeCanvasPanel.ts        # Full-screen architecture canvas (new)
+│   │       │   ├── CodebaseExplorerPanel.ts  # Architecture tree sidebar
 │   │       │   ├── QAPanel.ts                # Q&A webview
 │   │       │   ├── WalkthroughPanel.ts       # Step-by-step tours
 │   │       │   └── ProgressPanel.ts          # Skill progress view
@@ -500,6 +503,111 @@ Accessibility-first voice interface for code explanations. Developers can **spea
 ### 6. AI Copilot
 
 Context-aware coding assistant embedded directly in the dashboard — powered by Claude 3.5 Sonnet with full repo context.
+
+---
+
+### 7. VS Code Extension — IDE-Native Onboarding
+
+Install AutoDev directly in VS Code and get codebase intelligence **without leaving your editor**.
+
+#### Code Canvas (`autodev.openCodeCanvas`)
+
+A full-screen interactive architecture panel — open it with `> AutoDev: Open Code Canvas` or the `⎇ Canvas` status bar button.
+
+```
++------------------+------------------------------------+------------------+
+|  Repository      |                                    |  Controls        |
+|  Explorer        |        Architecture Canvas         |                  |
+|                  |                                    |  Edge Filters:   |
+|  ▸ API Layer     |   ┌─────────┐    ┌─────────┐      |  [x] calls       |
+|  ▸ Auth          |   │ Routes  │───▶│Services │      |  [x] writes      |
+|  ▸ Database      |   └────┬────┘    └────┬────┘      |  [x] imports     |
+|  ▸ Frontend      |        │             │            |                  |
+|  ▸ Middleware    |   ┌────▼────┐    ┌────▼────┐      |  MiniMap         |
+|  ▸ Config        |   │ Models  │    │ Database│      |  [fit] [+] [-]   |
+|                  |   └─────────┘    └─────────┘      |                  |
+|  [x] calls       |                                    |  Selected Node:  |
+|  [x] writes      |  Click any node to highlight       |  Auth Service    |
+|  [x] imports     |  connections and dim others.       |  ─────────────   |
+|                  |  Hover to preview module details.  |  Files: 4        |
+|                  |                                    |  Deps: 6         |
++------------------+------------------------------------+------------------+
+```
+
+- **Column layout**: Nodes arranged by architecture layer (Routes → Services → Models → Database)
+- **Hover to preview**: Highlight direct connections, dim unrelated nodes
+- **Click to inspect**: Right panel shows module description, file list, dependency count
+- **Edge filtering**: Toggle `calls` / `writes` / `imports` edges in real-time
+- **Open files**: Click any file in the detail panel to jump to it in the editor
+- **AI Explain**: Click `✦ AI Explain` to trigger the Module Detail panel with AI explanation
+- **Fit View**: Auto-fits all nodes in view with keyboard shortcut
+
+#### Codebase Explorer (Activity Bar)
+
+Persistent sidebar panel showing architecture tree, module summaries, and health indicators — always visible in the AutoDev activity bar (compass icon).
+
+#### Q&A Panel (`autodev.askQuestion`)
+
+Ask questions about the codebase in natural language — or in Hindi, Tamil, Telugu, and more. Answers include clickable file references that open directly in the editor.
+
+#### Guided Walkthroughs (`autodev.startWalkthrough`)
+
+Step-by-step code tours inside VS Code. Each step highlights the relevant file, scrolls to the right function, and provides an AI explanation.
+
+#### Architecture Annotations (`autodev.refreshCodeLens`)
+
+CodeLens annotations appear above key functions and classes:
+
+```typescript
+// ✦ Auth Layer — JWT validation middleware
+// Called by: 12 routes  |  Writes: users table  |  AutoDev: explain this
+export function authenticate(req, res, next) {
+```
+
+#### All Commands
+
+| Command | Title | Trigger |
+|---|---|---|
+| `autodev.openCodeCanvas` | Open Code Canvas | Status bar `⎇ Canvas` or Command Palette |
+| `autodev.showExplorer` | Show Codebase Explorer | Activity bar / Command Palette |
+| `autodev.askQuestion` | Ask About This Codebase | Command Palette |
+| `autodev.startWalkthrough` | Start Walkthrough | Command Palette |
+| `autodev.showWalkthroughs` | Show Walkthroughs | Command Palette |
+| `autodev.showNodeDetail` | Show Module Detail | Node click or Command Palette |
+| `autodev.refreshCodeLens` | Refresh Architecture Annotations | Command Palette |
+| `autodev.selectLanguage` | Select Language | Command Palette |
+| `autodev.setApiToken` | Set API Token | Command Palette |
+
+#### Status Bar
+
+| Button | Action |
+|---|---|
+| `⎇ Canvas` | Opens full-screen Code Canvas panel |
+| `✦ AutoDev` | Opens Codebase Explorer sidebar |
+
+#### Extension Settings
+
+| Setting | Default | Description |
+|---|---|---|
+| `autodev.apiUrl` | `http://localhost:3001/api` | Backend API URL |
+| `autodev.apiToken` | _(empty)_ | API token from web dashboard (Settings → API Token) |
+| `autodev.repoId` | _(auto-detect)_ | `owner/repo` — auto-detected from git remote |
+| `autodev.language` | `en` | Language for explanations: `en`, `hi`, `ta`, `te`, `kn`, `bn`, `mr` |
+| `autodev.fresherMode` | `false` | Simpler explanations for beginners |
+
+#### Quick Start (Extension)
+
+```bash
+# 1. Build the extension
+cd packages/vscode-extension
+pnpm build
+
+# 2. Open VS Code and press F5 to launch Extension Development Host
+# 3. Open any project folder
+# 4. Set your API URL: Ctrl+Shift+P → "AutoDev: Set API Token"
+# 5. Open Code Canvas: Ctrl+Shift+P → "AutoDev: Open Code Canvas"
+#    OR click the ⎇ Canvas button in the status bar
+```
 
 ---
 
