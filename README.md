@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Team-HASHMAP-FFD166?style=for-the-badge&logoColor=black" alt="Team HASHMAP" />
 </p>
 
-<h1 align="center">🚀 AutoDev</h1>
+<h1 align="center">AutoDev</h1>
 <h3 align="center">AI-Powered Codebase Onboarding Platform — Built for Bharat</h3>
 <p align="center"><i>"Onboard new developers in hours, not weeks. In their own language."</i></p>
 
@@ -22,61 +22,61 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [The Problem](#-the-problem)
-- [The Solution](#-the-solution)
-- [Live Demo](#-live-demo)
-- [System Architecture](#-system-architecture)
-- [Data Flow](#-data-flow)
-- [Package Structure](#-package-structure)
-- [Key Features](#-key-features)
-- [Tech Stack](#-tech-stack)
-- [API Reference](#-api-reference)
-- [Database Schema](#-database-schema)
-- [Getting Started](#-getting-started)
-- [Supported Languages](#-supported-languages)
-- [Milestones](#-milestones)
-- [Why AutoDev for India](#-why-autodev-for-india)
-- [Competitive Landscape](#-competitive-landscape)
-- [Team](#-team)
+- [The Problem](#the-problem)
+- [The Solution](#the-solution)
+- [Live Demo](#live-demo)
+- [System Architecture](#system-architecture)
+- [Data Flow](#data-flow)
+- [Package Structure](#package-structure)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [API Reference](#api-reference)
+- [Database Schema](#database-schema)
+- [Getting Started](#getting-started)
+- [Supported Languages](#supported-languages)
+- [Milestones](#milestones)
+- [Why AutoDev for India](#why-autodev-for-india)
+- [Competitive Landscape](#competitive-landscape)
+- [Team](#team)
 
 ---
 
-## 🇮🇳 The Problem
+## The Problem
 
 > **New developers waste 2–4 weeks understanding unfamiliar codebases.**
 
 India has **4.3 million developers** — yet the onboarding experience is broken:
 
-- 🔴 **83%** of engineering graduates struggle without senior mentors
-- 🔴 Service companies rotate developers across projects every 6–12 months
-- 🔴 Existing tools (CodeRabbit, Greptile, Qodo) focus on **code review**, not **learning**
-- 🔴 **Zero** tools explain code in Indian languages — Hindi, Tamil, Telugu, Kannada, Bengali, Marathi
-- 🔴 Average onboarding cost: **₹2–5 lakhs per developer** per project rotation
+- **83%** of engineering graduates struggle without senior mentors
+- Service companies rotate developers across projects every 6–12 months
+- Existing tools (CodeRabbit, Greptile, Qodo) focus on **code review**, not **learning**
+- **Zero** tools explain code in Indian languages — Hindi, Tamil, Telugu, Kannada, Bengali, Marathi
+- Average onboarding cost: **₹2–5 lakhs per developer** per project rotation
 
 ---
 
-## 💡 The Solution
+## The Solution
 
 **AutoDev** is the first platform purpose-built for **developer onboarding as learning** — not code search or PR review. Install it on any GitHub repo and get instant onboarding intelligence.
 
 | Feature | What It Does |
 |---|---|
-| 🗺️ **Animated Architecture Maps** | Watch request flows light up node-by-node — understand how the system works |
-| 🤖 **Environment Setup Autopilot** | AI-generated setup guide that flags conflicts and missing docs — Day 1 in 10 minutes |
-| 🌐 **Multi-Language Explanations** | "Explain auth like I'm a fresher" — in Hindi, Tamil, Telugu, or English |
-| 📈 **Learning Progress Dashboard** | Track understanding: "0% to 80% in 2 hours" with skill radar charts |
-| 🧭 **Guided Walkthroughs** | Step-by-step code tours auto-generated from AI analysis |
-| 💬 **Codebase Q&A** | Ask questions in natural language, get answers with file references |
-| 🔍 **Convention Detection** | Visual cards showing coding patterns and standards used in the repo |
-| 🎙️ **Voice Q&A** | Audio-based code explanations — accessibility first |
-| 🤝 **AI Copilot** | Context-aware coding assistance inside the platform |
-| 👥 **Team Leaderboard** | Track onboarding progress across the entire team |
+| **Animated Architecture Maps** | Watch request flows light up node-by-node — understand how the system works |
+| **Environment Setup Autopilot** | AI-generated setup guide that flags conflicts and missing docs — Day 1 in 10 minutes |
+| **Multi-Language Explanations** | "Explain auth like I'm a fresher" — in Hindi, Tamil, Telugu, or English |
+| **Learning Progress Dashboard** | Track understanding: "0% to 80% in 2 hours" with skill radar charts |
+| **Guided Walkthroughs** | Step-by-step code tours auto-generated from AI analysis |
+| **Codebase Q&A** | Ask questions in natural language, get answers with file references |
+| **Convention Detection** | Visual cards showing coding patterns and standards used in the repo |
+| **Voice Q&A** | Audio-based code explanations — accessibility first |
+| **AI Copilot** | Context-aware coding assistance inside the platform |
+| **Team Leaderboard** | Track onboarding progress across the entire team |
 
 ---
 
-## 🎬 Live Demo
+## Live Demo
 
 > **"A fresher joins a company. In 10 minutes: animated system map, AI explanations in their language, verified setup guide, and a learning path. 2 weeks → 2 hours."**
 
@@ -93,38 +93,38 @@ open http://localhost:3000/dashboard?demo=true
 
 ---
 
-## 🏛️ System Architecture
+## System Architecture
 
 ```mermaid
 graph TB
-    subgraph CLIENT["🖥️ Client Layer"]
+    subgraph CLIENT["Client Layer"]
         style CLIENT fill:#1a1a2e,stroke:#4361EE,stroke-width:2px,color:#fff
-        FE["🌐 Next.js 14<br/>Web Dashboard"]
-        VS["🔵 VS Code<br/>Extension"]
-        GH["⚫ GitHub App<br/>Probot"]
+        FE["Next.js 14\nWeb Dashboard"]
+        VS["VS Code\nExtension"]
+        GH["GitHub App\nProbot"]
     end
 
-    subgraph API["⚙️ API Layer"]
+    subgraph API["API Layer"]
         style API fill:#16213e,stroke:#7209B7,stroke-width:2px,color:#fff
-        BE["🚀 Express.js Backend<br/>TypeScript + Lambda"]
+        BE["Express.js Backend\nTypeScript + Lambda"]
     end
 
-    subgraph AI["🧠 AI Layer — AWS Bedrock"]
+    subgraph AI["AI Layer - AWS Bedrock"]
         style AI fill:#0f3460,stroke:#F72585,stroke-width:2px,color:#fff
-        CS["Claude 3.5 Sonnet<br/>Architecture & Walkthroughs"]
-        CH["Claude 3 Haiku<br/>Conventions & i18n"]
-        TE["Titan Embeddings V2<br/>Semantic Search"]
+        CS["Claude 3.5 Sonnet\nArchitecture and Walkthroughs"]
+        CH["Claude 3 Haiku\nConventions and i18n"]
+        TE["Titan Embeddings V2\nSemantic Search"]
     end
 
-    subgraph DATA["💾 Data Layer"]
+    subgraph DATA["Data Layer"]
         style DATA fill:#1a1a2e,stroke:#06D6A0,stroke-width:2px,color:#fff
-        DB["🗄️ DynamoDB<br/>repos · analyses · cache<br/>progress · walkthroughs"]
-        S3["🪣 S3 Buckets<br/>repo-files · analysis-results"]
+        DB["DynamoDB\nrepos - analyses - cache\nprogress - walkthroughs"]
+        S3["S3 Buckets\nrepo-files - analysis-results"]
     end
 
     FE -->|REST API| BE
     VS -->|REST API| BE
-    GH -->|Webhooks & REST| BE
+    GH -->|Webhooks and REST| BE
     BE -->|Invoke Models| CS
     BE -->|Invoke Models| CH
     BE -->|Generate Embeddings| TE
@@ -140,37 +140,37 @@ graph TB
     style CH fill:#F72585,color:#fff
     style TE fill:#4CC9F0,color:#000
     style DB fill:#06D6A0,color:#000
-    style S3fill:#FFD166,color:#000
+    style S3 fill:#FFD166,color:#000
 ```
 
 ---
 
-## 🔄 Data Flow
+## Data Flow
 
 ### End-to-End Onboarding Pipeline
 
 ```mermaid
 sequenceDiagram
-    participant DEV as 👨‍💻 Developer
-    participant GHA as ⚫ GitHub App
-    participant BE as 🚀 Backend
-    participant S3 as 🪣 S3
-    participant AI as 🧠 AWS Bedrock
-    participant DB as 🗄️ DynamoDB
-    participant UI as 🌐 Dashboard
+    participant DEV as Developer
+    participant GHA as GitHub App
+    participant BE as Backend
+    participant S3 as S3 Storage
+    participant AI as AWS Bedrock
+    participant DB as DynamoDB
+    participant UI as Dashboard
 
     DEV->>GHA: Install AutoDev on GitHub Repo
     GHA->>GHA: Receive installation webhook
-    GHA->>S3: Fetch & store repo files
+    GHA->>S3: Fetch and store repo files
     GHA->>BE: POST /api/internal/analyze
     BE->>S3: Read repo files
-    BE->>AI: Claude 3.5 Sonnet — Architecture Analysis
+    BE->>AI: Claude 3.5 Sonnet - Architecture Analysis
     AI-->>BE: Architecture map + component graph
-    BE->>AI: Claude 3 Haiku — Convention Detection
+    BE->>AI: Claude 3 Haiku - Convention Detection
     AI-->>BE: Coding patterns + standards
-    BE->>AI: Claude 3.5 Sonnet — Walkthrough Generation
+    BE->>AI: Claude 3.5 Sonnet - Walkthrough Generation
     AI-->>BE: Step-by-step code tours
-    BE->>AI: Titan Embeddings — Vectorize codebase
+    BE->>AI: Titan Embeddings - Vectorize codebase
     AI-->>BE: Embedding vectors
     BE->>DB: Store analysis results
     BE->>S3: Store detailed results
@@ -185,23 +185,23 @@ sequenceDiagram
     UI->>BE: POST /api/qa (language: hi)
     BE->>AI: Semantic search + Claude answer
     AI-->>BE: Answer with file references
-    BE->>AI: Claude Haiku — Translate to Hindi
+    BE->>AI: Claude Haiku - Translate to Hindi
     AI-->>BE: Hindi response
     BE->>DB: Cache Q&A (TTL: 24h)
     BE-->>UI: Hindi answer with file links
-    UI-->>DEV: 🎉 Answer in Hindi!
+    UI-->>DEV: Answer in Hindi!
 ```
 
-### Architecture Analysis Flow
+### Analysis Pipeline Flow
 
 ```mermaid
 flowchart LR
-    subgraph INPUT["📥 Input"]
+    subgraph INPUT["Input"]
         style INPUT fill:#1a1a2e,stroke:#4361EE,color:#fff
         REPO["GitHub Repo\nSource Files"]
     end
 
-    subgraph ANALYSIS["🧠 AI Analysis Pipeline"]
+    subgraph ANALYSIS["AI Analysis Pipeline"]
         style ANALYSIS fill:#0f3460,stroke:#F72585,color:#fff
         ARCH["Architecture\nMapping"]
         CONV["Convention\nDetection"]
@@ -210,11 +210,11 @@ flowchart LR
         EMBED["Embedding\nVectorization"]
     end
 
-    subgraph OUTPUT["📤 Output Channels"]
+    subgraph OUTPUT["Output Channels"]
         style OUTPUT fill:#16213e,stroke:#06D6A0,color:#fff
-        WEB["🌐 Web Dashboard\nAnimated Maps · Q&A · Progress"]
-        VSCODE["🔵 VS Code\nCodeLens · Explorer · Panels"]
-        GITHUB["⚫ GitHub PRs\nOnboarding Comments"]
+        WEB["Web Dashboard\nAnimated Maps - Q&A - Progress"]
+        VSCODE["VS Code\nCodeLens - Explorer - Panels"]
+        GITHUB["GitHub PRs\nOnboarding Comments"]
     end
 
     REPO --> ARCH
@@ -238,48 +238,48 @@ flowchart LR
 
 ---
 
-## 📦 Package Structure
+## Package Structure
 
 ```mermaid
 graph TD
-    ROOT["🏠 AutoDev Monorepo<br/>(pnpm workspaces)"]
+    ROOT["AutoDev Monorepo\npnpm workspaces"]
 
-    ROOT --> FE["📦 packages/frontend<br/>Next.js 14 Dashboard"]
-    ROOT --> BE["📦 packages/backend<br/>Express.js API + Lambda"]
-    ROOT --> GHA["📦 packages/github-app<br/>Probot GitHub App"]
-    ROOT --> VSC["📦 packages/vscode-extension<br/>VS Code Extension"]
-    ROOT --> SH["📦 packages/shared<br/>TypeScript Types"]
-    ROOT --> INF["📁 infrastructure/<br/>AWS SAM Template"]
+    ROOT --> FE["packages/frontend\nNext.js 14 Dashboard"]
+    ROOT --> BE["packages/backend\nExpress.js API + Lambda"]
+    ROOT --> GHA["packages/github-app\nProbot GitHub App"]
+    ROOT --> VSC["packages/vscode-extension\nVS Code Extension"]
+    ROOT --> SH["packages/shared\nTypeScript Types"]
+    ROOT --> INF["infrastructure\nAWS SAM Template"]
 
-    FE --> FE1["app/page.tsx — Landing Page"]
-    FE --> FE2["app/dashboard/ — Repo List"]
-    FE --> FE3["app/dashboard/[repoId]/ — Per-Repo"]
-    FE3 --> FE3A["animated/ — Animated Maps"]
-    FE3 --> FE3B["walkthroughs/ — Code Tours"]
-    FE3 --> FE3C["qa/ — Q&A Chat"]
-    FE3 --> FE3D["progress/ — Skills Dashboard"]
-    FE3 --> FE3E["env-setup/ — Setup Autopilot"]
-    FE3 --> FE3F["conventions/ — Code Patterns"]
-    FE3 --> FE3G["canvas/ — Architecture Canvas"]
-    FE3 --> FE3H["team/ — Team Leaderboard"]
+    FE --> FE1["app/page.tsx - Landing Page"]
+    FE --> FE2["app/dashboard/ - Repo List"]
+    FE --> FE3["app/dashboard/repoId/ - Per-Repo"]
+    FE3 --> FE3A["animated/ - Animated Maps"]
+    FE3 --> FE3B["walkthroughs/ - Code Tours"]
+    FE3 --> FE3C["qa/ - Q&A Chat"]
+    FE3 --> FE3D["progress/ - Skills Dashboard"]
+    FE3 --> FE3E["env-setup/ - Setup Autopilot"]
+    FE3 --> FE3F["conventions/ - Code Patterns"]
+    FE3 --> FE3G["canvas/ - Architecture Canvas"]
+    FE3 --> FE3H["team/ - Team Leaderboard"]
 
-    BE --> BE1["routes/ — 14 API endpoints"]
-    BE --> BE2["services/ — 11 services"]
-    BE --> BE3["prompts/ — AI prompts"]
-    BE1 --> BE1A["analysis · qa · walkthroughs"]
-    BE1 --> BE1B["animated · conventions · envSetup"]
-    BE1 --> BE1C["skillTracker · voice · copilot · i18n"]
-    BE2 --> BE2A["bedrock · dynamodb · s3"]
-    BE2 --> BE2B["analysisOrchestrator · progressTracker"]
-    BE2 --> BE2C["semanticSearch · embeddings · i18n · voice"]
+    BE --> BE1["routes/ - 14 API endpoints"]
+    BE --> BE2["services/ - 11 services"]
+    BE --> BE3["prompts/ - AI prompts"]
+    BE1 --> BE1A["analysis - qa - walkthroughs"]
+    BE1 --> BE1B["animated - conventions - envSetup"]
+    BE1 --> BE1C["skillTracker - voice - copilot - i18n"]
+    BE2 --> BE2A["bedrock - dynamodb - s3"]
+    BE2 --> BE2B["analysisOrchestrator - progressTracker"]
+    BE2 --> BE2C["semanticSearch - embeddings - i18n - voice"]
 
-    GHA --> GHA1["handlers/ — installation, PR, push"]
-    GHA --> GHA2["services/ — repoFetcher"]
+    GHA --> GHA1["handlers/ - installation, PR, push"]
+    GHA --> GHA2["services/ - repoFetcher"]
 
-    VSC --> VSC1["panels/ — CodebaseExplorer, QAPanel"]
-    VSC --> VSC2["panels/ — WalkthroughPanel, ProgressPanel"]
-    VSC --> VSC3["providers/ — CodeLens"]
-    VSC --> VSC4["api/ — Backend client"]
+    VSC --> VSC1["panels/ - CodebaseExplorer, QAPanel"]
+    VSC --> VSC2["panels/ - WalkthroughPanel, ProgressPanel"]
+    VSC --> VSC3["providers/ - CodeLens"]
+    VSC --> VSC4["api/ - Backend client"]
 
     style ROOT fill:#FF6B35,color:#fff
     style FE fill:#4361EE,color:#fff
@@ -295,7 +295,7 @@ graph TD
 ```
 autodev/
 ├── packages/
-│   ├── frontend/                      # 🌐 Next.js 14 Dashboard
+│   ├── frontend/                      # Next.js 14 Dashboard
 │   │   └── src/
 │   │       ├── app/
 │   │       │   ├── page.tsx           # Landing page (hero, features, CTA)
@@ -318,7 +318,7 @@ autodev/
 │   │       ├── hooks/                 # Custom React hooks
 │   │       └── lib/                   # API client, utilities
 │   │
-│   ├── backend/                       # 🚀 Express.js API + Lambda
+│   ├── backend/                       # Express.js API + Lambda
 │   │   └── src/
 │   │       ├── index.ts               # App entry + route registration
 │   │       ├── routes/
@@ -351,7 +351,7 @@ autodev/
 │   │       ├── prompts/               # AI prompt templates (5 files)
 │   │       └── middleware/            # Auth, error handling
 │   │
-│   ├── github-app/                    # ⚫ Probot GitHub App
+│   ├── github-app/                    # Probot GitHub App
 │   │   └── src/
 │   │       ├── index.ts               # App entry + event registration
 │   │       ├── handlers/
@@ -361,7 +361,7 @@ autodev/
 │   │       └── services/
 │   │           └── repoFetcher.ts     # GitHub API → S3 storage
 │   │
-│   ├── vscode-extension/              # 🔵 VS Code Extension
+│   ├── vscode-extension/              # VS Code Extension
 │   │   └── src/
 │   │       ├── extension.ts           # Main activation + command registration
 │   │       ├── panels/
@@ -374,7 +374,7 @@ autodev/
 │   │       └── api/
 │   │           └── client.ts                 # Backend API client
 │   │
-│   └── shared/                        # 📐 Shared TypeScript Types
+│   └── shared/                        # Shared TypeScript Types
 │       └── src/types/
 │           ├── repo.ts                # Repository types
 │           ├── analysis.ts            # Analysis result types
@@ -389,21 +389,21 @@ autodev/
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 1. 🗺️ Animated Architecture Maps
+### 1. Animated Architecture Maps
 
 Interactive React Flow diagrams where nodes **light up in sequence** showing how requests flow through the system.
 
 ```mermaid
 graph LR
-    A["👆 User Click"] -->|trigger| B["🔀 API Gateway"]
-    B --> C["🔒 Auth Middleware"]
-    C --> D["✅ JWT Validation"]
-    D --> E["🗄️ DB Lookup"]
-    E --> F["⚙️ Service Layer"]
-    F --> G["📦 Controller"]
-    G --> H["✅ Response"]
+    A["User Click"] -->|trigger| B["API Gateway"]
+    B --> C["Auth Middleware"]
+    C --> D["JWT Validation"]
+    D --> E["DB Lookup"]
+    E --> F["Service Layer"]
+    F --> G["Controller"]
+    G --> H["Response"]
 
     style A fill:#06D6A0,color:#000
     style B fill:#4361EE,color:#fff
@@ -415,62 +415,62 @@ graph LR
     style H fill:#06D6A0,color:#000
 ```
 
-- ✅ Nodes highlight one-by-one with animated edges
-- ✅ Click any node to pause and get AI explanation
-- ✅ Per-module walkthroughs: "Auth System", "Data Pipeline", "Frontend Layer"
-- ✅ Auto-generated from codebase analysis via AWS Bedrock
+- Nodes highlight one-by-one with animated edges
+- Click any node to pause and get AI explanation
+- Per-module walkthroughs: "Auth System", "Data Pipeline", "Frontend Layer"
+- Auto-generated from codebase analysis via AWS Bedrock
 
 ---
 
-### 2. 🤖 Environment Setup Autopilot
+### 2. Environment Setup Autopilot
 
 AI scans the repo and generates a **verified setup guide** — not a stale README.
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  🤖 Environment Setup Autopilot                      │
-├─────────────────────────────────────────────────────┤
-│  ✅ Node.js 18.x required (.nvmrc detected)         │
-│  ✅ pnpm 8.x required (packageManager field)        │
-│  ⚠️  CONFLICT: README says Node 16, package.json    │
-│     engines requires Node 18                         │
-│  ✅ Docker Compose detected (3 services)             │
-│  ❌ MISSING: .env.example exists but no Redis        │
-│     setup docs (docker-compose uses Redis)           │
-│  ✅ 8 setup steps generated                          │
-│                                                      │
-│  Estimated setup time: 10 minutes                    │
-│  (vs. average 1-3 days without AutoDev)              │
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|  Environment Setup Autopilot                         |
++-----------------------------------------------------+
+|  [OK]  Node.js 18.x required (.nvmrc detected)      |
+|  [OK]  pnpm 8.x required (packageManager field)     |
+|  [!!]  CONFLICT: README says Node 16, package.json  |
+|        engines requires Node 18                      |
+|  [OK]  Docker Compose detected (3 services)          |
+|  [XX]  MISSING: .env.example exists but no Redis     |
+|        setup docs (docker-compose uses Redis)        |
+|  [OK]  8 setup steps generated                       |
+|                                                      |
+|  Estimated setup time: 10 minutes                    |
+|  (vs. average 1-3 days without AutoDev)              |
++-----------------------------------------------------+
 ```
 
 ---
 
-### 3. 🌐 Multi-Language Q&A (Bharat-First)
+### 3. Multi-Language Q&A (Bharat-First)
 
 Code explanations in **Hindi, Tamil, Telugu, Kannada, Bengali, Marathi** — because 83% of Indian graduates learn better in their native language.
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  🌐 Language: हिंदी (Hindi)                   [▼]  │
-├─────────────────────────────────────────────────────┤
-│                                                      │
-│  Q: "Auth module kaise kaam karta hai?"              │
-│                                                      │
-│  A: "Yeh authentication module JWT tokens ka         │
-│  use karta hai. Jab user login karta hai,            │
-│  server ek token generate karta hai jo               │
-│  24 ghante tak valid rehta hai. Har API              │
-│  request mein yeh token header mein bheja            │
-│  jaata hai aur middleware verify karta hai."          │
-│                                                      │
-│  📁 src/middleware/auth.ts, src/services/jwt.ts      │
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|  Language: Hindi                              [v]   |
++-----------------------------------------------------+
+|                                                      |
+|  Q: "Auth module kaise kaam karta hai?"              |
+|                                                      |
+|  A: "Yeh authentication module JWT tokens ka         |
+|  use karta hai. Jab user login karta hai,            |
+|  server ek token generate karta hai jo               |
+|  24 ghante tak valid rehta hai. Har API              |
+|  request mein yeh token header mein bheja            |
+|  jaata hai aur middleware verify karta hai."          |
+|                                                      |
+|  Related: src/middleware/auth.ts, src/services/jwt.ts|
++-----------------------------------------------------+
 ```
 
 ---
 
-### 4. 📈 Learning Progress Dashboard
+### 4. Learning Progress Dashboard
 
 Real-time skill tracking with **measurable onboarding metrics**.
 
@@ -484,30 +484,30 @@ pie title Developer Skill Coverage (Rahul, Day 1 - 2hrs)
     "DevOps" : 15
 ```
 
-- ✅ Questions asked, walkthroughs completed, time spent
-- ✅ Skill radar chart per module
-- ✅ "Ready for first contribution" recommendation
-- ✅ Team leaderboard across all developers
+- Questions asked, walkthroughs completed, time spent
+- Skill radar chart per module
+- "Ready for first contribution" recommendation
+- Team leaderboard across all developers
 
 ---
 
-### 5. 🎙️ Voice Q&A
+### 5. Voice Q&A
 
 Accessibility-first voice interface for code explanations. Developers can **speak their question** and receive an **audio response** powered by AWS Polly + Bedrock.
 
 ---
 
-### 6. 🤝 AI Copilot
+### 6. AI Copilot
 
 Context-aware coding assistant embedded directly in the dashboard — powered by Claude 3.5 Sonnet with full repo context.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ```mermaid
 graph LR
-    subgraph FE["🌐 Frontend"]
+    subgraph FE["Frontend"]
         style FE fill:#4361EE,color:#fff,stroke:#4361EE
         N["Next.js 14"]
         RF["React Flow"]
@@ -515,7 +515,7 @@ graph LR
         RC["Recharts"]
     end
 
-    subgraph BE["⚙️ Backend"]
+    subgraph BE["Backend"]
         style BE fill:#7209B7,color:#fff
         EX["Express.js"]
         TS["TypeScript"]
@@ -523,21 +523,21 @@ graph LR
         SH["serverless-http"]
     end
 
-    subgraph AI["🧠 AI (AWS Bedrock)"]
+    subgraph AI["AI - AWS Bedrock"]
         style AI fill:#FF6B35,color:#fff
         CS["Claude 3.5 Sonnet"]
         CH["Claude 3 Haiku"]
         TE["Titan Embeddings V2"]
     end
 
-    subgraph DA["💾 Data"]
+    subgraph DA["Data"]
         style DA fill:#06D6A0,color:#000
         DY["DynamoDB"]
         S3["S3"]
         AG["API Gateway"]
     end
 
-    subgraph EX2["📦 Ecosystem"]
+    subgraph EX2["Ecosystem"]
         style EX2 fill:#FFD166,color:#000
         PB["Probot"]
         VS["VS Code API"]
@@ -567,7 +567,7 @@ graph LR
 
 ---
 
-## 🔌 API Reference
+## API Reference
 
 ### Core Endpoints
 
@@ -602,7 +602,7 @@ graph LR
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ```mermaid
 erDiagram
@@ -668,7 +668,7 @@ erDiagram
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -725,10 +725,10 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 
 ```mermaid
 flowchart TD
-    A["1️⃣ Enable Bedrock Models"] --> B["Claude 3.5 Sonnet\nClaude 3 Haiku\nTitan Embeddings V2"]
-    C["2️⃣ Create DynamoDB Tables"] --> D["repos · analyses · qa-cache\nprogress · walkthroughs"]
-    E["3️⃣ Create S3 Buckets"] --> F["autodev-repo-files\nautodev-analysis-results"]
-    G["4️⃣ Deploy via SAM"] --> H["API Gateway + Lambda\nAuto-scaling serverless"]
+    A["Step 1 - Enable Bedrock Models"] --> B["Claude 3.5 Sonnet\nClaude 3 Haiku\nTitan Embeddings V2"]
+    C["Step 2 - Create DynamoDB Tables"] --> D["repos - analyses - qa-cache\nprogress - walkthroughs"]
+    E["Step 3 - Create S3 Buckets"] --> F["autodev-repo-files\nautodev-analysis-results"]
+    G["Step 4 - Deploy via SAM"] --> H["API Gateway + Lambda\nAuto-scaling serverless"]
 
     style A fill:#FF9900,color:#fff
     style C fill:#4053D6,color:#fff
@@ -761,19 +761,19 @@ open http://localhost:3000/dashboard?demo=true
 
 ---
 
-## 🌐 Supported Languages
+## Supported Languages
 
 ```mermaid
 graph TD
-    CENTER["🌐 AutoDev\nLanguage Support"]
+    CENTER["AutoDev\nLanguage Support"]
 
-    CENTER --> EN["🇬🇧 English\nen — Default"]
-    CENTER --> HI["🇮🇳 हिंदी\nHindi — hi"]
-    CENTER --> TA["🇮🇳 தமிழ்\nTamil — ta"]
-    CENTER --> TE["🇮🇳 తెలుగు\nTelugu — te"]
-    CENTER --> KN["🇮🇳 ಕನ್ನಡ\nKannada — kn"]
-    CENTER --> BN["🇧🇩 বাংলা\nBengali — bn"]
-    CENTER --> MR["🇮🇳 मराठी\nMarathi — mr"]
+    CENTER --> EN["English\nen - Default"]
+    CENTER --> HI["Hindi\nhi - Supported"]
+    CENTER --> TA["Tamil\nta - Supported"]
+    CENTER --> TE["Telugu\nte - Supported"]
+    CENTER --> KN["Kannada\nkn - Supported"]
+    CENTER --> BN["Bengali\nbn - Supported"]
+    CENTER --> MR["Marathi\nmr - Supported"]
 
     style CENTER fill:#FF6B35,color:#fff
     style EN fill:#4361EE,color:#fff
@@ -785,9 +785,19 @@ graph TD
     style MR fill:#FFD166,color:#000
 ```
 
+| Language | Code | Status |
+|---|---|---|
+| English | `en` | Default |
+| Hindi | `hi` | Supported |
+| Tamil | `ta` | Supported |
+| Telugu | `te` | Supported |
+| Kannada | `kn` | Supported |
+| Bengali | `bn` | Supported |
+| Marathi | `mr` | Supported |
+
 ---
 
-## 🏁 Milestones
+## Milestones
 
 ```mermaid
 gantt
@@ -798,7 +808,7 @@ gantt
     section Core
     M2 Bedrock + GitHub App + React Flow  :done, m2, after m1, 4d
     section MVP
-    M3 Q&A + Analysis Pipeline + VS Code  :done, m3, after m2, 4d
+    M3 QA + Analysis Pipeline + VS Code   :done, m3, after m2, 4d
     section Features
     M4 Walkthroughs + Env Setup           :done, m4, after m3, 3d
     M5 Animated Maps + i18n               :done, m5, after m4, 3d
@@ -809,34 +819,34 @@ gantt
 
 | # | Milestone | Status | Key Deliverables |
 |---|---|:---:|---|
-| M1 | **Foundation** | ✅ | Monorepo, all 5 packages, AWS SAM infra template, shared types |
-| M2 | **Core Integration** | ✅ | Bedrock AI client, GitHub App events, React Flow architecture maps |
-| M3 | **MVP End-to-End** | ✅ | Natural language Q&A, full analysis pipeline, VS Code extension base |
-| M4 | **Walkthroughs + Env Setup** | ✅ | Guided code tours, convention detection, environment autopilot |
-| M5 | **Animated Maps + i18n** | ✅ | Animated step-by-step walkthroughs, 7-language support |
-| M6 | **Progress Dashboard** | ✅ | Skill radar charts, learning progress, team leaderboard |
-| M7 | **Demo Day Ready** | ✅ | Demo mode (no AWS), guided demo script, voice Q&A, AI copilot, health checks |
+| M1 | **Foundation** | Done | Monorepo, all 5 packages, AWS SAM infra template, shared types |
+| M2 | **Core Integration** | Done | Bedrock AI client, GitHub App events, React Flow architecture maps |
+| M3 | **MVP End-to-End** | Done | Natural language Q&A, full analysis pipeline, VS Code extension base |
+| M4 | **Walkthroughs + Env Setup** | Done | Guided code tours, convention detection, environment autopilot |
+| M5 | **Animated Maps + i18n** | Done | Animated step-by-step walkthroughs, 7-language support |
+| M6 | **Progress Dashboard** | Done | Skill radar charts, learning progress, team leaderboard |
+| M7 | **Demo Day Ready** | Done | Demo mode (no AWS), guided demo script, voice Q&A, AI copilot, health checks |
 
 ---
 
-## 🇮🇳 Why AutoDev for India
+## Why AutoDev for India
 
 ```mermaid
 graph LR
-    subgraph PROBLEM["❌ Today's Reality"]
-        style PROBLEM fill:#FF000030,stroke:#FF0000,color:#fff
+    subgraph PROBLEM["Today's Reality"]
+        style PROBLEM fill:#3a0000,stroke:#FF0000,color:#fff
         P1["4.3M developers\nin India"]
         P2["83% struggle\nwithout mentors"]
         P3["2-4 weeks\nonboarding time"]
         P4["Language barrier\nEnglish-only tools"]
-        P5["₹2-5 Lakh\ncost per rotation"]
+        P5["High cost\nper rotation"]
     end
 
-    subgraph SOLUTION["✅ With AutoDev"]
-        style SOLUTION fill:#06D6A030,stroke:#06D6A0,color:#fff
+    subgraph SOLUTION["With AutoDev"]
+        style SOLUTION fill:#003a1a,stroke:#06D6A0,color:#fff
         S1["AI mentor for\nevery developer"]
-        S2["Onboarding:\n2 weeks → 2 hours"]
-        S3["Setup:\n2 days → 10 minutes"]
+        S2["Onboarding:\n2 weeks to 2 hours"]
+        S3["Setup:\n2 days to 10 minutes"]
         S4["7 Indian\nlanguages supported"]
         S5["90% cost\nreduction"]
     end
@@ -850,17 +860,17 @@ graph LR
 
 ---
 
-## 🥊 Competitive Landscape
+## Competitive Landscape
 
 ```mermaid
 quadrantChart
-    title Developer Tools — Learning vs Doing
+    title Developer Tools - Learning vs Doing
     x-axis "Code Review / Doing" --> "Onboarding / Learning"
     y-axis "Basic Features" --> "Advanced Features"
-    quadrant-1 "Learning Leaders"
-    quadrant-2 "Advanced Doers"
-    quadrant-3 "Basic Doers"
-    quadrant-4 "Basic Learners"
+    quadrant-1 Learning Leaders
+    quadrant-2 Advanced Doers
+    quadrant-3 Basic Doers
+    quadrant-4 Basic Learners
     AutoDev: [0.9, 0.95]
     Swimm: [0.55, 0.50]
     CodeRabbit: [0.1, 0.70]
@@ -872,30 +882,30 @@ quadrantChart
 
 | Feature | AutoDev | CodeRabbit | Qodo | Greptile | Swimm | CodeScene |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Animated Visual Walkthroughs** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **Environment Setup Autopilot** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **Indian Language Support** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **Learning Progress Dashboard** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **Skill Radar Charts** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **Voice Q&A** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **AI Coding Copilot** | ✅ | Partial | Partial | Partial | ❌ | ❌ |
-| **Team Leaderboard** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **VS Code Extension** | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ |
-| **GitHub App Integration** | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Offline Demo Mode** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **Animated Visual Walkthroughs** | Yes | No | No | No | No | No |
+| **Environment Setup Autopilot** | Yes | No | No | No | No | No |
+| **Indian Language Support** | Yes | No | No | No | No | No |
+| **Learning Progress Dashboard** | Yes | No | No | No | No | No |
+| **Skill Radar Charts** | Yes | No | No | No | No | No |
+| **Voice Q&A** | Yes | No | No | No | No | No |
+| **AI Coding Copilot** | Yes | Partial | Partial | Partial | No | No |
+| **Team Leaderboard** | Yes | No | No | No | No | No |
+| **VS Code Extension** | Yes | No | Yes | Yes | No | No |
+| **GitHub App Integration** | Yes | Yes | Yes | Yes | No | No |
+| **Offline Demo Mode** | Yes | No | No | No | No | No |
 
 > **Every competitor helps developers DO work. AutoDev helps developers LEARN.**
 
 ---
 
-## 🏗️ Infrastructure
+## Infrastructure
 
 ```mermaid
 graph TB
-    subgraph AWS["☁️ AWS Cloud"]
-        style AWS fill:#FF9900,color:#fff,stroke:#FF9900
-        AG["API Gateway\n(REST API)"]
-        LM["Lambda Function\n(Express via serverless-http)"]
+    subgraph AWS["AWS Cloud"]
+        style AWS fill:#1a1000,stroke:#FF9900,color:#fff,stroke-width:2px
+        AG["API Gateway\nREST API"]
+        LM["Lambda Function\nExpress via serverless-http"]
         BR["AWS Bedrock\nClaude + Titan"]
         DY["DynamoDB\n5 Tables"]
         S3["S3\n2 Buckets"]
@@ -908,7 +918,7 @@ graph TB
         LM --> CW
     end
 
-    subgraph CLIENTS["🖥️ Clients"]
+    subgraph CLIENTS["Clients"]
         FE["Next.js App\nlocalhost:3000"]
         VS["VS Code Extension"]
         GH["GitHub.com\nWebhooks"]
@@ -937,7 +947,7 @@ sam deploy --guided
 
 ---
 
-## 🧑‍💻 Built With
+## Built With
 
 <p>
   <img src="https://img.shields.io/badge/Claude%203.5%20Sonnet-AWS%20Bedrock-FF6B35?logo=amazon-aws&logoColor=white" />
@@ -958,7 +968,7 @@ sam deploy --guided
 
 ---
 
-## 👥 Team
+## Team
 
 Built for the **AI for Bharat Hackathon 2026** — Student Track  
 **Problem Statement:** *AI for Learning & Developer Productivity*  
@@ -966,6 +976,6 @@ Built for the **AI for Bharat Hackathon 2026** — Student Track
 
 ---
 
-## 📄 License
+## License
 
 MIT © Team HASHMAP
