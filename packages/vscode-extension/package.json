@@ -45,6 +45,11 @@
       {
         "command": "autodev.showWalkthroughs",
         "title": "AutoDev: Show Walkthroughs"
+      },
+      {
+        "command": "autodev.openCodeCanvas",
+        "title": "AutoDev: Open Code Canvas",
+        "icon": "$(type-hierarchy)"
       }
     ],
     "viewsContainers": {

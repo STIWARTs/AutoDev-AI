@@ -3,7 +3,7 @@
 import { motion, Variants, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ChevronRight, Code2, Cpu, Globe2, GitBranch, Terminal, Shield, Sparkles, Check, Play } from "lucide-react";
+import { ChevronRight, Code2, Cpu, Globe2, GitBranch, Terminal, Shield, Sparkles, Check, Play, Map, BookOpen, BarChart2, Mic, Monitor, Zap, Users, Settings2, Languages, FileCode2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InteractiveGrid } from "@/components/InteractiveGrid";
 
@@ -311,6 +311,243 @@ const AnimatedQA = () => {
   );
 };
 
+const AnimatedWalkthrough = () => {
+  const [activeStep, setActiveStep] = useState(0);
+  const steps = [
+    { label: "Client Request", tag: "HTTP", color: "#60a5fa" },
+    { label: "API Gateway", tag: "Route", color: "#E25A34" },
+    { label: "Auth Middleware", tag: "JWT", color: "#a78bfa" },
+    { label: "Order Service", tag: "Logic", color: "#34d399" },
+    { label: "DynamoDB", tag: "SQL", color: "#fbbf24" },
+  ];
+  useEffect(() => {
+    const t = setInterval(() => setActiveStep((s) => (s + 1) % steps.length), 1300);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="bg-brand-surface border border-brand-border rounded-sm overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-brand-border bg-brand-bg">
+        <div className="w-3 h-3 rounded-full bg-red-500/80" />
+        <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+        <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+        <div className="font-mono text-[10px] text-brand-muted ml-4">Animated Flow — Checkout Request</div>
+        <div className="ml-auto font-mono text-[10px] text-brand flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" /> Live
+        </div>
+      </div>
+      <div className="p-8 flex flex-col items-center">
+        {steps.map((step, i) => {
+          const isActive = i === activeStep;
+          const isPast = i < activeStep;
+          return (
+            <div key={i} className="flex flex-col items-center w-full max-w-xs">
+              <motion.div
+                animate={{
+                  scale: isActive ? 1.04 : 1,
+                  boxShadow: isActive ? `0 0 24px ${step.color}35` : "0 0 0 transparent",
+                }}
+                transition={{ duration: 0.25 }}
+                className="w-full border px-4 py-3 font-mono text-sm flex items-center justify-between"
+                style={{
+                  borderColor: isActive ? step.color : "#3a3533",
+                  backgroundColor: isActive ? `${step.color}12` : "#1a1816",
+                  color: isActive ? step.color : isPast ? "#5a5452" : "#3a3533",
+                }}
+              >
+                <span>{step.label}</span>
+                <span className="text-[10px] uppercase tracking-widest opacity-60">{step.tag}</span>
+              </motion.div>
+              {i < steps.length - 1 && (
+                <div className="w-[2px] h-6 bg-brand-border relative overflow-hidden">
+                  {(isPast || isActive) && (
+                    <motion.div
+                      className="absolute inset-0"
+                      style={{ backgroundColor: step.color }}
+                      initial={{ scaleY: 0, transformOrigin: "top" }}
+                      animate={{ scaleY: 1 }}
+                      transition={{ duration: 0.35 }}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        <motion.div
+          key={activeStep}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-5 text-center"
+        >
+          <div className="font-mono text-[11px] text-brand-muted">
+            Step {activeStep + 1}/{steps.length} — <span className="text-brand-text">{steps[activeStep].label}</span>
+          </div>
+          <div className="font-mono text-[10px] text-brand-muted/60 mt-1">Click any node to pause and get AI explanation</div>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+const AnimatedVSCode = () => {
+  const [selected, setSelected] = useState<string | null>(null);
+  const modules = [
+    { id: "routes", label: "API Routes", files: 4, color: "#60a5fa", type: "CONTROLLER" },
+    { id: "auth", label: "Auth Layer", files: 2, color: "#E25A34", type: "MIDDLEWARE" },
+    { id: "services", label: "Services", files: 6, color: "#a78bfa", type: "SERVICE" },
+    { id: "models", label: "Data Models", files: 3, color: "#34d399", type: "MODEL" },
+  ];
+  const connections: Record<string, string[]> = {
+    routes: ["auth", "services"],
+    auth: ["services"],
+    services: ["models"],
+    models: [],
+  };
+  return (
+    <div className="bg-brand-bg border border-brand-border rounded-sm overflow-hidden font-mono text-xs">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-brand-border bg-[#0d0d0c]">
+        <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+        <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+        <span className="ml-4 text-brand-muted text-[10px]">AutoDev · Code Canvas</span>
+        <span className="ml-auto text-[10px] text-brand flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" /> Connected
+        </span>
+      </div>
+      <div className="flex h-[280px]">
+        <div className="w-28 border-r border-brand-border bg-brand-surface p-3 space-y-1 shrink-0">
+          <div className="text-[9px] uppercase tracking-widest text-brand-muted mb-3">Explorer</div>
+          {modules.map((m) => (
+            <div
+              key={m.id}
+              onClick={() => setSelected((s) => (s === m.id ? null : m.id))}
+              className={`px-2 py-1.5 cursor-pointer text-[10px] flex items-center gap-1.5 transition-colors ${
+                selected === m.id ? "text-brand" : "text-brand-muted hover:text-brand-text hover:bg-brand-bg/60"
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: m.color }} />
+              {m.label}
+            </div>
+          ))}
+        </div>
+        <div className="flex-1 p-4 grid grid-cols-2 gap-2 content-center">
+          {modules.map((m) => {
+            const isSel = selected === m.id;
+            const isConn = !!selected && (connections[selected]?.includes(m.id) || connections[m.id]?.includes(selected ?? ""));
+            const isDim = !!selected && !isSel && !isConn;
+            return (
+              <motion.div
+                key={m.id}
+                animate={{ opacity: isDim ? 0.18 : 1 }}
+                onClick={() => setSelected((s) => (s === m.id ? null : m.id))}
+                className="border p-2 cursor-pointer transition-all"
+                style={{
+                  borderColor: isSel ? m.color : "#3a3533",
+                  backgroundColor: isSel ? `${m.color}12` : "#1a1816",
+                  boxShadow: isSel ? `0 0 14px ${m.color}30` : "none",
+                }}
+              >
+                <div className="text-[8px] uppercase tracking-widest mb-1" style={{ color: m.color }}>{m.type}</div>
+                <div className="text-brand-text text-[11px] font-semibold">{m.label}</div>
+                <div className="text-brand-muted text-[9px] mt-0.5">{m.files} files</div>
+              </motion.div>
+            );
+          })}
+        </div>
+        <div className="w-28 border-l border-brand-border bg-brand-surface p-3 shrink-0">
+          <div className="text-[9px] uppercase tracking-widest text-brand-muted mb-3">Detail</div>
+          {selected ? (() => {
+            const m = modules.find((x) => x.id === selected)!;
+            return (
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold" style={{ color: m.color }}>{m.label}</div>
+                <div className="text-brand-muted text-[9px]">{m.files} source files</div>
+                <div className="text-brand-muted text-[9px]">{connections[m.id]?.length ?? 0} deps</div>
+                <button className="mt-2 text-[9px] text-brand border border-brand/30 px-2 py-1 w-full text-left hover:bg-brand/10 transition-colors">
+                  ✦ AI Explain
+                </button>
+                <button className="text-[9px] text-brand-muted border border-brand-border px-2 py-1 w-full text-left hover:bg-brand-bg/60 transition-colors">
+                  ⎇ Open Files
+                </button>
+              </div>
+            );
+          })() : (
+            <div className="text-brand-muted text-[9px] leading-relaxed">Click any node to inspect module</div>
+          )}
+        </div>
+      </div>
+      <div className="border-t border-brand-border bg-[#0d0d0c] px-4 py-1.5 flex items-center justify-between">
+        <span className="text-brand-muted text-[9px]">⎇ Canvas · {modules.length} modules · calls / writes / imports</span>
+        <span className="text-emerald-400 text-[9px]">● Synced</span>
+      </div>
+    </div>
+  );
+};
+
+const AnimatedProgress = () => {
+  const [visible, setVisible] = useState(false);
+  const skills = [
+    { label: "Authentication", score: 85, color: "#E25A34" },
+    { label: "API Routes", score: 70, color: "#60a5fa" },
+    { label: "Database Layer", score: 60, color: "#34d399" },
+    { label: "Frontend", score: 50, color: "#a78bfa" },
+    { label: "DevOps / Infra", score: 20, color: "#fbbf24" },
+  ];
+  return (
+    <div className="bg-brand-surface border border-brand-border rounded-sm overflow-hidden">
+      <div className="flex items-center px-4 py-3 border-b border-brand-border bg-brand-bg">
+        <div className="font-mono text-[10px] text-brand-muted">Learning Progress — Rahul S., Day 1 (2 hrs)</div>
+        <div className="ml-auto font-mono text-[10px] text-emerald-400 flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> +23% today
+        </div>
+      </div>
+      <div className="p-6 space-y-3">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          onViewportEnter={() => setVisible(true)}
+          className="space-y-3"
+        >
+          {skills.map((s, i) => (
+            <div key={i}>
+              <div className="flex justify-between font-mono text-[11px] text-brand-muted mb-1">
+                <span>{s.label}</span>
+                <span>{s.score}%</span>
+              </div>
+              <div className="h-1 bg-brand-bg overflow-hidden">
+                <motion.div
+                  className="h-full"
+                  style={{ backgroundColor: s.color }}
+                  initial={{ width: 0 }}
+                  animate={visible ? { width: `${s.score}%` } : { width: 0 }}
+                  transition={{ duration: 1.1, delay: i * 0.12, ease: "easeOut" }}
+                />
+              </div>
+            </div>
+          ))}
+        </motion.div>
+        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-brand-border">
+          {[
+            { v: "12", l: "Questions Asked" },
+            { v: "3", l: "Walkthroughs Done" },
+            { v: "2h", l: "Active Time" },
+          ].map((s, i) => (
+            <div key={i} className="text-center">
+              <div className="font-heading text-2xl text-brand-text">{s.v}</div>
+              <div className="font-mono text-[9px] text-brand-muted uppercase tracking-wider mt-1">{s.l}</div>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 pt-2 border-t border-brand-border font-mono text-[10px] text-brand">
+          <Sparkles className="w-3 h-3" />
+          Ready for first contribution in 3 more walkthroughs
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function HomePage() {
   const { scrollYProgress } = useScroll();
   const heroY = useTransform(scrollYProgress, [0, 0.2], ["0%", "30%"]);
@@ -356,6 +593,7 @@ export default function HomePage() {
           <div className="hidden md:flex items-center gap-8 font-mono text-xs uppercase tracking-widest text-brand-muted">
             <Link href="#how-it-works" className="hover:text-brand-text transition-colors">How it works</Link>
             <Link href="#product" className="hover:text-brand-text transition-colors">Product</Link>
+            <Link href="#extension" className="hover:text-brand-text transition-colors">Extension</Link>
             <Link href="#customers" className="hover:text-brand-text transition-colors">Customers</Link>
             <Link href="#pricing" className="hover:text-brand-text transition-colors">Pricing</Link>
           </div>
@@ -635,6 +873,131 @@ export default function HomePage() {
             </motion.div>
           </div>
 
+          {/* Feature 4 — Animated Walkthroughs */}
+          <div className="flex flex-col md:flex-row-reverse items-center gap-12 lg:gap-20">
+            <motion.div
+              initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="flex-1 space-y-6"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-brand-border bg-brand-surface font-mono text-xs text-brand">
+                <Map className="w-3 h-3" /> Animated Architecture Maps
+              </div>
+              <h2 className="font-heading text-4xl md:text-5xl leading-[1.1]">Watch your system come alive</h2>
+              <p className="font-body text-lg text-brand-muted leading-relaxed">
+                See how a real request travels through your entire stack — node by node, service by service. AutoDev animates the exact execution path so every new developer understands the system in minutes, not weeks.
+              </p>
+              <ul className="space-y-3 pt-4 font-mono text-sm text-brand-muted">
+                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-emerald-400 mt-0.5" /> Nodes highlight sequentially showing real request flows.</li>
+                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-emerald-400 mt-0.5" /> Click any node to pause and get an AI explanation.</li>
+                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-emerald-400 mt-0.5" /> Fresher Mode simplifies explanations for junior devs.</li>
+              </ul>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="flex-1 w-full"
+            >
+              <AnimatedWalkthrough />
+            </motion.div>
+          </div>
+
+          {/* Feature 5 — VS Code Extension / Code Canvas */}
+          <div id="extension" className="flex flex-col md:flex-row items-center gap-12 lg:gap-20 scroll-mt-20">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="flex-1 space-y-6"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-brand-border bg-brand-surface font-mono text-xs text-brand">
+                <Monitor className="w-3 h-3" /> VS Code Extension
+              </div>
+              <h2 className="font-heading text-4xl md:text-5xl leading-[1.1]">Architecture inside your editor</h2>
+              <p className="font-body text-lg text-brand-muted leading-relaxed">
+                The AutoDev VS Code extension brings the full architecture canvas directly into your IDE. Open Code Canvas with one command — hover to preview, click to inspect, jump to files instantly.
+              </p>
+              <ul className="space-y-3 pt-4 font-mono text-sm text-brand-muted">
+                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-emerald-400 mt-0.5" /> 3-panel layout: Explorer + Canvas + Detail — zero context switching.</li>
+                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-emerald-400 mt-0.5" /> CodeLens annotations above every key function and class.</li>
+                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-emerald-400 mt-0.5" /> Ask questions in Hindi, Tamil, Telugu — right in the Q&A panel.</li>
+              </ul>
+              <div className="pt-2">
+                <div className="inline-flex items-center gap-2 font-mono text-xs text-brand-muted border border-brand-border bg-brand-surface px-3 py-1.5">
+                  <code className="text-brand">Ctrl+Shift+P</code> → AutoDev: Open Code Canvas
+                </div>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="flex-1 w-full"
+            >
+              <AnimatedVSCode />
+            </motion.div>
+          </div>
+
+          {/* Feature 6 — Learning Progress Dashboard */}
+          <div className="flex flex-col md:flex-row-reverse items-center gap-12 lg:gap-20">
+            <motion.div
+              initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="flex-1 space-y-6"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-brand-border bg-brand-surface font-mono text-xs text-brand">
+                <BarChart2 className="w-3 h-3" /> Learning Progress
+              </div>
+              <h2 className="font-heading text-4xl md:text-5xl leading-[1.1]">Measure onboarding in real time</h2>
+              <p className="font-body text-lg text-brand-muted leading-relaxed">
+                Stop guessing if a new developer is ready. AutoDev tracks every walkthrough, every question, every module explored — and shows you exactly where their knowledge gaps are.
+              </p>
+              <ul className="space-y-3 pt-4 font-mono text-sm text-brand-muted">
+                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-emerald-400 mt-0.5" /> Per-module skill scores updated in real time.</li>
+                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-emerald-400 mt-0.5" /> Team leaderboard — see who&apos;s onboarding fastest.</li>
+                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-emerald-400 mt-0.5" /> AI recommendation: &quot;Ready for first contribution.&quot;</li>
+              </ul>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="flex-1 w-full"
+            >
+              <AnimatedProgress />
+            </motion.div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─── FEATURES GRID ─── */}
+      <section className="py-24 px-6 border-t border-brand-border bg-brand-surface">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="font-heading text-4xl md:text-5xl mb-4">Everything in one platform</h2>
+            <p className="font-mono text-sm text-brand-muted max-w-2xl mx-auto">From architecture maps to VS Code integration — AutoDev covers every touchpoint in the developer onboarding journey.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { Icon: Map, title: "Animated Architecture Maps", desc: "Step-by-step animated flows showing how requests travel through your entire stack — node by node." },
+              { Icon: Monitor, title: "VS Code Code Canvas", desc: "Full-screen interactive architecture panel inside your editor. 3-panel layout: explorer, canvas, detail." },
+              { Icon: Globe2, title: "Multilingual Q&A", desc: "Ask questions and get answers in Hindi, Tamil, Telugu, Kannada, Bengali, Marathi, or English." },
+              { Icon: BookOpen, title: "Guided Walkthroughs", desc: "AI-generated step-by-step code tours with file highlights and contextual explanations at every step." },
+              { Icon: BarChart2, title: "Learning Progress Dashboard", desc: "Real-time skill scores, question history, and team leaderboard to track onboarding across your org." },
+              { Icon: Settings2, title: "Environment Setup Autopilot", desc: "AI scans your repo and generates a verified setup guide — detects conflicts, missing docs, and prerequisites." },
+              { Icon: Mic, title: "Voice Q&A", desc: "Speak your question and receive an audio response — accessibility-first code explanations via AWS Bedrock." },
+              { Icon: Users, title: "Team Leaderboard", desc: "Compare onboarding speed across your entire engineering team and surface who needs extra support." },
+              { Icon: Zap, title: "GitHub App Integration", desc: "Auto-analyze repos on install. Get AI-powered onboarding comments on every new PR opened." },
+              { Icon: FileCode2, title: "CodeLens Annotations", desc: "Inline architecture context above key functions — see call counts, writes, and module ownership at a glance." },
+              { Icon: Languages, title: "Fresher Mode", desc: "Toggle simplified explanations designed for junior developers entering their first real production codebase." },
+              { Icon: Shield, title: "Convention Checker", desc: "AI detects project-specific coding conventions and flags violations in PRs before they reach production." },
+            ].map(({ Icon, title, desc }, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: (i % 3) * 0.07 }}
+                className="border border-brand-border bg-brand-bg p-6 hover:border-brand/40 hover:bg-brand-card transition-colors group"
+              >
+                <Icon className="w-5 h-5 text-brand mb-4 group-hover:scale-110 transition-transform" />
+                <h3 className="font-heading text-lg mb-2">{title}</h3>
+                <p className="font-mono text-xs text-brand-muted leading-relaxed">{desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -648,8 +1011,8 @@ export default function HomePage() {
             {[
               { stat: "4.3M+", label: "INDIAN DEVELOPERS" },
               { stat: "10k+", label: "REPOS ANALYZED" },
-              { stat: "-80%", label: "ONBOARDING TIME" },
-              { stat: "99.9%", label: "UPTIME SLA" },
+              { stat: "2 hrs", label: "AVG. ONBOARDING" },
+              { stat: "7", label: "LANGUAGES SUPPORTED" },
             ].map((s, i) => (
               <div key={i} className="border border-brand-border bg-brand-surface p-6 rounded-sm flex flex-col items-center justify-center">
                 <div className="font-heading text-3xl mb-1 text-brand-text">{s.stat}</div>
@@ -689,8 +1052,9 @@ export default function HomePage() {
               <div className="font-heading text-4xl mb-6">Free</div>
               <ul className="space-y-4 mb-8 flex-1 font-mono text-sm text-brand-text">
                 <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> Public repositories only</li>
-                <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> Basic architecture mapping</li>
-                <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> 100 native Q&A queries/month</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> Architecture maps + animated flows</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> 100 Q&A queries/month (English)</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> VS Code extension included</li>
               </ul>
               <Button variant="outline" className="w-full rounded-sm border-brand-border bg-transparent hover:bg-brand-card text-brand-text transition-colors">
                 Start for Free
@@ -707,9 +1071,12 @@ export default function HomePage() {
               <div className="font-mono text-[10px] text-brand-muted mb-6">Billed annually</div>
               <ul className="space-y-4 mb-8 flex-1 font-mono text-sm text-brand-text">
                 <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> Unlimited private repos</li>
-                <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> Multi-service architecture tracing</li>
-                <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> Unlimited multilingual Q&A</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> Animated maps + guided walkthroughs</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> Unlimited multilingual Q&A (7 languages)</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> VS Code Code Canvas + CodeLens</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> Learning progress + team leaderboard</li>
                 <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> AI PR convention reviews</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-brand shrink-0 mt-0.5" /> Voice Q&A + Fresher Mode</li>
               </ul>
               <Button className="w-full rounded-sm bg-brand-text hover:bg-brand text-brand-bg hover:text-brand-bg transition-colors">
                 Upgrade to Pro
@@ -721,8 +1088,9 @@ export default function HomePage() {
               <div className="font-mono text-xs text-brand-muted mb-2 uppercase tracking-widest">Enterprise</div>
               <div className="font-heading text-4xl mb-6">Custom</div>
               <ul className="space-y-4 mb-8 flex-1 font-mono text-sm text-brand-text">
-                <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> Self-hosted model options</li>
-                <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> VPC peering & SSO setup</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> Everything in Developer, unlimited seats</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> Self-hosted Bedrock model options</li>
+                <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> VPC peering & SSO / SAML setup</li>
                 <li className="flex gap-3"><Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> Dedicated success manager</li>
               </ul>
               <Button variant="outline" className="w-full rounded-sm border-brand-border bg-transparent hover:bg-brand-card text-brand-text transition-colors">
@@ -778,18 +1146,18 @@ export default function HomePage() {
           <div className="space-y-4">
             <div className="font-heading font-semibold text-brand-text">Product</div>
             <ul className="space-y-3 font-mono text-xs text-brand-muted flex flex-col items-start">
-              <li><Link href="#" className="hover:text-brand transition-colors">Features</Link></li>
-              <li><Link href="#" className="hover:text-brand transition-colors">Integrations</Link></li>
-              <li><Link href="#" className="hover:text-brand transition-colors">Pricing</Link></li>
-              <li><Link href="#" className="hover:text-brand transition-colors">Changelog</Link></li>
+              <li><Link href="#product" className="hover:text-brand transition-colors">Architecture Maps</Link></li>
+              <li><Link href="#extension" className="hover:text-brand transition-colors">VS Code Extension</Link></li>
+              <li><Link href="#product" className="hover:text-brand transition-colors">Multilingual Q&A</Link></li>
+              <li><Link href="#pricing" className="hover:text-brand transition-colors">Pricing</Link></li>
             </ul>
           </div>
           <div className="space-y-4">
             <div className="font-heading font-semibold text-brand-text">Developers</div>
             <ul className="space-y-3 font-mono text-xs text-brand-muted flex flex-col items-start">
-              <li><Link href="#" className="hover:text-brand transition-colors">Documentation</Link></li>
+              <li><Link href="/dashboard" className="hover:text-brand transition-colors">Demo Dashboard</Link></li>
               <li><Link href="#" className="hover:text-brand transition-colors">API Reference</Link></li>
-              <li><Link href="#" className="hover:text-brand transition-colors">GitHub Check Status</Link></li>
+              <li><Link href="#" className="hover:text-brand transition-colors">GitHub App</Link></li>
             </ul>
           </div>
           <div className="space-y-4">
