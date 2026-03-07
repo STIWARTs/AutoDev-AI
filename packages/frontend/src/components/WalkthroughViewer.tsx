@@ -67,7 +67,7 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
           {onBack && (
             <button
               onClick={onBack}
-              className="text-[11px] text-brand-muted hover:text-brand-DEFAULT transition-colors mb-2 flex items-center gap-1 font-mono"
+              className="text-[11px] text-brand-muted hover:text-brand transition-colors mb-2 flex items-center gap-1 font-mono"
             >
               ← Back to walkthroughs
             </button>
@@ -106,7 +106,7 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
           <ul className="text-sm text-brand-text space-y-1 font-mono">
             {walkthrough.prerequisites.map((p, i) => (
               <li key={i} className="flex items-start gap-2">
-                <span className="text-brand-DEFAULT mt-0.5 flex-shrink-0">→</span> {p}
+                <span className="text-brand mt-0.5 flex-shrink-0">→</span> {p}
               </li>
             ))}
           </ul>
@@ -121,9 +121,9 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
             onClick={() => setCurrentStep(i)}
             className={`h-1 flex-1 transition-all duration-200 ${
               i === currentStep
-                ? "bg-brand-DEFAULT"
+                ? "bg-brand"
                 : i < currentStep
-                ? "bg-brand-DEFAULT/40"
+                ? "bg-brand/40"
                 : "bg-brand-border"
             }`}
           />
@@ -139,7 +139,7 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
           {/* Step header */}
           <div className="flex items-center justify-between px-5 py-3 border-b border-brand-border bg-brand-card">
             <div className="flex items-center gap-3">
-              <span className="w-6 h-6 flex items-center justify-center bg-brand-DEFAULT text-brand-bg text-xs font-bold font-mono flex-shrink-0">
+              <span className="w-6 h-6 flex items-center justify-center bg-brand text-brand-bg text-xs font-bold font-mono flex-shrink-0">
                 {currentStep + 1}
               </span>
               <h3 className="text-sm font-heading font-semibold text-brand-text">
@@ -149,14 +149,14 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
             <button
               onClick={toggleAudio}
               disabled={isLoadingAudio}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-bg border border-brand-border hover:border-brand-DEFAULT/40 text-brand-muted hover:text-brand-text transition-colors text-[11px] font-mono disabled:opacity-40"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-bg border border-brand-border hover:border-brand/40 text-brand-muted hover:text-brand-text transition-colors text-[11px] font-mono disabled:opacity-40"
             >
               {isLoadingAudio ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-DEFAULT" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-brand" />
               ) : isPlaying ? (
                 <Square className="w-3.5 h-3.5 text-red-400" />
               ) : (
-                <Volume2 className="w-3.5 h-3.5 text-brand-DEFAULT" />
+                <Volume2 className="w-3.5 h-3.5 text-brand" />
               )}
               {isPlaying ? "Stop" : "Listen"}
             </button>
@@ -170,7 +170,7 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
               <div className="p-3 bg-brand-bg border border-brand-border">
                 <p className="text-[9px] text-brand-muted uppercase tracking-widest mb-1.5">File Reference</p>
                 <div className="flex items-center gap-3">
-                  <code className="text-sm text-brand-DEFAULT font-mono">{step.file}</code>
+                  <code className="text-sm text-brand font-mono">{step.file}</code>
                   {step.lineStart && step.lineEnd && (
                     <span className="text-[10px] text-brand-muted font-mono border border-brand-border px-2 py-0.5">
                       L{step.lineStart}–{step.lineEnd}
@@ -220,7 +220,7 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
               key={i}
               onClick={() => setCurrentStep(i)}
               className={`h-1.5 transition-all duration-200 ${
-                i === currentStep ? "bg-brand-DEFAULT w-4" : "bg-brand-border w-1.5"
+                i === currentStep ? "bg-brand w-4" : "bg-brand-border w-1.5"
               }`}
             />
           ))}
@@ -229,7 +229,7 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
         <button
           onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
           disabled={currentStep === steps.length - 1}
-          className="px-5 py-2.5 bg-brand-DEFAULT text-brand-bg hover:bg-brand-DEFAULT/90 text-sm font-mono font-semibold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="px-5 py-2.5 bg-brand text-brand-bg hover:bg-brand/90 text-sm font-mono font-semibold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           Next →
         </button>
@@ -241,7 +241,7 @@ export default function WalkthroughViewer({ walkthrough, onBack }: WalkthroughVi
           <p className="text-[9px] text-brand-muted uppercase tracking-widest font-semibold mb-2.5">Related Modules</p>
           <div className="flex flex-wrap gap-2">
             {walkthrough.relatedModules.map((mod, i) => (
-              <span key={i} className="text-[11px] px-2.5 py-1 border border-brand-border bg-brand-bg text-brand-muted font-mono hover:border-brand-DEFAULT/40 transition-colors">
+              <span key={i} className="text-[11px] px-2.5 py-1 border border-brand-border bg-brand-bg text-brand-muted font-mono hover:border-brand/40 transition-colors">
                 {mod}
               </span>
             ))}

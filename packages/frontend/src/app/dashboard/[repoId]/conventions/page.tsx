@@ -12,11 +12,11 @@ import { Loader2, AlertCircle, Wand2, CheckCircle2, AlertTriangle, Info, Search,
 const SEVERITY_CONFIG: Record<string, { icon: typeof CheckCircle2; className: string; label: string }> = {
   "must-follow":   { icon: CheckCircle2,   className: "text-red-400 bg-red-500/10 border-red-500/20",     label: "Must Follow" },
   "should-follow": { icon: AlertTriangle,  className: "text-amber-400 bg-amber-500/10 border-amber-500/20", label: "Should Follow" },
-  "nice-to-have":  { icon: Info,           className: "text-brand-DEFAULT bg-brand-DEFAULT/10 border-brand-DEFAULT/20", label: "Nice to Have" },
+  "nice-to-have":  { icon: Info,           className: "text-brand bg-brand/10 border-brand/20", label: "Nice to Have" },
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Architecture:       "text-brand-DEFAULT bg-brand-DEFAULT/10 border-brand-DEFAULT/20",
+  Architecture:       "text-brand bg-brand/10 border-brand/20",
   "Error Handling":   "text-red-400 bg-red-500/10 border-red-500/20",
   Naming:             "text-amber-400 bg-amber-500/10 border-amber-500/20",
   Testing:            "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
@@ -99,7 +99,7 @@ export default function ConventionsPage() {
         <button
           onClick={detectConventions}
           disabled={detecting}
-          className="flex items-center gap-2 px-4 py-2 bg-brand-DEFAULT hover:bg-brand-DEFAULT/90 disabled:opacity-50 text-brand-bg text-sm font-mono font-semibold transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand/90 disabled:opacity-50 text-brand-bg text-sm font-mono font-semibold transition-colors"
         >
           {detecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
           {detecting ? "Detecting..." : "Re-detect"}
@@ -115,9 +115,9 @@ export default function ConventionsPage() {
         ].map((s) => (
           <div
             key={s.label}
-            className="bg-brand-surface border border-brand-border p-4 group hover:border-brand-DEFAULT/30 transition-colors relative overflow-hidden"
+            className="bg-brand-surface border border-brand-border p-4 group hover:border-brand/30 transition-colors relative overflow-hidden"
           >
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-brand-DEFAULT opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-brand opacity-0 group-hover:opacity-100 transition-opacity" />
             <p className="text-[9px] text-brand-muted uppercase tracking-widest font-semibold mb-1">{s.label}</p>
             <p className={`text-3xl font-heading font-bold ${s.color}`}>{s.value}</p>
           </div>
@@ -133,7 +133,7 @@ export default function ConventionsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search conventions..."
-            className="w-full pl-9 pr-3 py-2 bg-brand-surface border border-brand-border text-xs text-brand-text placeholder-brand-muted font-mono focus:outline-none focus:border-brand-DEFAULT/60 transition-colors"
+            className="w-full pl-9 pr-3 py-2 bg-brand-surface border border-brand-border text-xs text-brand-text placeholder-brand-muted font-mono focus:outline-none focus:border-brand/60 transition-colors"
           />
         </div>
         <div className="flex gap-1.5 flex-wrap">
@@ -143,7 +143,7 @@ export default function ConventionsPage() {
               onClick={() => setFilter(cat)}
               className={`px-3 py-1.5 text-xs font-mono transition-all capitalize border ${
                 filter === cat
-                  ? "bg-brand-DEFAULT/10 text-brand-DEFAULT border-brand-DEFAULT/20"
+                  ? "bg-brand/10 text-brand border-brand/20"
                   : "bg-brand-surface border-brand-border text-brand-muted hover:text-brand-text hover:border-brand-muted"
               }`}
             >
@@ -183,9 +183,9 @@ export default function ConventionsPage() {
             return (
               <div
                 key={i}
-                className="bg-brand-surface border border-brand-border p-5 hover:border-brand-DEFAULT/30 transition-colors relative overflow-hidden group"
+                className="bg-brand-surface border border-brand-border p-5 hover:border-brand/30 transition-colors relative overflow-hidden group"
               >
-                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand-DEFAULT opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`text-[10px] px-2.5 py-1 border font-semibold uppercase tracking-wide font-mono ${catColor}`}>
@@ -203,7 +203,7 @@ export default function ConventionsPage() {
                     )}
                   </div>
                 </div>
-                <code className="text-sm font-mono text-brand-DEFAULT mb-2 block">{conv.pattern}</code>
+                <code className="text-sm font-mono text-brand mb-2 block">{conv.pattern}</code>
                 <p className="text-sm text-brand-text mb-3 font-body">{conv.description}</p>
                 {(conv.doExample || conv.dontExample) && (
                   <div className="grid grid-cols-2 gap-3 mt-3">
@@ -227,8 +227,8 @@ export default function ConventionsPage() {
         </div>
       ) : (
         <div className="bg-brand-surface border border-brand-border border-dashed flex flex-col items-center justify-center py-20">
-          <div className="w-14 h-14 bg-brand-DEFAULT/10 border border-brand-DEFAULT/20 flex items-center justify-center mb-4">
-            <Wand2 className="w-6 h-6 text-brand-DEFAULT" />
+          <div className="w-14 h-14 bg-brand/10 border border-brand/20 flex items-center justify-center mb-4">
+            <Wand2 className="w-6 h-6 text-brand" />
           </div>
           <p className="text-brand-text font-heading font-semibold mb-1">No conventions found</p>
           <p className="text-brand-muted text-sm font-mono">Click Re-detect to analyze this codebase.</p>

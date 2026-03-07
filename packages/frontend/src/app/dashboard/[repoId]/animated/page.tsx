@@ -106,10 +106,10 @@ export default function AnimatedPage() {
   }
 
   const CATEGORY_COLORS: Record<string, string> = {
-    "auth-flow": "text-purple-400 bg-purple-500/10 border-purple-500/20",
-    "request-flow": "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    "auth-flow":     "text-purple-400 bg-purple-500/10 border-purple-500/20",
+    "request-flow":  "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
     "data-pipeline": "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-    default: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+    default:         "text-brand-DEFAULT bg-brand-DEFAULT/10 border-brand-DEFAULT/20",
   };
 
   return (
@@ -123,10 +123,10 @@ export default function AnimatedPage() {
           {/* Fresher mode */}
           <button
             onClick={() => setFresherMode(!fresherMode)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+            className={`flex items-center gap-2 px-3 py-2 text-xs font-mono border transition-colors ${
               fresherMode
                 ? "bg-amber-500/15 border-amber-500/30 text-amber-300"
-                : "glass-hover border-white/[0.08] text-brand-text-secondary hover:text-white"
+                : "border-brand-border text-brand-muted hover:text-brand-text hover:border-brand-muted"
             }`}
           >
             <GraduationCap className="w-3.5 h-3.5" />
@@ -136,7 +136,7 @@ export default function AnimatedPage() {
           <button
             onClick={generateSequences}
             disabled={generating}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-indigo-500/20"
+            className="flex items-center gap-2 px-4 py-2 bg-brand-DEFAULT hover:bg-brand-DEFAULT/90 disabled:opacity-50 text-brand-bg text-sm font-mono font-semibold transition-colors"
           >
             {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
             {generating ? "Generating..." : "Generate Flows"}
@@ -147,25 +147,35 @@ export default function AnimatedPage() {
       {loading ? (
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
-            <Loader2 className="w-10 h-10 text-indigo-400 animate-spin mx-auto mb-4" />
-            <p className="text-brand-text-secondary">Loading animated map...</p>
+            <div className="flex items-end gap-1 mx-auto mb-5" style={{ width: 52, height: 40 }}>
+              {[0.45, 0.75, 1.0, 0.75, 0.45].map((h, i) => (
+                <div
+                  key={i}
+                  className="flex-1 bg-brand-DEFAULT eq-bar"
+                  style={{ height: `${h * 100}%`, animationDelay: `${i * 0.12}s` }}
+                />
+              ))}
+            </div>
+            <p className="text-brand-muted text-sm font-mono">Loading animated map...</p>
           </div>
         </div>
       ) : !archMap ? (
-        <div className="glass rounded-xl border border-white/[0.06] flex flex-col items-center justify-center py-20">
-          <Play className="w-12 h-12 text-brand-muted mb-4 opacity-50" />
-          <p className="text-white font-semibold mb-1">No architecture data yet</p>
-          <p className="text-brand-muted text-sm">Run analysis on the Architecture Map page first.</p>
+        <div className="bg-brand-surface border border-brand-border border-dashed flex flex-col items-center justify-center py-20">
+          <div className="w-14 h-14 bg-brand-DEFAULT/10 border border-brand-DEFAULT/20 flex items-center justify-center mb-4">
+            <Play className="w-6 h-6 text-brand-DEFAULT" />
+          </div>
+          <p className="text-brand-text font-heading font-semibold mb-1">No architecture data yet</p>
+          <p className="text-brand-muted text-sm font-mono">Run analysis on the Architecture Map page first.</p>
         </div>
       ) : (
         <div className="grid grid-cols-[260px_1fr] gap-5">
           {/* Sequences sidebar */}
           <div className="space-y-3">
-            <p className="text-xs text-brand-muted uppercase tracking-widest font-semibold">Flows</p>
+            <p className="text-[9px] text-brand-muted uppercase tracking-widest font-semibold font-mono">Flows</p>
             {sequences.length === 0 ? (
-              <div className="glass rounded-xl border border-white/[0.06] p-4 text-center">
-                <Sparkles className="w-6 h-6 text-brand-muted mx-auto mb-2" />
-                <p className="text-xs text-brand-muted">No flows yet. Click Generate to create animations.</p>
+              <div className="bg-brand-surface border border-brand-border p-4 text-center">
+                <Sparkles className="w-5 h-5 text-brand-muted mx-auto mb-2" />
+                <p className="text-xs text-brand-muted font-mono">No flows yet. Click Generate to create animations.</p>
               </div>
             ) : (
               sequences.map((seq) => {
@@ -175,21 +185,23 @@ export default function AnimatedPage() {
                   <button
                     key={seq.id}
                     onClick={() => setSelectedSeq(seq)}
-                    className={`w-full text-left p-4 rounded-xl border transition-all cursor-pointer ${
+                    className={`w-full text-left p-4 border transition-colors cursor-pointer ${
                       isActive
-                        ? "bg-indigo-500/10 border-indigo-500/25"
-                        : "glass border-white/[0.06] hover:border-white/[0.1]"
+                        ? "bg-brand-DEFAULT/10 border-brand-DEFAULT/20"
+                        : "bg-brand-surface border-brand-border hover:border-brand-DEFAULT/30"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold uppercase tracking-wide ${catColor}`}>
+                      <span className={`text-[10px] px-2 py-0.5 border font-semibold uppercase tracking-wide font-mono ${catColor}`}>
                         {seq.category?.replace("-", " ") || "flow"}
                       </span>
-                      {isActive && <ChevronRight className="w-3.5 h-3.5 text-indigo-400" />}
+                      {isActive && <ChevronRight className="w-3.5 h-3.5 text-brand-DEFAULT" />}
                     </div>
-                    <p className={`text-sm font-semibold mb-1 ${isActive ? "text-indigo-300" : "text-white"}`}>{seq.title}</p>
-                    <p className="text-xs text-brand-muted line-clamp-2">{seq.description}</p>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-brand-muted">
+                    <p className={`text-sm font-heading font-semibold mb-1 ${isActive ? "text-brand-DEFAULT" : "text-brand-text"}`}>
+                      {seq.title}
+                    </p>
+                    <p className="text-xs text-brand-muted font-mono line-clamp-2">{seq.description}</p>
+                    <div className="flex items-center gap-3 mt-2 text-[10px] text-brand-muted font-mono">
                       <span>{seq.steps.length} steps</span>
                       {seq.estimatedDuration && <span>~{seq.estimatedDuration}s</span>}
                     </div>
@@ -202,7 +214,10 @@ export default function AnimatedPage() {
           {/* Map & explanation */}
           <div className="space-y-4">
             {/* Animated map */}
-            <div className="glass rounded-xl border border-white/[0.06] overflow-hidden" style={{ minHeight: 420 }}>
+            <div
+              className="bg-brand-surface border border-brand-border overflow-hidden"
+              style={{ height: "calc(100vh - 340px)", minHeight: 400 }}
+            >
               {archMap && selectedSeq ? (
                 <AnimatedArchitectureMap
                   data={archMap}
@@ -222,26 +237,33 @@ export default function AnimatedPage() {
 
             {/* Node explanation panel */}
             {explanation && (
-              <div className="glass rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-5">
+              <div className="bg-brand-DEFAULT/5 border border-brand-DEFAULT/20 p-5">
                 <div className="flex items-center gap-2 mb-3">
                   {explaining ? (
-                    <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+                    <Loader2 className="w-4 h-4 text-brand-DEFAULT animate-spin" />
                   ) : (
-                    <MessageSquare className="w-4 h-4 text-indigo-400" />
+                    <MessageSquare className="w-4 h-4 text-brand-DEFAULT" />
                   )}
-                  <p className="text-xs font-semibold text-indigo-300 uppercase tracking-wide">
+                  <p className="text-[10px] font-semibold text-brand-DEFAULT uppercase tracking-widest font-mono">
                     {explanation.nodeId} — Explanation
-                    {language !== "en" && <span className="ml-2 flex items-center gap-1 inline-flex"><Globe className="w-3 h-3" /></span>}
+                    {language !== "en" && <span className="ml-2 inline-flex items-center gap-1"><Globe className="w-3 h-3" /></span>}
                   </p>
-                  <button onClick={() => setExplanation(null)} className="ml-auto text-xs text-brand-muted hover:text-white transition-colors">✕</button>
+                  <button
+                    onClick={() => setExplanation(null)}
+                    className="ml-auto text-xs text-brand-muted hover:text-brand-text transition-colors font-mono"
+                  >
+                    ✕
+                  </button>
                 </div>
-                <p className="text-sm text-brand-text-secondary leading-relaxed">{explanation.text}</p>
+                <p className="text-sm text-brand-text leading-relaxed font-body">{explanation.text}</p>
               </div>
             )}
 
             {/* Click prompt */}
             {!explanation && archMap && (
-              <p className="text-xs text-brand-muted text-center">Click any node on the map to get an explanation</p>
+              <p className="text-xs text-brand-muted text-center font-mono">
+                Click any node on the map to get an explanation
+              </p>
             )}
           </div>
         </div>

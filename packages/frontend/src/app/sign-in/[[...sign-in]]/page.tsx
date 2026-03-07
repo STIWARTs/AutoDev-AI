@@ -8,7 +8,7 @@ export default function SignInPage() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
       
       <div className="z-10 w-full max-w-sm flex flex-col items-center mb-8 gap-3">
-        <div className="w-12 h-12 bg-brand-DEFAULT rounded-sm flex items-center justify-center">
+        <div className="w-12 h-12 bg-brand rounded-sm flex items-center justify-center">
             <Code2 className="w-6 h-6 text-brand-bg" />
         </div>
         <div className="text-2xl font-heading font-semibold text-brand-text">Log in to AutoDev</div>
@@ -23,10 +23,10 @@ export default function SignInPage() {
             dividerLine: "bg-brand-border",
             dividerText: "text-brand-muted font-mono text-xs",
             formFieldLabel: "text-brand-text font-mono text-sm",
-            formFieldInput: "bg-brand-bg border border-brand-border text-brand-text rounded-sm focus:border-brand-DEFAULT focus:ring-1 focus:ring-brand-DEFAULT",
-            formButtonPrimary: "bg-brand-DEFAULT text-brand-bg hover:bg-brand-text hover:text-brand-bg rounded-sm font-semibold transition-colors shadow-none",
+            formFieldInput: "bg-brand-bg border border-brand-border text-brand-text rounded-sm focus:border-brand focus:ring-1 focus:ring-brand",
+            formButtonPrimary: "bg-brand text-brand-bg hover:bg-brand-text hover:text-brand-bg rounded-sm font-semibold transition-colors shadow-none",
             footerActionText: "text-brand-muted font-mono text-sm",
-            footerActionLink: "text-brand-DEFAULT hover:text-brand-text transition-colors",
+            footerActionLink: "text-brand hover:text-brand-text transition-colors",
           }
         }} />
       </div>
