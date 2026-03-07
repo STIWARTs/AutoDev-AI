@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { CodebaseExplorerProvider } from "./panels/CodebaseExplorer";
 import { QAPanel } from "./panels/QAPanel";
 import { WalkthroughPanel } from "./panels/WalkthroughPanel";
+import { CodeCanvasPanel } from "./panels/CodeCanvasPanel";
 import { AutoDevCodeLensProvider } from "./providers/CodeLensProvider";
 import { explainNode, getRepoId, getFresherMode } from "./api/client";
 
@@ -124,6 +125,12 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("autodev.openCodeCanvas", () => {
+      CodeCanvasPanel.createOrShow(context.extensionUri);
+    })
+  );
+
   // Show node detail — triggered from CodeLens
   context.subscriptions.push(
     vscode.commands.registerCommand(
@@ -243,6 +250,16 @@ export function activate(context: vscode.ExtensionContext) {
   statusBar.command = "autodev.showExplorer";
   statusBar.show();
   context.subscriptions.push(statusBar);
+
+  const canvasBar = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+    99
+  );
+  canvasBar.text = "$(type-hierarchy) Canvas";
+  canvasBar.tooltip = "AutoDev: Open Code Canvas";
+  canvasBar.command = "autodev.openCodeCanvas";
+  canvasBar.show();
+  context.subscriptions.push(canvasBar);
 
   // Update status bar to show repo
   resolveRepoId().then((r) => {
