@@ -20,3 +20,7 @@ subfolder-claude-examples/
 tmp/
 AGENTS.md
 CLAUDE.md
+.clinerules
+.cursorrules
+opencode.json
+scripts/
