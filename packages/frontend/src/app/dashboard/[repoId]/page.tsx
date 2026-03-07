@@ -159,7 +159,7 @@ export default function RepoDetailPage() {
       </div>
 
       {/* Architecture map panel */}
-      <div className="bg-brand-surface border border-brand-border overflow-hidden" style={{ minHeight: 520 }}>
+      <div className="bg-brand-surface border border-brand-border overflow-hidden" style={{ height: 520 }}>
         {loading && !archMap ? (
           <div className="flex items-center justify-center h-[520px]">
             <div className="text-center">
