@@ -8,3 +8,15 @@ dist/
 .DS_Store
 coverage/
 *.log
+
+# AI tooling & IDE config (not for repo)
+.ai-context/
+.antigravity/
+.claude/
+.github/
+.vscode/
+design-system/
+subfolder-claude-examples/
+tmp/
+AGENTS.md
+CLAUDE.md
