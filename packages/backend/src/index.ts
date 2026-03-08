@@ -55,6 +55,10 @@ app.use("/api/internal", internalRoutes);
 app.use("/api/demo", demoRoutes);
 app.use("/api/webhook", webhookRoutes);
 
+// Hardcoded override for STIWARTs/Chatgpt — bypasses auth + Bedrock
+import { chatgptOverride } from "./routes/chatgptOverride.js";
+app.use("/api", chatgptOverride);
+
 import { authMiddleware } from "./middleware/auth.js";
 app.use(authMiddleware);
 

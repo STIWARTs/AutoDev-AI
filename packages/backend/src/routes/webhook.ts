@@ -23,91 +23,85 @@ webhookRoutes.post("/github", async (req, res) => {
 
   const [owner] = repoId.split("/");
 
-  try {
-    console.log(`[webhook] Fetching ${repoId} branch ${branch}...`);
-    
-    // 1. Download repo as ZIP from GitHub
-    const zipUrl = `https://github.com/${repoId}/archive/refs/heads/${branch}.zip`;
-    const response = await fetch(zipUrl);
+  // Immediately create a pending entry so the repo card appears right away
+  await putRepo({
+    repoId,
+    userId: owner,
+    repoUrl: `https://github.com/${repoId}`,
+    defaultBranch: branch,
+    analysisStatus: "analyzing",
+    createdAt: new Date().toISOString(),
+  });
 
-    if (!response.ok) {
-      if (response.status === 404) {
-         res.status(404).json({ error: `Repository or branch not found at ${zipUrl}` });
-         return;
+  // Respond immediately — processing happens in background
+  res.json({ repoId, status: "queued", message: "Repository queued for ingestion" });
+
+  // Background: download, extract, upload, analyze
+  (async () => {
+    try {
+      console.log(`[webhook] Fetching ${repoId} branch ${branch}...`);
+
+      const zipUrl = `https://github.com/${repoId}/archive/refs/heads/${branch}.zip`;
+      const response = await fetch(zipUrl, { redirect: "follow" });
+
+      if (!response.ok) {
+        throw new Error(`GitHub returned ${response.status} for ${zipUrl}`);
       }
-      throw new Error(`Failed to fetch from GitHub: ${response.statusText}`);
-    }
 
-    // 2. Extract in memory
-    const files: { path: string; content: string; size: number }[] = [];
-    const zipStream = response.body?.pipe(unzipper.Parse());
+      const zipBuffer = Buffer.from(await response.arrayBuffer());
+      console.log(`[webhook] Downloaded ${(zipBuffer.length / 1024).toFixed(0)}KB ZIP for ${repoId}`);
 
-    if (!zipStream) {
-      throw new Error("Failed to read zip stream");
-    }
+      const directory = await unzipper.Open.buffer(zipBuffer);
+      const files: { path: string; content: string; size: number }[] = [];
 
-    for await (const entry of zipStream) {
-      const fileName = entry.path;
-      const type = entry.type; // 'Directory' or 'File'
-      const size = entry.vars.uncompressedSize; // Uncompressed size
-
-      // Skip directories, binary files, max size 1MB, node_modules etc.
-      if (
-        type === "File" &&
-        size < 1000000 &&
-        !fileName.includes("/node_modules/") &&
-        !fileName.includes("/.git/") &&
-        !fileName.includes("/dist/") &&
-        !fileName.includes("/build/")
-      ) {
-        // Simple heuristic to skip binary files
-        const mimeType = mime.lookup(fileName) || "text/plain";
-        if (mimeType.startsWith("text/") || mimeType === "application/json" || fileName.match(/\.(ts|js|jsx|tsx|py|go|java|rs|cpp|c|h|md)$/i)) {
-          const contentBuffer = await entry.buffer();
-          files.push({
-            path: fileName.replace(/^[^\/]+\//, ""), // Remove the root folder inside the zip
-            content: contentBuffer.toString("utf-8"),
-            size,
-          });
-        } else {
-          entry.autodrain();
+      for (const entry of directory.files) {
+        const fileName = entry.path;
+        const size = entry.uncompressedSize;
+        if (
+          entry.type === "File" &&
+          size < 1000000 &&
+          !fileName.includes("/node_modules/") &&
+          !fileName.includes("/.git/") &&
+          !fileName.includes("/dist/") &&
+          !fileName.includes("/build/")
+        ) {
+          const mimeType = mime.lookup(fileName) || "text/plain";
+          if (mimeType.startsWith("text/") || mimeType === "application/json" || fileName.match(/\.(ts|js|jsx|tsx|py|go|java|rs|cpp|c|h|md)$/i)) {
+            const contentBuffer = await entry.buffer();
+            files.push({
+              path: fileName.replace(/^[^/]+\//, ""),
+              content: contentBuffer.toString("utf-8"),
+              size,
+            });
+          }
         }
-      } else {
-        entry.autodrain();
       }
+
+      console.log(`[webhook] Extracted ${files.length} files for ${repoId}`);
+
+      if (files.length === 0) {
+        await putRepo({ repoId, userId: owner, repoUrl: `https://github.com/${repoId}`, defaultBranch: branch, analysisStatus: "failed", createdAt: new Date().toISOString() });
+        return;
+      }
+
+      await uploadCodeIndexWithLatest(repoId, "latest", files);
+
+      await putRepo({
+        repoId,
+        userId: owner,
+        repoUrl: `https://github.com/${repoId}`,
+        defaultBranch: branch,
+        analysisStatus: "pending",
+        fileCount: files.length,
+        createdAt: new Date().toISOString(),
+      });
+
+      runArchitectureAnalysis({ repoId, files }).catch((err) =>
+        console.error(`[webhook] Background analysis failed for ${repoId}:`, err)
+      );
+    } catch (err: any) {
+      console.error(`[webhook] Background ingestion failed for ${repoId}:`, err.message);
+      await putRepo({ repoId, userId: owner, repoUrl: `https://github.com/${repoId}`, defaultBranch: branch, analysisStatus: "failed", createdAt: new Date().toISOString() }).catch(() => {});
     }
-
-    if (files.length === 0) {
-      res.status(400).json({ error: "No valid source files found in repository." });
-      return;
-    }
-
-    console.log(`[webhook] Extracted ${files.length} files for ${repoId}`);
-
-    // 3. Store in S3
-    const commitSha = "latest"; // For a real webhook, we'd use the SHA from the payload
-    await uploadCodeIndexWithLatest(repoId, commitSha, files);
-
-    // 4. Update DynamoDB
-    await putRepo({
-      repoId,
-      userId: owner, // Default to repo owner
-      repoUrl: `https://github.com/${repoId}`,
-      defaultBranch: branch,
-      analysisStatus: "pending",
-      fileCount: files.length,
-      createdAt: new Date().toISOString(),
-    });
-
-    // 5. Trigger Analysis (ECS Worker Simulator)
-    res.json({ repoId, status: "ingested", fileCount: files.length, message: "Analysis started" });
-
-    runArchitectureAnalysis({ repoId, files }).catch((err) =>
-      console.error(`[webhook] Background analysis failed for ${repoId}:`, err)
-    );
-
-  } catch (error: any) {
-    console.error(`[webhook] Failed to process ${repoId}:`, error);
-    res.status(500).json({ error: "Failed to process repository: " + error.message });
-  }
+  })();
 });

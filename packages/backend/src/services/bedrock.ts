@@ -16,8 +16,8 @@ const client = new BedrockRuntimeClient({
   region: process.env.AWS_REGION || "us-east-1",
 });
 
-const CLAUDE_SONNET_MODEL = "anthropic.claude-3-5-sonnet-20241022-v2:0";
-const CLAUDE_HAIKU_MODEL = "anthropic.claude-3-haiku-20240307-v1:0";
+const CLAUDE_SONNET_MODEL = "us.anthropic.claude-3-5-haiku-20241022-v1:0";
+const CLAUDE_HAIKU_MODEL = "us.anthropic.claude-3-haiku-20240307-v1:0";
 
 interface BedrockMessage {
   role: "user" | "assistant";

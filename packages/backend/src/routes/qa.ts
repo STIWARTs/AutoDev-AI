@@ -25,12 +25,6 @@ qaRoutes.post("/:owner/:repo", requireAuthMiddleware, async (req: any, res) => {
     return;
   }
 
-  // Ensure user has access
-  const userId = req.auth?.userId;
-  if (!userId) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
 
 
   try {

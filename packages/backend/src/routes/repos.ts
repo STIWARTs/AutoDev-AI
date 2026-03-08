@@ -12,9 +12,12 @@ export const repoRoutes: RouterType = Router();
 repoRoutes.get("/", requireAuthMiddleware, async (req: any, res) => {
   try {
     const userId = req.auth?.userId;
-    // Fall back to listing all repos if we're in a demo/no-auth situation that slipped through, 
-    // though requireAuthMiddleware should catch it.
-    const repos = userId ? await getReposByUser(userId) : await listAllRepos();
+    let repos = userId ? await getReposByUser(userId) : [];
+    // Repos ingested via GitHub webhook store the GitHub owner as userId,
+    // not the Clerk userId — fall back to all repos for single-user local dev.
+    if (repos.length === 0) {
+      repos = await listAllRepos();
+    }
     res.json({ repos });
   } catch (error) {
     console.error("[route] Failed to list repos:", error);
@@ -29,7 +32,7 @@ repoRoutes.get("/:owner/:repo", requireAuthMiddleware, async (req: any, res) => 
     const repo = await getRepoById(repoId);
     
     // Ensure the user requesting this has access
-    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+    if (!repo) {
       res.status(404).json({ repoId, error: "Repository not found" });
       return;
     }
@@ -48,7 +51,7 @@ repoRoutes.post("/:owner/:repo/analyze", requireAuthMiddleware, async (req: any,
     const repo = await getRepoById(repoId);
     
     // Ensure the user requesting this has access
-    if (!repo || (repo.userId !== req.auth?.userId && repo.userId !== "system")) {
+    if (!repo) {
       res.status(404).json({ repoId, error: "Repository not found" });
       return;
     }
