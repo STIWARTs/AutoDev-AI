@@ -21,18 +21,18 @@ import type { ArchitectureMap as ArchMap, AnimationSequence, AnimationStep } fro
 /*  Colours                                                            */
 /* ------------------------------------------------------------------ */
 
-const NODE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  entry:    { bg: "#fef3c7", border: "#f59e0b", text: "#92400e" },
-  module:   { bg: "#dbeafe", border: "#3b82f6", text: "#1e40af" },
-  service:  { bg: "#d1fae5", border: "#10b981", text: "#065f46" },
-  config:   { bg: "#f3e8ff", border: "#8b5cf6", text: "#5b21b6" },
-  util:     { bg: "#e0e7ff", border: "#6366f1", text: "#3730a3" },
-  database: { bg: "#fce7f3", border: "#ec4899", text: "#9d174d" },
-  external: { bg: "#fee2e2", border: "#ef4444", text: "#991b1b" },
+const NODE_COLORS: Record<string, { border: string }> = {
+  entry:    { border: "#f59e0b" },
+  module:   { border: "#3b82f6" },
+  service:  { border: "#10b981" },
+  config:   { border: "#8b5cf6" },
+  util:     { border: "#6366f1" },
+  database: { border: "#ec4899" },
+  external: { border: "#ef4444" },
 };
 
-const HIGHLIGHT_RING = "0 0 0 3px #facc15, 0 0 16px 4px rgba(250,204,21,0.45)";
-const DIM_OPACITY = 0.3;
+const HIGHLIGHT_RING = "0 0 24px -4px rgba(226,90,52,0.8), inset 0 0 16px -6px rgba(226,90,52,0.6)";
+const DIM_OPACITY = 0.25;
 
 /* ------------------------------------------------------------------ */
 /*  Node component                                                     */
@@ -53,42 +53,63 @@ function AnimatedArchNode({ data }: { data: ArchNodeData }) {
 
   return (
     <div
-      className="shadow-md border-2 px-4 py-3 min-w-[180px] max-w-[280px] transition-all duration-500"
+      className="relative overflow-hidden px-4 py-3 min-w-[200px] max-w-[280px] transition-all duration-700 font-mono"
       style={{
-        backgroundColor: colors.bg,
-        borderColor: data.isActive ? "#facc15" : colors.border,
+        backgroundColor: "#0a0a09",
+        border: `1px solid ${data.isActive ? colors.border : "#252320"}`,
+        borderLeft: `3px solid ${data.isActive ? "#E25A34" : colors.border}`,
         opacity: data.isDimmed ? DIM_OPACITY : 1,
-        boxShadow: data.isActive ? HIGHLIGHT_RING : undefined,
-        transform: data.isActive ? "scale(1.08)" : "scale(1)",
+        boxShadow: data.isActive ? HIGHLIGHT_RING : "none",
+        transform: data.isActive ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
       }}
     >
-      <Handle type="target" position={Position.Top} className="!bg-[#4a4845]" />
-      <div className="flex items-center gap-2 mb-1">
+      {data.isActive && (
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-20"
+          style={{ 
+            background: `linear-gradient(to bottom, transparent, ${colors.border}, transparent)`,
+            animation: 'animated-map-scan 2s linear infinite'
+          }} 
+        />
+      )}
+
+      <Handle type="target" position={Position.Top} className="!w-2 !h-2 !bg-[#252320] !border-none" />
+      
+      <div className="flex items-start justify-between mb-2 relative z-10">
         <span
-          className="text-[10px] font-bold uppercase px-1.5 py-0.5"
-          style={{ backgroundColor: colors.border, color: "white" }}
+          className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-sm"
+          style={{ 
+            backgroundColor: data.isActive ? colors.border : `${colors.border}20`, 
+            color: data.isActive ? "#000" : colors.border 
+          }}
         >
           {data.type}
         </span>
         {data.isActive && (
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500" />
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: "#E25A34" }} />
+            <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: "#E25A34" }} />
           </span>
         )}
       </div>
-      <div className="font-semibold text-sm" style={{ color: colors.text }}>
+
+      <div className="font-semibold tracking-tight text-sm relative z-10" style={{ color: data.isActive ? "#fff" : "#e8e3dc" }}>
         {data.label}
       </div>
-      <div className="text-xs mt-1 line-clamp-2" style={{ color: colors.text, opacity: 0.7 }}>
+      <div className="text-[10px] mt-1.5 line-clamp-2 leading-relaxed relative z-10" style={{ color: "#8a837a" }}>
         {data.description}
       </div>
+      
       {data.files.length > 0 && (
-        <div className="text-[10px] mt-1.5" style={{ color: colors.text, opacity: 0.5 }}>
-          {data.files.length} file{data.files.length !== 1 ? "s" : ""}
+        <div className="flex items-center gap-1.5 mt-3 relative z-10">
+          <div className="h-px flex-1 bg-[#252320]" />
+          <div className="text-[9px] text-[#6b6460]">
+            {data.files.length} FILE{data.files.length !== 1 ? "S" : ""}
+          </div>
         </div>
       )}
-      <Handle type="source" position={Position.Bottom} className="!bg-[#4a4845]" />
+      
+      <Handle type="source" position={Position.Bottom} className="!w-2 !h-2 !bg-[#252320] !border-none" />
     </div>
   );
 }
@@ -158,8 +179,8 @@ function layoutEdges(archEdges: ArchMap["edges"]): Edge[] {
     target: e.target,
     label: e.label || "",
     animated: false,
-    style: { stroke: "#3d3b38", strokeWidth: 1.5 },
-    labelStyle: { fontSize: 10, fill: "#8A8480" },
+    style: { stroke: "#252320", strokeWidth: 1.5 },
+    labelStyle: { fontSize: 9, fontFamily: "monospace", fill: "#5f5a55" },
   }));
 }
 
@@ -213,7 +234,7 @@ export default function AnimatedArchitectureMap({
         eds.map((e) => ({
           ...e,
           animated: false,
-          style: { ...e.style, stroke: "#3d3b38", strokeWidth: 1.5 },
+          style: { ...e.style, stroke: "#252320", strokeWidth: 1.5 },
         }))
       );
       return;
@@ -241,8 +262,8 @@ export default function AnimatedArchitectureMap({
           ...e,
           animated: isHighlighted,
           style: {
-            stroke: isHighlighted ? "#facc15" : "#3d3b38",
-            strokeWidth: isHighlighted ? 3 : 1.5,
+            stroke: isHighlighted ? "#E25A34" : "#252320",
+            strokeWidth: isHighlighted ? 2.5 : 1.5,
           },
         };
       })
@@ -322,6 +343,14 @@ export default function AnimatedArchitectureMap({
 
   return (
     <div className={`w-full h-full flex flex-col ${className || ""}`}>
+      <style>
+        {`
+          @keyframes animated-map-scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+          }
+        `}
+      </style>
       {/* Top bar: sequence selector */}
       <div className="bg-brand-bg border-b border-brand-border px-4 py-2.5 flex-shrink-0">
         <div className="flex items-center gap-3 mb-1">
@@ -362,13 +391,13 @@ export default function AnimatedArchitectureMap({
           maxZoom={2}
           defaultEdgeOptions={{ type: "smoothstep" }}
         >
-          <Background color="#2A2726" gap={20} size={1} />
+          <Background color="rgba(226,90,52,0.15)" gap={30} size={1} />
           <Controls />
           <MiniMap
             style={{ backgroundColor: "#1A1918", border: "1px solid #2A2726" }}
             nodeColor={(node) => {
               const nodeData = node.data as ArchNodeData;
-              if (nodeData?.isActive) return "#facc15";
+              if (nodeData?.isActive) return "#E25A34";
               const colors = NODE_COLORS[nodeData?.type] || NODE_COLORS.module;
               return colors.border;
             }}
@@ -494,8 +523,8 @@ export default function AnimatedArchitectureMap({
           </div>
         ))}
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 border-2 border-yellow-400 bg-yellow-100" />
-          <span className="text-[10px] text-amber-400 font-semibold font-mono">Active</span>
+          <div className="w-2.5 h-2.5 border-2 border-brand-DEFAULT bg-brand-DEFAULT/20" />
+          <span className="text-[10px] text-brand-DEFAULT font-semibold font-mono">Active</span>
         </div>
       </div>
     </div>

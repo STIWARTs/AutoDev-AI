@@ -1,0 +1,55 @@
+ ΓÜá Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\stiwa\package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * C:\Users\stiwa\Downloads\Hackathon\AiForBharat\Claude\pnpm-lock.yaml
+
+   Γû▓ Next.js 15.5.12
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 6.1s
+   Linting and checking validity of types ...
+
+./src/app/dashboard/[repoId]/animated/page.tsx
+47:6  Warning: React Hook useCallback has a missing dependency: 'getToken'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+63:6  Warning: React Hook useCallback has missing dependencies: 'getToken' and 'track'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/dashboard/[repoId]/conventions/page.tsx
+66:6  Warning: React Hook useCallback has missing dependencies: 'getToken' and 'track'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/dashboard/[repoId]/env-setup/page.tsx
+153:6  Warning: React Hook useCallback has a missing dependency: 'getToken'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/dashboard/[repoId]/page.tsx
+66:6  Warning: React Hook useCallback has missing dependencies: 'getToken' and 'track'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/dashboard/[repoId]/progress/page.tsx
+155:6  Warning: React Hook useCallback has a missing dependency: 'getToken'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/dashboard/[repoId]/team/page.tsx
+85:6  Warning: React Hook useCallback has a missing dependency: 'getToken'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/dashboard/[repoId]/walkthroughs/page.tsx
+53:6  Warning: React Hook useCallback has a missing dependency: 'getToken'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/page.tsx
+178:7  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+252:7  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+328:6  Warning: React Hook useEffect has a missing dependency: 'steps.length'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+Failed to compile.
+
+./src/app/dashboard/[repoId]/env-setup/page.tsx:66:17
+Type error: Type 'string' is not assignable to type 'never'.
+
+  64 |       <div className="flex items-center gap-3 mb-5">
+  65 |         <div className="w-6 h-6 bg-brand flex items-center justify-center shrink-0">
+> 66 |           <Icon className="w-3 h-3 text-brand-bg" />
+     |                 ^
+  67 |         </div>
+  68 |         <h2 className="text-base font-heading font-semibold text-brand-text">{title}</h2>
+  69 |         <div className="flex-1 h-px bg-brand-border" />
+Next.js build worker exited with code: 1 and signal: null

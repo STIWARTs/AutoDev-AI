@@ -70,10 +70,12 @@ export default function LanguageSelector({
         <div className="relative">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-2 px-3 py-2 bg-white border rounded-lg hover:bg-gray-50 transition-colors text-sm"
+            className={`flex items-center gap-2 px-3 py-2 text-xs font-mono border transition-colors ${
+              isOpen ? "border-brand-text text-brand-text" : "border-brand-border text-brand-muted hover:text-brand-text hover:border-brand-muted"
+            }`}
           >
             <svg
-              className="w-4 h-4 text-gray-500"
+              className="w-3.5 h-3.5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -87,7 +89,7 @@ export default function LanguageSelector({
             </svg>
             <span className="font-medium">{currentLang.nativeName}</span>
             <svg
-              className={`w-3 h-3 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+              className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -100,7 +102,7 @@ export default function LanguageSelector({
           </button>
 
           {isOpen && (
-            <div className="absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg z-50 min-w-[200px] py-1">
+            <div className="absolute top-full left-0 mt-1 bg-brand-surface border border-brand-border z-50 min-w-[160px] py-1">
               {LANGUAGES.map((lang) => (
                 <button
                   key={lang.code}
@@ -108,12 +110,12 @@ export default function LanguageSelector({
                     onChange(lang.code as SupportedLanguage);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${
-                    lang.code === value ? "bg-blue-50 text-blue-700" : "text-gray-700"
+                  className={`w-full text-left px-3 py-2 text-xs font-mono hover:bg-brand-bg flex items-center justify-between ${
+                    lang.code === value ? "text-brand-DEFAULT" : "text-brand-muted"
                   }`}
                 >
-                  <span>{lang.nativeName}</span>
-                  <span className="text-xs text-gray-400">{lang.name}</span>
+                  <span className="font-semibold">{lang.nativeName}</span>
+                  <span className="text-[10px] opacity-60">{lang.name}</span>
                 </button>
               ))}
             </div>
@@ -131,13 +133,13 @@ export default function LanguageSelector({
                 className="sr-only"
               />
               <div
-                className={`w-9 h-5 rounded-full transition-colors ${
-                  fresherMode ? "bg-green-500" : "bg-gray-300"
+                className={`w-8 h-4 rounded-full transition-colors ${
+                  fresherMode ? "bg-amber-500/30 border border-amber-500/50" : "bg-brand-surface border border-brand-border"
                 }`}
               />
               <div
-                className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                  fresherMode ? "translate-x-4" : "translate-x-0"
+                className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full transition-transform ${
+                  fresherMode ? "translate-x-4 bg-amber-400" : "translate-x-0 bg-brand-muted"
                 }`}
               />
             </div>

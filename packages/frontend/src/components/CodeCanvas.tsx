@@ -123,7 +123,7 @@ function ModuleCardNode({ data }: { data: ModuleNodeData }) {
         </span>
         <div style={{
           fontSize: 11, fontWeight: 600, fontFamily: "monospace",
-          color: data.dimmed ? "#252320" : "#d4cfc8",
+          color: data.dimmed ? "#3a3835" : "#e8e3dc",
           marginTop: 5, lineHeight: 1.3,
         }}>
           {data.label}
@@ -131,7 +131,7 @@ function ModuleCardNode({ data }: { data: ModuleNodeData }) {
         {data.description && (
           <div style={{
             fontSize: 9, fontFamily: "monospace",
-            color: data.dimmed ? "#1e1c1a" : "#4a4845",
+            color: data.dimmed ? "#2e2c2a" : "#8a837a",
             marginTop: 2, lineHeight: 1.4,
           }}>
             {data.description}
@@ -148,7 +148,7 @@ function ModuleCardNode({ data }: { data: ModuleNodeData }) {
             <span style={{ width: 5, height: 5, flexShrink: 0, backgroundColor: fileColor(f) }} />
             <span style={{
               fontSize: 9, fontFamily: "monospace",
-              color: data.dimmed ? "#222120" : "#5f5a55",
+              color: data.dimmed ? "#2e2c2a" : "#9a938a",
               whiteSpace: "nowrap", overflow: "hidden",
               textOverflow: "ellipsis", maxWidth: 175,
             }}>
@@ -401,11 +401,11 @@ function LeftSidebar({
         <div style={{
           fontSize: 9, fontFamily: "monospace", fontWeight: 700,
           letterSpacing: "0.1em", textTransform: "uppercase",
-          color: "#4a4845", marginBottom: 4,
+          color: "#7a736a", marginBottom: 4,
         }}>
           Repository Explorer
         </div>
-        <div style={{ fontSize: 9, fontFamily: "monospace", color: "#323030" }}>
+        <div style={{ fontSize: 9, fontFamily: "monospace", color: "#6b6460" }}>
           {arch.nodes.length} modules · {totalFiles} files
         </div>
       </div>
@@ -442,13 +442,13 @@ function LeftSidebar({
                   >
                     <div style={{
                       fontSize: 10, fontFamily: "monospace",
-                      color: active ? color : "#5f5a55",
+                      color: active ? color : "#a09890",
                       fontWeight: active ? 600 : 400,
                     }}>
                       {n.label}
                     </div>
                     {n.files.length > 0 && (
-                      <div style={{ fontSize: 8, fontFamily: "monospace", color: "#323030", marginTop: 1 }}>
+                      <div style={{ fontSize: 8, fontFamily: "monospace", color: "#6b6460", marginTop: 1 }}>
                         {n.files.length} file{n.files.length !== 1 ? "s" : ""}
                       </div>
                     )}
@@ -466,7 +466,7 @@ function LeftSidebar({
           padding: "10px 14px",
           borderTop: "1px solid #191816",
           fontSize: 8, fontFamily: "monospace",
-          color: "#323030", lineHeight: 1.7,
+          color: "#6b6460", lineHeight: 1.7,
           flexShrink: 0,
         }}>
           {arch.summary}
@@ -601,7 +601,7 @@ function RightPanel({
                 </div>
                 {connections.out.map((e, i) => (
                   <div key={`out-${i}`} style={{ display: "flex", alignItems: "center", gap: 6, padding: "3px 0" }}>
-                    <span style={{ fontSize: 10, color: "#3a3835" }}>→</span>
+                    <span style={{ fontSize: 10, color: "#7a736a" }}>→</span>
                     <span style={{
                       fontSize: 9, fontFamily: "monospace",
                       color: getEdgeColor(e.label || ""),
@@ -609,21 +609,21 @@ function RightPanel({
                     }}>
                       {e.node?.label || e.target}
                     </span>
-                    <span style={{ fontSize: 8, fontFamily: "monospace", color: "#3a3835", flexShrink: 0 }}>
+                    <span style={{ fontSize: 8, fontFamily: "monospace", color: "#7a736a", flexShrink: 0 }}>
                       {e.label}
                     </span>
                   </div>
                 ))}
                 {connections.inc.map((e, i) => (
                   <div key={`in-${i}`} style={{ display: "flex", alignItems: "center", gap: 6, padding: "3px 0" }}>
-                    <span style={{ fontSize: 10, color: "#3a3835" }}>←</span>
+                    <span style={{ fontSize: 10, color: "#7a736a" }}>←</span>
                     <span style={{
-                      fontSize: 9, fontFamily: "monospace", color: "#5f5a55",
+                      fontSize: 9, fontFamily: "monospace", color: "#a09890",
                       flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                     }}>
                       {e.node?.label || e.source}
                     </span>
-                    <span style={{ fontSize: 8, fontFamily: "monospace", color: "#3a3835", flexShrink: 0 }}>
+                    <span style={{ fontSize: 8, fontFamily: "monospace", color: "#7a736a", flexShrink: 0 }}>
                       {e.label}
                     </span>
                   </div>
@@ -653,8 +653,8 @@ function RightPanel({
                   }}
                 >
                   <span style={{ width: 16, height: 2, backgroundColor: color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 9, fontFamily: "monospace", color: "#5f5a55" }}>{label}</span>
-                  <span style={{ marginLeft: "auto", fontSize: 8, fontFamily: "monospace", color: "#3a3835" }}>
+                  <span style={{ fontSize: 9, fontFamily: "monospace", color: "#c0b8b0" }}>{label}</span>
+                  <span style={{ marginLeft: "auto", fontSize: 8, fontFamily: "monospace", color: "#7a736a" }}>
                     {filters[key] ? "on" : "off"}
                   </span>
                 </button>
@@ -698,8 +698,8 @@ function RightPanel({
                 >
                   <span style={{ width: 20, height: 2, backgroundColor: color, flexShrink: 0 }} />
                   <div style={{ textAlign: "left", flex: 1 }}>
-                    <div style={{ fontSize: 10, fontFamily: "monospace", color: "#6b6460" }}>{label}</div>
-                    <div style={{ fontSize: 8, fontFamily: "monospace", color: "#323030", marginTop: 1 }}>{desc}</div>
+                    <div style={{ fontSize: 10, fontFamily: "monospace", color: "#c0b8b0" }}>{label}</div>
+                    <div style={{ fontSize: 8, fontFamily: "monospace", color: "#7a736a", marginTop: 1 }}>{desc}</div>
                   </div>
                   <span style={{ fontSize: 8, fontFamily: "monospace", color: filters[key] ? "#4a4845" : "#252320", flexShrink: 0 }}>
                     {filters[key] ? "shown" : "hidden"}
@@ -745,7 +745,7 @@ function RightPanel({
               ].map((hint, i) => (
                 <div key={i} style={{
                   fontSize: 9, fontFamily: "monospace",
-                  color: "#323030", padding: "2px 0", lineHeight: 1.5,
+                  color: "#7a736a", padding: "2px 0", lineHeight: 1.5,
                 }}>
                   {hint}
                 </div>

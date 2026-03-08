@@ -23,10 +23,7 @@ interface Contributor {
 // ── Demo data ─────────────────────────────────────────────────────────────────
 
 const DEMO_CONTRIBUTORS: Contributor[] = [
-  { name: "Rahul Sharma",   initials: "RS", color: "#E25A34", commits: 143, additions: 8420, deletions: 2100, modules: ["api", "auth", "database"],      lastActive: "2 days ago",  role: "Backend Lead"  },
-  { name: "Priya Nair",     initials: "PN", color: "#4ade80", commits: 98,  additions: 5230, deletions: 1800, modules: ["ui", "components", "pages"],      lastActive: "5 hours ago", role: "Frontend Lead" },
-  { name: "Arjun Menon",    initials: "AM", color: "#60a5fa", commits: 61,  additions: 3100, deletions: 980,  modules: ["infra", "docker", "ci"],          lastActive: "1 week ago",  role: "DevOps"        },
-  { name: "Divya Krishnan", initials: "DK", color: "#a78bfa", commits: 34,  additions: 1890, deletions: 420,  modules: ["tests", "docs", "fixtures"],      lastActive: "3 days ago",  role: "QA & Docs"     },
+  { name: "STIWARTs", initials: "ST", color: "#E25A34", commits: 336, additions: 18640, deletions: 5300, modules: ["api", "auth", "database", "ui", "infra", "tests"], lastActive: "just now", role: "Full Stack" },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -58,7 +55,7 @@ function buildPackageDiagram(repoId: string, techStack: Record<string, string | 
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function DocSection({ id, icon: Icon, title, children }: { id: string; icon: React.ElementType; title: string; children: React.ReactNode }) {
+function DocSection({ id, icon: Icon, title, children }: { id: string; icon: any; title: string; children: React.ReactNode }) {
   return (
     <section id={id} className="scroll-mt-6">
       <div className="flex items-center gap-3 mb-5">

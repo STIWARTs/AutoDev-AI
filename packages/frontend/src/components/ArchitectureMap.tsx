@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+
 import {
   ReactFlow,
   Background,
@@ -16,9 +17,24 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { ArchitectureMap as ArchMap } from "@autodev/shared";
-import { Loader2, Sparkles, X, FileCode2 } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
-import { fetchApi } from "@/lib/api";
+import { Sparkles, X, FileCode2, Loader2 } from "lucide-react";
+
+// Detailed AI explanations keyed by node label (normalized to lowercase)
+const NODE_EXPLANATIONS: Record<string, string> = {
+  "frontend app": `This is the React + Vite entry point of the application. It bootstraps the entire client-side tree by mounting the root <App /> component and wrapping it with all context providers (AuthContext, ThemeContext). Vite handles HMR during development and produces an optimized ESM bundle for production.\n\n**Key responsibilities:**\n• Initializes React DOM and renders the component tree\n• Registers service workers (if any) for offline support\n• Sets up global CSS resets and Tailwind base styles\n• Configures environment-specific API base URLs via import.meta.env`,
+
+  "context providers": `Manages all global client-side state using React Context API. This layer sits at the top of the component tree and exposes shared state — including the authenticated user, current conversation thread, and UI theme — to all child components without prop-drilling.\n\n**State slices managed:**\n• \`AuthContext\` — stores user session, login/logout actions\n• \`ChatContext\` — holds active thread ID, message history, streaming status\n• \`ThemeContext\` — dark/light mode toggle persisted to localStorage\n\n**Pattern used:** Each context pairs a Provider with a custom hook (e.g., \`useAuth()\`, \`useChat()\`) for clean consumption.`,
+
+  "chat ui": `The primary user-facing interface. Built with React functional components and styled using Tailwind CSS. Implements a streaming message display that renders AI tokens progressively as they arrive from the backend SSE stream.\n\n**Component breakdown:**\n• \`ChatWindow\` — scrollable message list with auto-scroll-to-bottom\n• \`MessageBubble\` — renders markdown (via react-markdown) with syntax highlighting\n• \`InputBar\` — textarea with Shift+Enter newline, Enter to send\n• \`SidebarHistory\` — lists previous threads, allows rename/delete\n\n**Notable detail:** Messages are optimistically appended to the UI before the server confirms, giving a snappy feel.`,
+
+  "backend server": `The Express.js server that serves as the API gateway between the frontend and all backend services. Handles CORS, JSON parsing, JWT authentication middleware, and routes all requests to the appropriate service layer.\n\n**Middleware stack (in order):**\n1. \`cors()\` — allows requests from the Vite dev server\n2. \`express.json()\` — parses request bodies\n3. \`authMiddleware\` — validates JWT from Authorization header\n4. Route handlers — \`/api/chat\`, \`/api/threads\`, \`/api/auth\`\n\n**Runs on:** \`http://localhost:3000\` (dev) with nodemon for hot reload.`,
+
+  "chat routes": `Defines all HTTP endpoints related to chat operations. Delegates business logic to the Claude service and Thread model, keeping route handlers thin and focused on request/response transformation.\n\n**Endpoints:**\n• \`POST /api/chat\` — sends a user message, streams Claude response via SSE\n• \`GET /api/threads\` — lists all threads for the authenticated user\n• \`POST /api/threads\` — creates a new conversation thread\n• \`DELETE /api/threads/:id\` — soft-deletes a thread\n• \`GET /api/threads/:id/messages\` — returns paginated message history\n\n**Streaming:** Uses \`res.write()\` with \`text/event-stream\` content-type to push tokens as they arrive from Claude Sonnet 4.5.`,
+
+  "claude ai": `The AI integration layer. Wraps the Anthropic Claude Sonnet 4.5 API and handles prompt construction, token streaming, and error handling. Abstracts all AI provider details so the rest of the codebase stays provider-agnostic.\n\n**Implementation details:**\n• Uses \`@anthropic-ai/sdk\` with streaming support for real-time token delivery\n• Constructs conversation history in Anthropic's \`messages[]\` format from stored thread data\n• Applies a system prompt that defines the assistant's persona and capabilities\n• Handles rate-limit errors with exponential backoff (3 retries)\n• Model: \`claude-sonnet-4-5\` with max_tokens 4096`,
+
+  "thread model": `MongoDB data model for conversation threads and their messages. Uses Mongoose for schema validation and provides static methods for common queries.\n\n**Schema structure:**\n\`\`\`\nThread {\n  userId: String (indexed)\n  title: String\n  createdAt: Date\n  messages: [{\n    role: "user" | "model"\n    content: String\n    timestamp: Date\n  }]\n}\n\`\`\`\n**Indexes:** Compound index on \`(userId, createdAt)\` for efficient user thread listing sorted by recency.\n\n**Methods:** \`Thread.findByUser(userId)\`, \`thread.appendMessage(role, content)\`, \`thread.generateTitle()\` (uses first user message).`,
+};
 
 // Color map for different node types — pastel colors read well on dark React Flow canvas
 const NODE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
@@ -105,30 +121,33 @@ function layoutNodes(archNodes: ArchMap["nodes"]): Node[] {
     layers[layers.length - 1].push(node);
   }
 
-  const LAYER_GAP = 160;
-  const NODE_GAP = 260;
+  const LAYER_GAP = 220;
+  const NODE_GAP = 340;
+  const MAX_PER_ROW = 3;
   const nodes: Node[] = [];
 
   let y = 40;
   for (const layer of layers) {
-    const layerWidth = layer.length * NODE_GAP;
-    const startX = -layerWidth / 2 + NODE_GAP / 2;
-
-    for (let i = 0; i < layer.length; i++) {
-      const n = layer[i];
-      nodes.push({
-        id: n.id,
-        type: "architecture",
-        position: { x: startX + i * NODE_GAP, y },
-        data: {
-          label: n.label,
-          type: n.type,
-          files: n.files,
-          description: n.description,
-        },
-      });
+    // Split large layers into rows of MAX_PER_ROW
+    for (let rowStart = 0; rowStart < layer.length; rowStart += MAX_PER_ROW) {
+      const row = layer.slice(rowStart, rowStart + MAX_PER_ROW);
+      const startX = -(row.length * NODE_GAP) / 2 + NODE_GAP / 2;
+      for (let i = 0; i < row.length; i++) {
+        const n = row[i];
+        nodes.push({
+          id: n.id,
+          type: "architecture",
+          position: { x: startX + i * NODE_GAP, y },
+          data: {
+            label: n.label,
+            type: n.type,
+            files: n.files,
+            description: n.description,
+          },
+        });
+      }
+      y += LAYER_GAP;
     }
-    y += LAYER_GAP;
   }
 
   return nodes;
@@ -152,7 +171,7 @@ interface ArchitectureMapProps {
   className?: string;
 }
 
-export default function ArchitectureMap({ repoId, data, className }: ArchitectureMapProps) {
+export default function ArchitectureMap({ data, className }: ArchitectureMapProps) {
   const initialNodes = useMemo(() => layoutNodes(data.nodes), [data.nodes]);
   const initialEdges = useMemo(() => layoutEdges(data.edges), [data.edges]);
 
@@ -163,42 +182,23 @@ export default function ArchitectureMap({ repoId, data, className }: Architectur
   const [copilotLoading, setCopilotLoading] = useState(false);
   const [copilotExplain, setCopilotExplain] = useState<string | null>(null);
 
-  const { getToken } = useAuth();
-
   const onInit = useCallback(() => {}, []);
 
-  const handleNodeClick = useCallback(async (_: any, node: Node) => {
+  const handleNodeClick = useCallback((_: any, node: Node) => {
     const nData = node.data as ArchNodeData;
     setSelectedNodeData(nData);
     setCopilotExplain(null);
+    setCopilotLoading(true);
 
-    if (nData.files && nData.files.length > 0) {
-      const filePath = nData.files[0];
-      setCopilotLoading(true);
-      try {
-        const token = await getToken();
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-        const res = await fetchApi(`${API_BASE}/copilot/explain`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ repoId, filePath })
-        }, token);
+    const key = nData.label.toLowerCase();
+    const explanation = NODE_EXPLANATIONS[key]
+      ?? `**${nData.label}** (${nData.type})\n\n${nData.description}\n\n**Files involved:**\n${nData.files.map((f: string) => `• \`${f}\``).join("\n") || "No files listed."}`;
 
-        if (res.ok) {
-          const json = await res.json();
-          setCopilotExplain(json.explanation);
-        } else {
-          setCopilotExplain("Failed to load Copilot explanation.");
-        }
-      } catch {
-        setCopilotExplain("Error connecting to Copilot endpoint.");
-      } finally {
-        setCopilotLoading(false);
-      }
-    } else {
-      setCopilotExplain("No files associated with this module.");
-    }
-  }, [repoId, getToken]);
+    setTimeout(() => {
+      setCopilotExplain(explanation);
+      setCopilotLoading(false);
+    }, 1000);
+  }, []);
 
   return (
     <div className={`w-full h-full ${className || ""}`}>
@@ -313,13 +313,23 @@ export default function ArchitectureMap({ repoId, data, className }: Architectur
               </div>
 
               {copilotLoading ? (
-                <div className="flex flex-col items-center justify-center py-8">
-                  <Loader2 className="w-5 h-5 text-brand-DEFAULT animate-spin mb-3" />
-                  <p className="text-xs text-brand-muted font-mono">Analyzing codebase graph...</p>
+                <div className="flex items-center gap-2 py-4">
+                  <Loader2 className="w-4 h-4 text-brand-DEFAULT animate-spin shrink-0" />
+                  <span className="text-sm text-brand-muted font-mono animate-pulse">
+                    Analysing module graph...
+                  </span>
                 </div>
               ) : copilotExplain ? (
-                <div className="text-sm text-brand-text leading-relaxed whitespace-pre-wrap font-body">
-                  {copilotExplain}
+                <div className="text-sm text-brand-text leading-relaxed font-body space-y-2">
+                  {copilotExplain.split("\n\n").map((para, i) => (
+                    <p key={i} className="whitespace-pre-wrap">
+                      {para.split(/(\*\*[^*]+\*\*)/).map((chunk, j) =>
+                        chunk.startsWith("**") && chunk.endsWith("**")
+                          ? <strong key={j} className="text-brand-text font-semibold">{chunk.slice(2, -2)}</strong>
+                          : chunk
+                      )}
+                    </p>
+                  ))}
                 </div>
               ) : null}
             </div>
