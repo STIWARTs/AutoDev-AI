@@ -63,7 +63,7 @@ export default function RepoDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [owner, repo, decodedRepoId]);
+  }, [owner, repo, decodedRepoId, getToken, track]);
 
   useEffect(() => { fetchArchitecture(); }, [fetchArchitecture]);
   useEffect(() => {

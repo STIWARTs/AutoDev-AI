@@ -82,7 +82,7 @@ export default function TeamPage() {
     } catch { /* ignore */ } finally {
       setLoading(false);
     }
-  }, [owner, repo, decodedRepoId]);
+  }, [owner, repo, decodedRepoId, getToken]);
 
   useEffect(() => { fetchTeamData(); }, [fetchTeamData]);
 

@@ -50,7 +50,7 @@ export default function WalkthroughsPage() {
     } finally {
       setLoading(false);
     }
-  }, [owner, repo, decodedRepoId]);
+  }, [owner, repo, decodedRepoId, getToken]);
 
   useEffect(() => { fetchWalkthroughs(); }, [fetchWalkthroughs]);
 

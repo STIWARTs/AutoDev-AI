@@ -63,7 +63,7 @@ export default function ConventionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [owner, repo, decodedRepoId]);
+  }, [owner, repo, decodedRepoId, getToken, track]);
 
   useEffect(() => { fetchConventions(); }, [fetchConventions]);
 

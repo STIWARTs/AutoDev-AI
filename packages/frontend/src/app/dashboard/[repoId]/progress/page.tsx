@@ -152,7 +152,7 @@ export default function ProgressPage() {
     } catch { /* ignore */ } finally {
       setLoading(false);
     }
-  }, [owner, repo, decodedRepoId]);
+  }, [owner, repo, decodedRepoId, getToken]);
 
   useEffect(() => { fetchProgress(); }, [fetchProgress]);
 

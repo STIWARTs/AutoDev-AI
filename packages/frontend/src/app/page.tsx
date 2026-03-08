@@ -158,6 +158,7 @@ const AnimatedTerminal = () => {
 
 const AnimatedCodeReview = () => {
   const [step, setStep] = useState(0);
+  const isInitialStep = step === 0;
   
   useEffect(() => {
     const sequence = [
@@ -175,7 +176,7 @@ const AnimatedCodeReview = () => {
     };
     runSequence(0);
     return () => clearTimeout(timeout);
-  }, [step === 0]);
+  }, [isInitialStep]);
   
   return (
     <div className="bg-brand-surface border border-brand-border rounded-sm p-6 space-y-4 relative overflow-hidden h-full flex flex-col justify-center">
@@ -232,6 +233,7 @@ const AnimatedCodeReview = () => {
 
 const AnimatedQA = () => {
   const [step, setStep] = useState(0);
+  const isInitialStep = step === 0;
   
   useEffect(() => {
     const sequence = [
@@ -249,7 +251,7 @@ const AnimatedQA = () => {
     };
     runSequence(0);
     return () => clearTimeout(timeout);
-  }, [step === 0]);
+  }, [isInitialStep]);
   
   return (
     <div className="bg-brand-surface border border-brand-border rounded-sm overflow-hidden flex flex-col h-[400px]">
@@ -325,7 +327,7 @@ const AnimatedWalkthrough = () => {
   useEffect(() => {
     const t = setInterval(() => setActiveStep((s) => (s + 1) % steps.length), 1300);
     return () => clearInterval(t);
-  }, []);
+  }, [steps.length]);
   return (
     <div className="bg-brand-surface border border-brand-border rounded-sm overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-brand-border bg-brand-bg">

@@ -44,7 +44,7 @@ export default function AnimatedPage() {
       const data = await res.json();
       setArchMap(data.content ?? data);
     } catch { /* ignore */ }
-  }, [owner, repo, decodedRepoId]);
+  }, [owner, repo, decodedRepoId, getToken]);
 
   const fetchSequences = useCallback(async () => {
     if (!owner || !repo) return;
@@ -60,7 +60,7 @@ export default function AnimatedPage() {
         setSelectedSeq(seqList[0]);
       }
     } catch { /* ignore */ }
-  }, [owner, repo, decodedRepoId]);
+  }, [owner, repo, decodedRepoId, getToken, track]);
 
   useEffect(() => {
     async function init() {
