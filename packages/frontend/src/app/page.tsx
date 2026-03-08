@@ -656,7 +656,7 @@ export default function HomePage() {
       </nav>
 
       {/* ─── HERO SECTION ─── */}
-      <section className="relative mt-16 flex flex-col items-center pt-16 pb-24 overflow-hidden border-b border-brand-border">
+      <section className="relative mt-16 flex flex-col items-center pt-6 pb-24 overflow-hidden border-b border-brand-border">
         {/* Dynamic Aurora & Grid Background */}
         <div className="absolute inset-0 w-full h-full bg-brand-bg opacity-90 animate-aurora pointer-events-none" style={{ backgroundImage: "radial-gradient(ellipse at top left, rgba(226,90,52,0.15) 0%, transparent 50%), radial-gradient(ellipse at bottom right, rgba(226,90,52,0.1) 0%, transparent 40%)" }} />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />

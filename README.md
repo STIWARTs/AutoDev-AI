@@ -20,6 +20,9 @@
   <a href="https://autodev-bharat.vercel.app/">
     <img src="https://img.shields.io/badge/Live-Link-blue?style=for-the-badge&logo=github" />
   </a>
+  <a href="https://github.com/apps/autodev-bharat">
+    <img src="https://img.shields.io/badge/GitHub-App-24292E?style=for-the-badge&logo=github" />
+  </a>
 </p>
 
 <p align="center">
@@ -73,7 +76,7 @@ India has **4.3 million developers** — yet the onboarding experience is broken
 
 ## The Solution
 
-**AutoDev** is the first platform purpose-built for **developer onboarding as learning** — not code search or PR review. Install it on any GitHub repo and get instant onboarding intelligence.
+**AutoDev** is the first platform purpose-built for **developer onboarding as learning** — not code search or PR review. **[Install the AutoDev GitHub App](https://github.com/apps/autodev-bharat)** on any GitHub repo and get instant onboarding intelligence.
 
 | Feature | What It Does |
 |---|---|
@@ -87,6 +90,41 @@ India has **4.3 million developers** — yet the onboarding experience is broken
 | **Voice Q&A** | Audio-based code explanations — accessibility first |
 | **AI Copilot** | Context-aware coding assistance inside the platform |
 | **Team Leaderboard** | Track onboarding progress across the entire team |
+
+---
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <b>Architecture Maps</b><br><br>
+      <img src="docs/screenshots/architecture-maps.png" alt="Architecture Maps" width="100%" />
+    </td>
+    <td align="center" width="33%">
+      <b>Codebase Q&A</b><br><br>
+      <img src="docs/screenshots/codebase-qa.png" alt="Codebase Q&A" width="100%" />
+    </td>
+    <td align="center" width="33%">
+      <b>Learning Dashboard</b><br><br>
+      <img src="docs/screenshots/learning-dashboard.png" alt="Learning Dashboard" width="100%" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <b>Environment Setup</b><br><br>
+      <img src="docs/screenshots/environment-setup.png" alt="Environment Setup" width="100%" />
+    </td>
+    <td align="center" width="33%">
+      <b>Guided Walkthroughs</b><br><br>
+      <img src="docs/screenshots/guided-walkthroughs.png" alt="Guided Walkthroughs" width="100%" />
+    </td>
+    <td align="center" width="33%">
+      <b>VS Code Extension</b><br><br>
+      <img src="docs/screenshots/vscode-extension.png" alt="VS Code Extension" width="100%" />
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -796,7 +834,7 @@ erDiagram
 - Node.js 18+
 - pnpm 8+
 - AWS account with Bedrock access (region: `us-east-1`)
-- GitHub account (for GitHub App)
+- GitHub account + **[Install the AutoDev GitHub App](https://github.com/apps/autodev-bharat)**
 
 ### 1. Clone & Install
 
