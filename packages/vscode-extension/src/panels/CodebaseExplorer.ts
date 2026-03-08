@@ -19,10 +19,12 @@ export class CodebaseExplorerProvider implements vscode.WebviewViewProvider {
     };
 
     webviewView.webview.html = this._getHtmlContent();
-    this._loadArchitecture();
 
     webviewView.webview.onDidReceiveMessage(async (message) => {
       switch (message.type) {
+        case "ready":
+          this._loadArchitecture();
+          break;
         case "openFile": {
           if (!message.path) break;
           const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -471,13 +473,13 @@ export class CodebaseExplorerProvider implements vscode.WebviewViewProvider {
   <!-- Quick Actions -->
   <div class="actions-section">
     <button class="action-btn" onclick="askQuestion()">
-      <span>💬</span> Ask About This Codebase
+      Ask About This Codebase
     </button>
     <button class="action-btn secondary" onclick="refreshData()">
-      <span>🔄</span> Refresh Architecture
+      Refresh Architecture
     </button>
     <button class="action-btn secondary" onclick="startWalkthrough()">
-      <span>🚀</span> Start a Walkthrough
+      Start a Walkthrough
     </button>
   </div>
 
@@ -487,8 +489,8 @@ export class CodebaseExplorerProvider implements vscode.WebviewViewProvider {
     var expandedNodeId = null;
 
     const typeIcons = {
-      entry: '⚡', module: '📦', service: '⚙️',
-      config: '🔧', util: '🔨', database: '🗄️', external: '🌐'
+      entry: 'E', module: 'M', service: 'S',
+      config: 'C', util: 'U', database: 'D', external: 'X'
     };
 
     const layerOrder = ['entry', 'module', 'service', 'util', 'database', 'external', 'config'];
@@ -579,7 +581,7 @@ export class CodebaseExplorerProvider implements vscode.WebviewViewProvider {
           html += '<div class="node-card border-' + n.type + (isExpanded ? ' expanded' : '') + '" onclick="toggleNode(\\'' + n.id + '\\')">';
 
           html += '<div class="node-card-header">';
-          html += '<div class="node-icon type-' + n.type + '">' + (typeIcons[n.type] || '📦') + '</div>';
+          html += '<div class="node-icon type-' + n.type + '">' + (typeIcons[n.type] || 'M') + '</div>';
           html += '<div class="node-info">';
           html += '<div class="node-name">' + esc(n.label) + '</div>';
           html += '<div class="node-type-label">' + esc(n.type) + ' · ' + (n.files ? n.files.length : 0) + ' files</div>';
@@ -594,7 +596,7 @@ export class CodebaseExplorerProvider implements vscode.WebviewViewProvider {
             html += '<div class="node-files-title">Files</div>';
             n.files.forEach(function(f) {
               html += '<div class="node-file" onclick="event.stopPropagation(); openFile(\\'' + f.replace(/'/g, "\\\\'") + '\\')">';
-              html += '📄 ' + esc(f);
+              html += esc(f);
               html += '</div>';
             });
           }
@@ -617,7 +619,7 @@ export class CodebaseExplorerProvider implements vscode.WebviewViewProvider {
             html += '</div>';
           }
 
-          html += '<button class="node-detail-btn" onclick="event.stopPropagation(); showAIDetail(\\'' + n.id + '\\')">🤖 AI Explanation</button>';
+          html += '<button class="node-detail-btn" onclick="event.stopPropagation(); showAIDetail(\\'' + n.id + '\\')">[AI] Explanation</button>';
           html += '</div>';
 
           html += '</div>';
@@ -685,13 +687,15 @@ export class CodebaseExplorerProvider implements vscode.WebviewViewProvider {
         if (archData.keyPatterns && archData.keyPatterns.length > 0) {
           document.getElementById('patterns-section').style.display = 'block';
           document.getElementById('patterns-tags').innerHTML = archData.keyPatterns
-            .map(function(p) { return '<span class="pattern-tag">' + esc(p) + '</span>'; })
+            .map(function(p) { return '<span class="pattern-tag">' + esc(typeof p === 'object' ? p.name : p) + '</span>'; })
             .join('');
         }
 
         renderArchitecture();
       }
     });
+
+    vscode.postMessage({ type: 'ready' });
   </script>
 </body>
 </html>`;

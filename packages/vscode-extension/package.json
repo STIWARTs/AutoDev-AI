@@ -85,7 +85,7 @@
         },
         "autodev.repoId": {
           "type": "string",
-          "default": "",
+          "default": "STIWARTs/ChatGPT",
           "description": "Repository identifier (owner/repo) for AutoDev — leave empty to auto-detect from git remote"
         },
         "autodev.language": {

@@ -250,16 +250,41 @@ export class QAPanel {
     button.send-btn:hover { background: var(--vscode-button-hoverBackground); }
     .empty-state {
       text-align: center;
-      opacity: 0.5;
-      padding: 40px 0;
+      padding: 24px 0;
       font-size: 13px;
     }
+    .empty-state p { opacity: 0.5; margin-bottom: 16px; }
+    .suggestions { display: flex; flex-direction: column; gap: 8px; }
+    .suggest-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--vscode-editor-inactiveSelectionBackground);
+      color: var(--vscode-foreground);
+      border: 1px solid var(--vscode-panel-border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1.4;
+      transition: background 0.15s;
+    }
+    .suggest-btn:hover { background: var(--vscode-list-hoverBackground); }
+    .suggest-lang { font-size: 10px; opacity: 0.5; text-transform: uppercase; margin-bottom: 2px; }
   </style>
 </head>
 <body>
   <h2>Ask About This Codebase</h2>
   <div id="messages">
-    <div class="empty-state">Ask any question about this codebase and AutoDev will find the answer.</div>
+    <div class="empty-state">
+      <p>Ask any question about this codebase — try a suggestion below:</p>
+      <div class="suggestions">
+        <button class="suggest-btn" onclick="askRelated('How does the authentication flow work in this app?')"><div class="suggest-lang">English</div>How does the authentication flow work in this app?</button>
+        <button class="suggest-btn" onclick="askRelated('इस ऐप में बैकएंड और फ्रंटएंड कैसे जुड़े हैं?')"><div class="suggest-lang">Hindi</div>इस ऐप में बैकएंड और फ्रंटएंड कैसे जुड़े हैं?</button>
+        <button class="suggest-btn" onclick="askRelated('இந்த செயலியின் API அமைப்பு எப்படி செயல்படுகிறது?')"><div class="suggest-lang">Tamil</div>இந்த செயலியின் API அமைப்பு எப்படி செயல்படுகிறது?</button>
+        <button class="suggest-btn" onclick="askRelated('এই অ্যাপে ডেটাবেস কানেকশন কীভাবে কাজ করে?')"><div class="suggest-lang">Bengali</div>এই অ্যাপে ডেটাবেস কানেকশন কীভাবে কাজ করে?</button>
+      </div>
+    </div>
   </div>
   <div class="input-row">
     <input type="text" id="question" placeholder="e.g., How does authentication work?" />

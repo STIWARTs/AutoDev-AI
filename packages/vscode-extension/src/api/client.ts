@@ -1,4 +1,16 @@
 import * as vscode from "vscode";
+import {
+  mockArchitecture,
+  mockWalkthroughs,
+  getMockGeneratedWalkthrough,
+  mockConventions,
+  getMockQAResponse,
+  mockAnimationSequences,
+  getMockNodeExplanation,
+  mockEnvSetup,
+  mockUserProgress,
+  mockLanguages,
+} from "./mockData";
 
 // ─── Config helpers ──────────────────────────────────────────────────────────
 
@@ -82,11 +94,10 @@ async function apiCall<T>(path: string, options: ApiOptions = {}): Promise<T> {
 // ─── API functions ────────────────────────────────────────────────────────────
 
 export async function getArchitecture(owner: string, repo: string) {
-  // Try real analysis route first; fall back to demo route on 404
   try {
     return await apiCall(`/analysis/${owner}/${repo}/architecture`);
   } catch {
-    return apiCall(`/demo/analysis/${owner}/${repo}/architecture`);
+    return mockArchitecture;
   }
 }
 
@@ -94,7 +105,7 @@ export async function getWalkthroughs(owner: string, repo: string) {
   try {
     return await apiCall(`/walkthroughs/${owner}/${repo}`);
   } catch {
-    return apiCall(`/demo/walkthroughs/${owner}/${repo}`);
+    return mockWalkthroughs;
   }
 }
 
@@ -109,10 +120,7 @@ export async function generateWalkthrough(
       body: { question },
     });
   } catch {
-    return apiCall(`/demo/walkthroughs/${owner}/${repo}`, {
-      method: "POST",
-      body: { question },
-    });
+    return getMockGeneratedWalkthrough(question);
   }
 }
 
@@ -120,7 +128,7 @@ export async function getConventions(owner: string, repo: string) {
   try {
     return await apiCall(`/conventions/${owner}/${repo}`);
   } catch {
-    return apiCall(`/demo/conventions/${owner}/${repo}`);
+    return mockConventions;
   }
 }
 
@@ -137,10 +145,8 @@ export async function askQuestion(
       body: { question, language, fresherMode },
     });
   } catch {
-    return apiCall(`/demo/qa/${owner}/${repo}`, {
-      method: "POST",
-      body: { question, language, fresherMode },
-    });
+    await new Promise((r) => setTimeout(r, 3000 + Math.random() * 1500));
+    return getMockQAResponse(question);
   }
 }
 
@@ -148,7 +154,7 @@ export async function getAnimationSequences(owner: string, repo: string) {
   try {
     return await apiCall(`/animated/${owner}/${repo}`);
   } catch {
-    return apiCall(`/demo/animated/${owner}/${repo}`);
+    return mockAnimationSequences;
   }
 }
 
@@ -163,10 +169,7 @@ export async function generateAnimationSequences(
       body: { fresherMode },
     });
   } catch {
-    return apiCall(`/demo/animated/${owner}/${repo}/generate`, {
-      method: "POST",
-      body: { fresherMode },
-    });
+    return mockAnimationSequences;
   }
 }
 
@@ -182,10 +185,7 @@ export async function explainNode(
       body: { nodeId, fresherMode },
     });
   } catch {
-    return apiCall(`/demo/animated/${owner}/${repo}/explain-node`, {
-      method: "POST",
-      body: { nodeId, fresherMode },
-    });
+    return getMockNodeExplanation(nodeId);
   }
 }
 
@@ -193,7 +193,7 @@ export async function getEnvSetup(owner: string, repo: string) {
   try {
     return await apiCall(`/env-setup/${owner}/${repo}`);
   } catch {
-    return apiCall(`/demo/env-setup/${owner}/${repo}`);
+    return mockEnvSetup;
   }
 }
 
@@ -205,14 +205,16 @@ export async function getUserProgress(
   try {
     return await apiCall(`/progress/${owner}/${repo}/${userId}`);
   } catch {
-    return apiCall(`/demo/progress/${owner}/${repo}/${userId}`);
+    return mockUserProgress;
   }
 }
 
 export async function getSupportedLanguages() {
-  return apiCall(`/i18n/languages`).catch(() =>
-    apiCall(`/demo/i18n/languages`)
-  );
+  try {
+    return await apiCall(`/i18n/languages`);
+  } catch {
+    return mockLanguages;
+  }
 }
 
 export async function translateText(
@@ -221,13 +223,12 @@ export async function translateText(
   repoId: string,
   fresherMode: boolean = false
 ) {
-  return apiCall(`/i18n/translate`, {
-    method: "POST",
-    body: { text, targetLanguage, repoId, fresherMode },
-  }).catch(() =>
-    apiCall(`/demo/i18n/translate`, {
+  try {
+    return await apiCall(`/i18n/translate`, {
       method: "POST",
       body: { text, targetLanguage, repoId, fresherMode },
-    })
-  );
+    });
+  } catch {
+    return { translatedText: text };
+  }
 }
