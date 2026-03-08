@@ -5,9 +5,22 @@
   <img src="https://img.shields.io/badge/Team-HASHMAP-FFD166?style=for-the-badge&logoColor=black" alt="Team HASHMAP" />
 </p>
 
-<h1 align="center">AutoDev</h1>
+<h1 align="center">AutoDev AI</h1>
 <h3 align="center">AI-Powered Codebase Onboarding Platform — Built for Bharat</h3>
 <p align="center"><i>"Onboard new developers in hours, not weeks. In their own language."</i></p>
+
+<p align="center">
+<img width="800" height="929" alt="autoodevvv" src="https://github.com/user-attachments/assets/b4f9e64e-77a3-4c88-affa-f6fa2d57b047" />
+</p>
+
+<p align="center">
+  <a href="https://youtu.be/WepYhHkuQ5g">
+    <img src="https://img.shields.io/badge/Demo-Video-red?style=for-the-badge&logo=youtube" />
+  </a>
+  <a href="https://autodev-bharat.vercel.app/">
+    <img src="https://img.shields.io/badge/Live-Link-blue?style=for-the-badge&logo=github" />
+  </a>
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Next.js-14-black?logo=next.js&logoColor=white" />
