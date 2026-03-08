@@ -163,7 +163,7 @@ graph TB
 
     subgraph AI["AI Layer - AWS Bedrock"]
         style AI fill:#0f3460,stroke:#F72585,stroke-width:2px,color:#fff
-        CS["Claude 3.5 Sonnet\nArchitecture and Walkthroughs"]
+        CS["Claude 4.5 Sonnet\nArchitecture and Walkthroughs"]
         CH["Claude 3 Haiku\nConventions and i18n"]
         TE["Titan Embeddings V2\nSemantic Search"]
     end
@@ -216,11 +216,11 @@ sequenceDiagram
     GHA->>S3: Fetch and store repo files
     GHA->>BE: POST /api/internal/analyze
     BE->>S3: Read repo files
-    BE->>AI: Claude 3.5 Sonnet - Architecture Analysis
+    BE->>AI: Claude 4.5 Sonnet - Architecture Analysis
     AI-->>BE: Architecture map + component graph
     BE->>AI: Claude 3 Haiku - Convention Detection
     AI-->>BE: Coding patterns + standards
-    BE->>AI: Claude 3.5 Sonnet - Walkthrough Generation
+    BE->>AI: Claude 4.5 Sonnet - Walkthrough Generation
     AI-->>BE: Step-by-step code tours
     BE->>AI: Titan Embeddings - Vectorize codebase
     AI-->>BE: Embedding vectors
@@ -436,7 +436,7 @@ autodev/
 │
 ├── infrastructure/
 │   └── template.yaml                  # AWS SAM: Lambda + API GW + DynamoDB + S3
-├── SPEC.md                            # Milestone specifications
+│
 ├── pnpm-workspace.yaml                # Monorepo config
 └── tsconfig.base.json                 # Shared TypeScript config
 ```
@@ -553,7 +553,7 @@ Accessibility-first voice interface for code explanations. Developers can **spea
 
 ### 6. AI Copilot
 
-Context-aware coding assistant embedded directly in the dashboard — powered by Claude 3.5 Sonnet with full repo context.
+Context-aware coding assistant embedded directly in the dashboard — powered by Claude 4.5 Sonnet with full repo context.
 
 ---
 
@@ -684,7 +684,7 @@ graph LR
 
     subgraph AI["AI - AWS Bedrock"]
         style AI fill:#FF6B35,color:#fff
-        CS["Claude 3.5 Sonnet"]
+        CS["Claude 4.5 Sonnet"]
         CH["Claude 3 Haiku"]
         TE["Titan Embeddings V2"]
     end
@@ -716,7 +716,7 @@ graph LR
 | **VS Code** | TypeScript, React Webviews, VS Code API | IDE-integrated onboarding: CodeLens, panels, explorer |
 | **GitHub App** | Probot Framework, Webhooks | Auto-analyze repos on install, PR onboarding comments |
 | **Backend** | Express.js + TypeScript, serverless-http | REST API, AI orchestration, caching, progress tracking |
-| **AI Models** | Claude 3.5 Sonnet | Architecture analysis, walkthroughs, complex Q&A |
+| **AI Models** | Claude 4.5 Sonnet | Architecture analysis, walkthroughs, complex Q&A |
 | **AI Models** | Claude 3 Haiku | Conventions, env setup, i18n translations, quick replies |
 | **AI Models** | Titan Embeddings V2 | Semantic search, vector similarity, Q&A retrieval |
 | **Database** | AWS DynamoDB | Repos, analyses, Q&A cache (TTL), progress, walkthroughs |
@@ -884,7 +884,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 
 ```mermaid
 flowchart TD
-    A["Step 1 - Enable Bedrock Models"] --> B["Claude 3.5 Sonnet\nClaude 3 Haiku\nTitan Embeddings V2"]
+    A["Step 1 - Enable Bedrock Models"] --> B["Claude 4.5 Sonnet\nClaude 3 Haiku\nTitan Embeddings V2"]
     C["Step 2 - Create DynamoDB Tables"] --> D["repos - analyses - qa-cache\nprogress - walkthroughs"]
     E["Step 3 - Create S3 Buckets"] --> F["autodev-repo-files\nautodev-analysis-results"]
     G["Step 4 - Deploy via SAM"] --> H["API Gateway + Lambda\nAuto-scaling serverless"]
