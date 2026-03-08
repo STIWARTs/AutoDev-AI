@@ -103,21 +103,21 @@ India has **4.3 million developers** — yet the onboarding experience is broken
     </td>
     <td align="center" width="33%">
       <b>Codebase Q&A</b><br><br>
-      <img src="docs/screenshots/codebase-qa.png" alt="Codebase Q&A" width="100%" />
+      <img src="docs/screenshots/codebase-qa.png" alt="Code Canvas" width="100%" />
     </td>
     <td align="center" width="33%">
       <b>Learning Dashboard</b><br><br>
-      <img src="docs/screenshots/learning-dashboard.png" alt="Learning Dashboard" width="100%" />
+      <img src="docs/screenshots/learning-dashboard.png" alt="Codebase Q&A" width="100%" />
     </td>
   </tr>
   <tr>
     <td align="center" width="33%">
       <b>Environment Setup</b><br><br>
-      <img src="docs/screenshots/environment-setup.png" alt="Environment Setup" width="100%" />
+      <img src="docs/screenshots/environment-setup.png" alt="Guided Walkthroughs" width="100%" />
     </td>
     <td align="center" width="33%">
       <b>Guided Walkthroughs</b><br><br>
-      <img src="docs/screenshots/guided-walkthroughs.png" alt="Guided Walkthroughs" width="100%" />
+      <img src="docs/screenshots/guided-walkthroughs.png" alt="VS Code Extension" width="100%" />
     </td>
     <td align="center" width="33%">
       <b>VS Code Extension</b><br><br>
