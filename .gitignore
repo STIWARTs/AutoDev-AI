@@ -25,3 +25,10 @@ CLAUDE.md
 .cursorrules
 opencode.json
 scripts/
+.vercel
+autodev_innovation_research.md
+autodev_innovation_research.md.resolved
+implementation_plan.md.resolved
+AWS_IMPLEMENTATION_PLAN.md
+SETUP.md
+SPEC.md
