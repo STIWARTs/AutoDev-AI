@@ -21,14 +21,14 @@ import type { ArchitectureMap as ArchMap, AnimationSequence, AnimationStep } fro
 /*  Colours                                                            */
 /* ------------------------------------------------------------------ */
 
-const NODE_COLORS: Record<string, { border: string }> = {
-  entry:    { border: "#f59e0b" },
-  module:   { border: "#3b82f6" },
-  service:  { border: "#10b981" },
-  config:   { border: "#8b5cf6" },
-  util:     { border: "#6366f1" },
-  database: { border: "#ec4899" },
-  external: { border: "#ef4444" },
+const NODE_COLORS: Record<string, { border: string; bg: string }> = {
+  entry:    { border: "#f59e0b", bg: "#f59e0b20" },
+  module:   { border: "#3b82f6", bg: "#3b82f620" },
+  service:  { border: "#10b981", bg: "#10b98120" },
+  config:   { border: "#8b5cf6", bg: "#8b5cf620" },
+  util:     { border: "#6366f1", bg: "#6366f120" },
+  database: { border: "#ec4899", bg: "#ec489920" },
+  external: { border: "#ef4444", bg: "#ef444420" },
 };
 
 const HIGHLIGHT_RING = "0 0 24px -4px rgba(226,90,52,0.8), inset 0 0 16px -6px rgba(226,90,52,0.6)";
