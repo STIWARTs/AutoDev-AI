@@ -8,6 +8,7 @@ dist/
 .DS_Store
 coverage/
 *.log
+CONTENT/
 
 # AI tooling & IDE config (not for repo)
 .ai-context/
